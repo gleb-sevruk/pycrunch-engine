@@ -34,9 +34,12 @@ def run_coverage():
     return jsonify(dict(entry_file=get_file(), results=serialized))
 
 
+from flask import request
+
 @app.route("/file", methods=['GET'])
 def download_file():
-    my_file = io.FileIO(get_file(), 'r')
+    filename = request.args.get('file')
+    my_file = io.FileIO(filename, 'r')
     content = my_file.read()
     return Response(content, mimetype='application/x-python-code')
 

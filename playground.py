@@ -1,5 +1,7 @@
 def my_sum():
-    pass
+    a = 1
+    b = 2
+    return a + b
 
 
 def unused():
