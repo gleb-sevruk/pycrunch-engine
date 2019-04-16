@@ -9,7 +9,7 @@
       </div>
     </div>
 <!--    <el-button @click="run_coverage()">Run</el-button>-->
-    <div class="test-run">
+    <div class="test-run ml-3">
 <!--      {{test_run}}-->
       <div class="all-files" v-if="test_run" >
         <div class="test-run__file mt-4" v-for="(run, index) in test_run.all_runs" :key="run.entry_point">

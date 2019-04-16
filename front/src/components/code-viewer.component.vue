@@ -1,7 +1,7 @@
 <template>
 
   <div v-loading="loading">
-    <div class="file__line" v-for="line in lines" :key="line.index"><span class="file__line-number">{{line.state}} {{line.index}}</span> {{line.text}} </div>
+    <div class="file__line" :class="{'line-state__green' : line.state === '+'}" v-for="line in lines" :key="line.index"><span class="file__line-number">{{line.state}} {{line.index}}</span>{{line.text}} </div>
 
   </div>
 
@@ -84,6 +84,10 @@
     width: 50px;
     user-select: none;
     border-right: 1px solid #6c757d;
+    margin-right: 1em;
 
+  }
+  .line-state__green {
+    background-color: rgba(44, 176, 0, 0.2);
   }
 </style>
