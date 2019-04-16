@@ -1,20 +1,51 @@
 <template>
 
-  <div>
-    <div class="file__line" v-for="line in lines" :key="line.index">{{line.state}} {{line.index}} | {{line.text}} </div>
+  <div v-loading="loading">
+    <div class="file__line" v-for="line in lines" :key="line.index"><span class="file__line-number">{{line.state}} {{line.index}}</span> {{line.text}} </div>
 
   </div>
 
 </template>
 
 <script>
+  import axios from 'axios'
+  import config from '../config'
+
   export default {
-    props: ['file', 'coverage'],
+    props: ['filename', 'coverage'],
     name: 'pc-code-viewer',
-    methods: {
-      splitLines (t) {
-        return t.split(/\r\n|\r|\n/)
+    data () {
+      return {
+        file: null,
+        loading: true,
       }
+    },
+    updated () {
+      this.load_file()
+
+    },
+
+    async mounted() {
+      console.log('this.file', this.file)
+      await this.load_file()
+      this.loading = false
+
+    },
+    methods: {
+      async load_file() {
+        let x = await axios.get(config.api_url + '/file', {params: {file: this.filename}})
+        this.file = x.data
+      },
+      splitLines (t) {
+        if (!t) {
+          return []
+        }
+        return t.split(/\r\n|\r|\n/)
+      },
+      async download_file (filename) {
+        let x = await axios.get(config.api_url + '/file', {params: {file:filename}})
+        return x.data
+      },
     },
     computed: {
       lines () {
@@ -47,5 +78,12 @@
     text-align: left;
     width: 600px;
     margin: 0 auto;
+  }
+  .file__line-number {
+    display: inline-block;
+    width: 50px;
+    user-select: none;
+    border-right: 1px solid #6c757d;
+
   }
 </style>

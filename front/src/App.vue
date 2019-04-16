@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <div id="nav">
+    <h2 class="text-center mt-4">PyCrunch</h2>
+
+    <div id="nav" class="text-center">
       <router-link to="/">Main</router-link> |
       <router-link to="/more">More</router-link>
     </div>
@@ -13,11 +15,9 @@
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
 }
 #nav {
-  padding: 30px;
   a {
     font-weight: bold;
     color: #2c3e50;
