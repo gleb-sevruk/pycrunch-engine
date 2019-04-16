@@ -1,45 +1,27 @@
-import io
-from collections import OrderedDict
-from decimal import Decimal
-
-from coverage import CoverageData, Coverage
-from flask import Flask, render_template, url_for, jsonify, Response
+import logging.config
+import yaml
+from flask import Flask
 from flask_cors import CORS
 
-import tests
-from api.serializers import serialize_coverage
-from diagnostics import print_coverage
+from pycrunch.api import shared
+from pycrunch.api import pycrunch_api
 
 app = Flask(__name__)
+
+shared.socketio.init_app(app=app)
+
+with open('log_configuration.yaml', 'r') as f:
+    config = yaml.safe_load(f.read())
+    logging.config.dictConfig(config)
+
 CORS(app)
+app.config['SECRET_KEY'] = '!pycrunch!'
 
 
-@app.route("/")
-def hello():
-    return "Nothing here"
+app.register_blueprint(pycrunch_api)
 
-def get_file():
- return '/Users/gleb/code/PyCrunch/tests.py'
+import pycrunch.api.socket_handlers
 
-@app.route("/entry-file")
-def entry_file():
-    return jsonify({'entry_file': get_file()})
+if __name__ == '__main__':
 
-
-
-@app.route("/coverage", methods=['POST'])
-def run_coverage():
-    cov = tests.run()
-    serialized = serialize_coverage(cov, get_file())
-    return jsonify(dict(entry_file=get_file(), results=serialized))
-
-
-from flask import request
-
-@app.route("/file", methods=['GET'])
-def download_file():
-    filename = request.args.get('file')
-    my_file = io.FileIO(filename, 'r')
-    content = my_file.read()
-    return Response(content, mimetype='application/x-python-code')
-
+    shared.socketio.run(app, use_reloader=False, debug=True, extra_files=['log_configuration.yaml'])
