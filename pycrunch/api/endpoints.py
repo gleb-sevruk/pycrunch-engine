@@ -5,9 +5,12 @@ from flask import jsonify, Response
 from flask_socketio import send
 
 from pycrunch import runner
+from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.session.state import file_watcher
-from .serializers import serialize_coverage
+from .serializers import serialize_coverage, serialize_test_set
 from flask import Blueprint
+from flask import request
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -31,7 +34,8 @@ def entry_file():
 
 @pycrunch_api.route("/coverage", methods=['POST'])
 def run_coverage():
-
+    x = SimpleTestDiscovery()
+    xx = x.find_tests_in_folder('/Users/gleb/code/PyCrunch/')
     entry_files = request.json.get('entry_files')
     file_watcher.watch(entry_files)
     all_runs = []
@@ -45,7 +49,15 @@ def run_coverage():
     return jsonify(dict(entry_files=entry_files, all_runs=all_runs))
 
 
-from flask import request
+@pycrunch_api.route("/discover")
+def discover_tests():
+    folder = request.args.get('folder')
+    x = SimpleTestDiscovery()
+    xx = x.find_tests_in_folder(folder)
+
+    return jsonify(dict(modules=serialize_test_set(xx), folder=folder))
+
+
 
 @pycrunch_api.route("/file", methods=['GET'])
 def download_file():

@@ -4,11 +4,11 @@ def my_sum():
     return a + b
 
 def unused():
-    return 'zalupa'
+    return 'wtf'
 
 
 def kurlik(a, b):
-    if a > 10:
+    if a < 10:
         return b + 1
 
     if b < 10:
@@ -17,3 +17,4 @@ def kurlik(a, b):
     return -42
 
 print('module imported!')
+

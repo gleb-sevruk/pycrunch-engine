@@ -3,10 +3,20 @@
     <hr/>
     <pc-socket-test @pipeline="on_pipeline"/>
     <div class="files ml-5">
-      <div class="text-secondary">Entry points:</div>
-      <div class="files__single" v-for="file in entry_files" :key="file">
-        {{file}}
-      </div>
+      <div class="text-secondary">Discovered tests:</div>
+      <template v-if="discovery_response">
+        <div class="files__single" v-for="module in discovery_response.modules" :key="module.filename">
+          <code class="text-info">{{module.filename}}</code>
+          <div class="test-methods">
+            <div class="test-methods ml-4" v-for="test in module.tests_found" :key="test">
+              <div class="single__test d-flex mt-2">
+                <div class="alert-success px-2">+</div>
+                <div class="single-test__name ml-2">{{test}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
 <!--    <el-button @click="run_coverage()">Run</el-button>-->
     <div class="test-run ml-3">
@@ -35,9 +45,11 @@
   name: 'home',
   data () {
     return {
+      folder: '/Users/gleb/code/PyCrunch/',
       entry_files: [],
       test_run: null,
       file_contents: null,
+      discovery_response: null,
     }
   },
   components: {
@@ -45,11 +57,11 @@
     'pc-code-viewer' : CodeViewer,
   },
   async mounted () {
-    let url = config.api_url + '/entry-files'
+    let url = config.api_url + '/discover'
 
     try {
-      let x = await axios.get(url)
-      this.entry_files = x.data.entry_files
+      let x = await axios.get(url, {params: {folder: this.folder}})
+      this.discovery_response = x.data
       x = await this.run_coverage()
     }
     catch (e) {
@@ -58,7 +70,8 @@
   },
   methods: {
     async run_coverage () {
-      let x = await axios.post(config.api_url + '/coverage', {entry_files: this.entry_files})
+      let x = await axios.post(config.api_url + '/coverage', {entry_files: [ '/Users/gleb/code/PyCrunch/tests.py',
+          '/Users/gleb/code/PyCrunch/playground.py',]})
       this.test_run = x.data
     },
     on_pipeline (data){

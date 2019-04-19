@@ -45,3 +45,12 @@ def serialize_coverage(cov : Coverage, entry_file):
     run_results = CoverageRun(entry_file)
     run_results.parse_lines(cov)
     return run_results.as_json()
+
+def serialize_test_set(test_set):
+    def serialize_module(tests_in_module):
+        return dict(
+            filename=tests_in_module.filename,
+            tests_found=[test_name for test_name in tests_in_module.tests_found]
+        )
+
+    return [serialize_module(m) for m in test_set.modules]
