@@ -62,6 +62,7 @@ def discover_tests():
 
 @pycrunch_api.route("/run-tests", methods=['POST'])
 def run_tests():
+
     tests = request.json.get('tests')
     entry_point = request.json.get('entry_point')
     execution_pipeline.add_task(RunTestTask(tests, entry_point))

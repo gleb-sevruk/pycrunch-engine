@@ -4,6 +4,7 @@ import time
 
 from pycrunch.api import shared
 from pycrunch.api.serializers import serialize_coverage
+from pycrunch.api.shared import file_watcher
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.runner.simple_test_runner import SimpleTestRunner
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage
@@ -11,16 +12,13 @@ from pycrunch.session.combined_coverage import combined_coverage, CombinedCovera
 
 def serialize_combined_coverage(combined: CombinedCoverage):
     return [
-        dict(filename=x.filename, lines_with_entrypoints=
-        compute_lines(x)) for x in combined.files.values()
+        dict(
+            filename=x.filename,
+            lines_with_entrypoints=compute_lines(x)) for x in combined.files.values()
     ]
 
 
 def compute_lines(x):
-    result = dict()
-    for (line_number, entry_points) in x.lines_with_entrypoints.items():
-        result[line_number] = list(entry_points)
-
     zzz = {line_number:list(entry_points) for (line_number, entry_points) in x.lines_with_entrypoints.items()}
     return zzz
 
@@ -37,6 +35,7 @@ class RunTestTask(AbstractTask):
     def run(self):
         runner = SimpleTestRunner()
         results = runner.run(self.tests)
+
         combined_coverage.add_multiple_results(results)
         shared.pipe.push(event_type='test_run_completed',
                          coverage=dict(all_runs=results),
@@ -47,7 +46,7 @@ class RunTestTask(AbstractTask):
         serialized = serialize_combined_coverage(combined_coverage)
         shared.pipe.push(event_type='combined_coverage_updated',
                          combined_coverage=serialized,
-
+                         dependencies={entry_point: list(filenames) for entry_point, filenames in combined_coverage.dependencies.items() },
                          timings=dict(start=self.timestamp, end=shared.timestamp()),
                          ),
         pass;

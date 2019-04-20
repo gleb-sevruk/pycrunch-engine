@@ -12,13 +12,11 @@ class FileModificationTask(AbstractTask):
         self.timestamp = time.time()
 
     def run(self):
-        # shared.socketio.emit('event',
-        #                      dict(
-        #                          type='pipeline_task',
-        #                          # data=task.file,
-        #                          ts=self.timestamp,
-        #                      ),
-        #                      namespace='/')
+        shared.pipe.push(event_type='file_modification',
+                         modified_file=self.file,
+                         ts=self.timestamp,
+                         )
+
         pass;
 
 # https://stackoverflow.com/questions/45369128/python-multithreading-queue

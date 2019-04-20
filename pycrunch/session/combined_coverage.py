@@ -1,6 +1,8 @@
 from collections import namedtuple, defaultdict
 from pprint import pprint
 
+from pycrunch.api.shared import file_watcher
+
 FileWithCoverage = namedtuple('FileWithCoverage', ['filename', 'lines_covered', 'analysis', 'arcs'])
 
 class FileStatistics:
@@ -15,6 +17,8 @@ class FileStatistics:
         for line in lines_covered:
             self.lines_with_entrypoints[line].add(by_entry_point)
 
+
+
 class CombinedCoverage:
     """
         files[] -> line 1 -> [test1, test2]
@@ -22,7 +26,12 @@ class CombinedCoverage:
     """
     def __init__(self):
         self.files = dict()
+        self.dependencies = defaultdict(list)
         pass
+
+    def mark_dependency(self, filename, test_metadata):
+        if test_metadata not in self.dependencies[filename]:
+            self.dependencies[filename].append(test_metadata)
 
     def mark_coverage(self, entry_point, filename, lines_covered):
         if not filename in self.files:
@@ -37,7 +46,11 @@ class CombinedCoverage:
         for entry_point, test_run in results.items():
             for file in test_run['files']:
                 file_with_coverage = FileWithCoverage(**file)
+                self.mark_dependency(file_with_coverage.filename, test_run['test_metadata'])
+
                 self.mark_coverage(entry_point=entry_point, filename=file_with_coverage.filename, lines_covered=file_with_coverage.lines_covered)
+
+        file_watcher.watch(self.files.keys())
 
         # pprint(results)
         for x in self.files.values():

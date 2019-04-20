@@ -51,6 +51,7 @@
       test_run: null,
       combined_coverage: null,
       file_contents: null,
+      dependencies: null,
       discovery_response: null,
     }
   },
@@ -78,11 +79,19 @@
     },
     on_pipeline (data){
       console.log('pipe', data)
+      if (data.event_type === 'file_modification') {
+        let file = data.modified_file
+        let dependent_tests = this.dependencies[file]
+        if (dependent_tests) {
+          this.run_specified_tests(dependent_tests)
+        }
+      }
       if (data.event_type === 'test_run_completed') {
         this.test_run = data.coverage
       }
       if (data.event_type === 'combined_coverage_updated') {
         this.combined_coverage = data.combined_coverage
+        this.dependencies = data.dependencies
       }
 
     },
@@ -91,7 +100,11 @@
       // this.test_run = x.data
     },
     async run_all_tests () {
-       await axios.post(config.api_url + '/run-tests', {entry_point:`--all--`, tests: this.get_all_tests() })
+       await this.run_specified_tests(this.get_all_tests())
+
+    },
+    async run_specified_tests (tests) {
+      await axios.post(config.api_url + '/run-tests', {entry_point:`--all--`, tests })
 
     },
     get_all_tests () {

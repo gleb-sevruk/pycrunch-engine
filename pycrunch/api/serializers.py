@@ -15,7 +15,8 @@ class CoverageRunForSingleFile:
         return OrderedDict(filename=self.filename, lines_covered=self.lines, analysis=self.analysis, arcs=self.arcs,)
 
 class CoverageRun:
-    def __init__(self, entry_point, time_elapsed):
+    def __init__(self, entry_point, time_elapsed, test_metadata):
+        self.test_metadata = test_metadata
         self.time_elapsed = time_elapsed
         self.entry_point = entry_point
         self.percentage_covered = -1
@@ -39,12 +40,13 @@ class CoverageRun:
             percentage_covered=self.percentage_covered,
             entry_point=self.entry_point,
             time_elapsed=round(self.time_elapsed * 1000, 2),
+            test_metadata=self.test_metadata,
             files=files_,
         )
 
 
-def serialize_coverage(cov : Coverage, entry_file, time_elapsed):
-    run_results = CoverageRun(entry_file, time_elapsed)
+def serialize_coverage(cov : Coverage, entry_file, time_elapsed, test_metadata):
+    run_results = CoverageRun(entry_file, time_elapsed, test_metadata)
     run_results.parse_lines(cov)
     return run_results.as_json()
 

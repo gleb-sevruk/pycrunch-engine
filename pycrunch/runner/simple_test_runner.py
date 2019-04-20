@@ -32,7 +32,7 @@ class SimpleTestRunner(_abstract_runner.Runner):
                 time_elapsed = time_end - time_start
                 cov.stop()
                 fqn = metadata.module + ':' + metadata.name
-                coverage_for_run = serialize_coverage(cov, fqn, time_elapsed)
+                coverage_for_run = serialize_coverage(cov, fqn, time_elapsed, test_metadata=t)
             except Exception as e:
                 logger.exception('error during run', exc_info=e)
             results[fqn] = coverage_for_run
