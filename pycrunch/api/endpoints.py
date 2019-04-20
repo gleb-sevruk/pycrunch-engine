@@ -5,8 +5,10 @@ from flask import jsonify, Response
 from flask_socketio import send
 
 from pycrunch import runner
+from pycrunch.api.shared import file_watcher
 from pycrunch.discovery.simple import SimpleTestDiscovery
-from pycrunch.session.state import file_watcher
+from pycrunch.pipeline import execution_pipeline
+from pycrunch.pipeline.run_test_task import RunTestTask
 from .serializers import serialize_coverage, serialize_test_set
 from flask import Blueprint
 from flask import request
@@ -56,6 +58,14 @@ def discover_tests():
     xx = x.find_tests_in_folder(folder)
 
     return jsonify(dict(modules=serialize_test_set(xx), folder=folder))
+
+
+@pycrunch_api.route("/run-tests", methods=['POST'])
+def run_tests():
+    tests = request.json.get('tests')
+    entry_point = request.json.get('entry_point')
+    execution_pipeline.add_task(RunTestTask(tests, entry_point))
+    return jsonify(tests)
 
 
 

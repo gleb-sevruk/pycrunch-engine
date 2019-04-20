@@ -6,7 +6,6 @@ from flask import url_for, session, current_app, request
 from flask_socketio import emit, send
 
 from pycrunch.runner.pipeline_dispatcher import dispather_thread
-from pycrunch.watcher.pipeline import execution_pipeline
 from . import shared
 
 logger = logging.getLogger(__name__)

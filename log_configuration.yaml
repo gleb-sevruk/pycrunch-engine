@@ -12,7 +12,7 @@ handlers:
     stream: ext://sys.stdout
 loggers:
   pycrunch.runner:
-    level: INFO
+    level: DEBUG
   pycrunch.api.socket_handlers:
     level: DEBUG
   pycrunch.watcher:

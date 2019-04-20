@@ -15,7 +15,8 @@ class CoverageRunForSingleFile:
         return OrderedDict(filename=self.filename, lines_covered=self.lines, analysis=self.analysis, arcs=self.arcs,)
 
 class CoverageRun:
-    def __init__(self, entry_point):
+    def __init__(self, entry_point, time_elapsed):
+        self.time_elapsed = time_elapsed
         self.entry_point = entry_point
         self.percentage_covered = -1
         self.files = []
@@ -37,12 +38,13 @@ class CoverageRun:
         return dict(
             percentage_covered=self.percentage_covered,
             entry_point=self.entry_point,
+            time_elapsed=round(self.time_elapsed * 1000, 2),
             files=files_,
         )
 
 
-def serialize_coverage(cov : Coverage, entry_file):
-    run_results = CoverageRun(entry_file)
+def serialize_coverage(cov : Coverage, entry_file, time_elapsed):
+    run_results = CoverageRun(entry_file, time_elapsed)
     run_results.parse_lines(cov)
     return run_results.as_json()
 
@@ -50,7 +52,7 @@ def serialize_test_set(test_set):
     def serialize_module(tests_in_module):
         return dict(
             filename=tests_in_module.filename,
-            tests_found=[test_name for test_name in tests_in_module.tests_found]
+            tests_found=[dict(name=test_name, filename=tests_in_module.filename, module=tests_in_module.module) for test_name in tests_in_module.tests_found]
         )
 
     return [serialize_module(m) for m in test_set.modules]

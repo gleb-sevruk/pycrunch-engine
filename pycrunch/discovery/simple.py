@@ -14,9 +14,10 @@ class TestSet:
 
 
 class TestsInModule:
-    def __init__(self, filename, tests_found):
+    def __init__(self, filename, tests_found, module):
         self.tests_found = tests_found
         self.filename = filename
+        self.module = module
 
 
 
@@ -47,7 +48,7 @@ class SimpleTestDiscovery:
             # http://forums.cgsociety.org/t/proper-way-of-reloading-a-python-module-with-new-code-without-having-to-restart-maya/1648174/8
             del sys.modules[module_name]
 
-            test_set.add_module(TestsInModule(py_file, tests_found))
+            test_set.add_module(TestsInModule(py_file, tests_found, module_name))
 
             logger.warning(f'tests found: {tests_found}')
 
