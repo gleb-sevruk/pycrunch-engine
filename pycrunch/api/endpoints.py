@@ -34,30 +34,13 @@ def entry_file():
     return jsonify(dict(entry_files=get_files()))
 
 
-@pycrunch_api.route("/coverage", methods=['POST'])
-def run_coverage():
-    x = SimpleTestDiscovery()
-    xx = x.find_tests_in_folder('/Users/gleb/code/PyCrunch/')
-    entry_files = request.json.get('entry_files')
-    file_watcher.watch(entry_files)
-    all_runs = []
-    cov = None
-    for entry_file in entry_files:
-        logger.debug('run_coverage for ' + entry_file)
-        simple_runner = runner.SimpleRunner()
-        cov = simple_runner.run(entry_file)
-        all_runs.append(serialize_coverage(cov, entry_file))
-
-    return jsonify(dict(entry_files=entry_files, all_runs=all_runs))
-
-
 @pycrunch_api.route("/discover")
 def discover_tests():
     folder = request.args.get('folder')
     x = SimpleTestDiscovery()
     xx = x.find_tests_in_folder(folder)
 
-    return jsonify(dict(modules=serialize_test_set(xx), folder=folder))
+    return jsonify(**serialize_test_set(xx), folder=folder)
 
 
 @pycrunch_api.route("/run-tests", methods=['POST'])
@@ -65,7 +48,7 @@ def run_tests():
 
     tests = request.json.get('tests')
     entry_point = request.json.get('entry_point')
-    execution_pipeline.add_task(RunTestTask(tests, entry_point))
+    execution_pipeline.add_task(RunTestTask(tests))
     return jsonify(tests)
 
 

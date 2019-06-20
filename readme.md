@@ -1,4 +1,9 @@
+#How to run:
 
+`/Users/gleb/code/PyCrunch/pychrunch_flask.py`
+
+
+###random 
 https://coverage.readthedocs.io/en/v4.5.x/faq.html
 
 cmd 

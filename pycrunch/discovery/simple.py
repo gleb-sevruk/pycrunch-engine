@@ -5,12 +5,23 @@ import os
 logger = logging.getLogger(__name__)
 
 
+class DiscoveredTest:
+    def __init__(self, name, filename, module):
+        self.filename = filename
+        self.module = module
+        # name of the test
+        self.name = name
+        self.fqn = module + ':' + name
+
 class TestSet:
     def __init__(self):
         self.modules = []
+        self.tests = []
 
     def add_module(self, tests_in_module):
         self.modules.append(tests_in_module)
+        for test in tests_in_module.tests_found:
+            self.tests.append(DiscoveredTest(test, tests_in_module.filename, tests_in_module.module))
 
 
 class TestsInModule:
@@ -53,6 +64,7 @@ class SimpleTestDiscovery:
             logger.warning(f'tests found: {tests_found}')
 
         return test_set
+
     def find_tests_in_module(self, module):
         all_methods = dir(module)
         found_methods = []

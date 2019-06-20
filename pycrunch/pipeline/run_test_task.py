@@ -27,8 +27,7 @@ def compute_lines(x):
 
 class RunTestTask(AbstractTask):
 
-    def __init__(self, tests, entry_point):
-        self.entry_point = entry_point
+    def __init__(self, tests):
         self.timestamp = shared.timestamp()
         self.tests = tests
 

@@ -3,6 +3,8 @@ from collections import OrderedDict
 
 from coverage import Coverage
 
+from pycrunch.discovery.simple import DiscoveredTest
+
 
 class CoverageRunForSingleFile:
     def __init__(self, filename, lines, arcs, analysis):
@@ -15,10 +17,11 @@ class CoverageRunForSingleFile:
         return OrderedDict(filename=self.filename, lines_covered=self.lines, analysis=self.analysis, arcs=self.arcs,)
 
 class CoverageRun:
-    def __init__(self, entry_point, time_elapsed, test_metadata):
+    def __init__(self, entry_point, time_elapsed, test_metadata, captured_output):
         self.test_metadata = test_metadata
         self.time_elapsed = time_elapsed
         self.entry_point = entry_point
+        self.captured_output = captured_output
         self.percentage_covered = -1
         self.files = []
 
@@ -42,13 +45,26 @@ class CoverageRun:
             time_elapsed=round(self.time_elapsed * 1000, 2),
             test_metadata=self.test_metadata,
             files=files_,
+            captured_output=self.captured_output,
         )
 
 
-def serialize_coverage(cov : Coverage, entry_file, time_elapsed, test_metadata):
-    run_results = CoverageRun(entry_file, time_elapsed, test_metadata)
+def serialize_coverage(cov : Coverage, entry_file, time_elapsed, test_metadata, captured_output):
+    run_results = CoverageRun(entry_file, time_elapsed, test_metadata, captured_output)
     run_results.parse_lines(cov)
     return run_results.as_json()
+
+
+def serialize_test(discovered_test: DiscoveredTest):
+    return dict(
+        fqn=discovered_test.fqn,
+        module=discovered_test.module,
+        filename=discovered_test.filename,
+        name=discovered_test.name,
+        state='pending',
+    )
+
+
 
 def serialize_test_set(test_set):
     def serialize_module(tests_in_module):
@@ -57,4 +73,6 @@ def serialize_test_set(test_set):
             tests_found=[dict(name=test_name, filename=tests_in_module.filename, module=tests_in_module.module) for test_name in tests_in_module.tests_found]
         )
 
-    return [serialize_module(m) for m in test_set.modules]
+    return dict(
+        tests=[serialize_test(t) for t in test_set.tests],
+        grouped=[serialize_module(m) for m in test_set.modules])

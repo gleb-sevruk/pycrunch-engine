@@ -1,12 +1,10 @@
-from datetime import datetime
-from queue import Queue
 import time
 
 from pycrunch.api import shared
 from pycrunch.pipeline.abstract_task import AbstractTask
 
 
-class FileModificationTask(AbstractTask):
+class FileModifiedNotificationTask(AbstractTask):
     def __init__(self, file):
         self.file = file
         self.timestamp = time.time()

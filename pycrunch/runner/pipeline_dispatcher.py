@@ -5,20 +5,25 @@ from pycrunch.pipeline import execution_pipeline
 
 logger = logging.getLogger(__name__)
 
+"""
+  responsible for handling tasks for
+    
+    - Test run
+"""
+
 def dispather_thread(arg):
-    logger.debug('OPA THGREAD!')
+    logger.debug('Dispatcher thread -- Start')
     count = 1
     while True:
         task = execution_pipeline.get_task()
         try:
             task.run()
         except Exception as e:
-            logger.exception('Exception in dispather_thread, ', exc_info=e)
+            logger.exception('Exception in dispatcher_thread, ', exc_info=e)
 
 
 
         count += 1
 
 
-
-    logger.debug('OPA THGREAD --- done!')
+    logger.debug('Dispatcher thread -- End')

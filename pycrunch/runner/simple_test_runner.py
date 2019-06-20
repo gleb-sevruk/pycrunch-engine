@@ -1,19 +1,19 @@
-import io
 import logging
 from collections import namedtuple
 import importlib.util
-from typing import Iterable
 
 import coverage
 
 from pycrunch.api.serializers import serialize_coverage
 from pycrunch.api.shared import timestamp
+from pycrunch.runner.interception import capture_stdout
 from . import _abstract_runner
 from . import exclusions
 
 logger = logging.getLogger(__name__)
 
-TestMetadata = namedtuple('TestMetadata', ['filename', 'name', 'module'])
+TestMetadata = namedtuple('TestMetadata', ['filename', 'name', 'module', 'fqn', 'state'])
+
 
 class SimpleTestRunner(_abstract_runner.Runner):
     def __init__(self):
@@ -22,17 +22,19 @@ class SimpleTestRunner(_abstract_runner.Runner):
     def run(self, tests):
 
         results = dict()
-        for t in tests:
+        for test_to_run in tests:
             cov = self.start_coverage()
             try:
-                time_start = timestamp()
-                metadata = TestMetadata(**t)
-                self._run_test(metadata)
-                time_end = timestamp()
-                time_elapsed = time_end - time_start
-                cov.stop()
-                fqn = metadata.module + ':' + metadata.name
-                coverage_for_run = serialize_coverage(cov, fqn, time_elapsed, test_metadata=t)
+                with capture_stdout() as get_value:
+                    time_start = timestamp()
+                    metadata = TestMetadata(**test_to_run)
+                    self._run_test(metadata)
+                    time_end = timestamp()
+                    time_elapsed = time_end - time_start
+                    cov.stop()
+                    fqn = metadata.fqn
+                    captured = get_value()
+                    coverage_for_run = serialize_coverage(cov, fqn, time_elapsed, test_metadata=test_to_run, captured_output=captured)
             except Exception as e:
                 logger.exception('error during run', exc_info=e)
             results[fqn] = coverage_for_run
@@ -64,6 +66,7 @@ class SimpleTestRunner(_abstract_runner.Runner):
             # logger.warning(f'_run_test->vars {vars(foo)}')
             spec.loader.exec_module(foo)
             method_to_call = getattr(foo, test.name, None)
+            # print(vars(foo))
             if method_to_call:
                 method_to_call()
             # logger.debug('after exec_module')

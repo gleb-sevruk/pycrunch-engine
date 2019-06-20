@@ -11,7 +11,10 @@ def kurlik(a, b):
     if a < 10:
         return b + 1
 
-    if b < 10:
+    print(f'b from arg {b}')
+    if b == 23:
+        print('b is 22')
+
         return a
 
     return -42
