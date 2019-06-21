@@ -1,4 +1,10 @@
-exclude_list = [
+py_test_exclusions = [
+    '*_pytest/*',
+    '*site-packages/*'
+
+]
+
+exclude_list = py_test_exclusions + [
     '*PyCharm.app/Contents/helpers/pydev/pydevd_file_utils.py',
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_bundle/pydevd_comm.py',
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_frame_eval/pydevd_frame_tracing.py',
@@ -8,3 +14,4 @@ exclude_list = [
     '*runner/interception.py'
 
 ]
+
