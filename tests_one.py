@@ -10,9 +10,8 @@ def test_pytest_support():
             self.passed_tests = set()
 
         def pytest_runtest_logreport(self, report):
-            print(report.nodeid)
             if not report.passed:
-                print(report.nodeid)
+                # print(report.nodeid)
 
                 # pprint(vars(report))
                 self.passed_tests.add(report.nodeid)
@@ -21,7 +20,8 @@ def test_pytest_support():
     plugin = Plugin()
 
     # pytest.main(['tests_two.py::test_x', '-p', 'no:terminal'])
-    pytest.main(['tests_two.py', '-q'], plugins=[plugin])
+    pytest.main(['tests_two.py::test_x', '-q'], plugins=[plugin])
+    print('testing output interception')
 
 
 def test_1():

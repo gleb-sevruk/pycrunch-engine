@@ -13,7 +13,7 @@ def test_dummy():
 
 def test_x():
     x = 2
-    assert x == 3
+    assert x == 2
     print('test_method 3')
 
 def test_y():
