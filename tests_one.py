@@ -6,12 +6,12 @@ from pprint import pprint
 
 import pytest
 
-from pycrunch.plugins.pytest_support.hot_reload import unload_candidates
+from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 
 
 def test_pytest_support():
     class Plugin:
-        def __init__(self):
+        def __init__(self, tests_to_run):
             self.passed_tests = set()
 
         def pytest_runtest_setup(item):
@@ -48,7 +48,7 @@ def test_pytest_support():
             pass
 
         def pytest_runtest_logreport(self, report):
-            pprint(vars(report))
+            # pprint(vars(report))
             if report.when == 'setup':
                 pass
             if report.when == 'teardown':
@@ -65,31 +65,28 @@ def test_pytest_support():
 
     fqn_test_to_run = 'tests_two.py::test_x'
     plugin = Plugin(tests_to_run=[fqn_test_to_run])
-    modules_before = set(sys.modules)
-    # pytest.main(['tests_two.py::test_x', '-p', 'no:terminal'])
-    # q - quite
-    # s - do not capture console logs
-    pytest.main([fqn_test_to_run, '-qs'], plugins=[plugin])
+    print('xxx')
+
+    with ModuleCleanup() as cleanup:
+        # pytest.main(['tests_two.py::test_x', '-p', 'no:terminal'])
+        # q - quite
+        # s - do not capture console logs
+        pytest.main([fqn_test_to_run, '-qs'], plugins=[plugin])
+        print(os.getpid())
+        pprint(plugin.passed_tests)
 
     # maybe context manager ?
-    modules_after = set(sys.modules)
-    difference = set(set(modules_after)).difference(set(modules_before))
-    modules_for_unload = unload_candidates(difference)
-    for m in modules_for_unload:
-        del sys.modules[m]
 
-    print(os.getpid())
-    pprint(plugin.passed_tests)
     print('testing output interception')
 
 
 def test_1():
     print('test_method__op 3')
-    print('test_method__op 2')
+    print('test_method__op 9')
     a = 5 + 6 + 3
     # b = a * 12
     # b = a * 12
-    b = a * 12
+    b = a * 11
     # b = a * 12
     print(f'b {b}')
     print('test_method__op 5')
@@ -99,9 +96,8 @@ def test_6():
     playground.kurlik(10, 23)
     # print('test_method 2')
     print('test_method 2')
-    assert 1 == 2
 
 
 def test_999():
-    print('test_method 2')
+    print('test_method 999')
 

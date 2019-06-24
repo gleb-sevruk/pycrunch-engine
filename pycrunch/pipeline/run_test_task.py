@@ -6,6 +6,7 @@ from pycrunch.api import shared
 from pycrunch.api.serializers import serialize_test_run
 from pycrunch.api.shared import file_watcher
 from pycrunch.pipeline.abstract_task import AbstractTask
+from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.runner.simple_test_runner import SimpleTestRunner
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage
 from pycrunch.session.state import engine
@@ -35,8 +36,9 @@ class RunTestTask(AbstractTask):
     def run(self):
         runner = SimpleTestRunner()
         engine.tests_will_run(self.tests)
+        with ModuleCleanup() as cleanup:
+            results = runner.run(self.tests)
 
-        results = runner.run(self.tests)
         engine.tests_did_run(results)
 
         combined_coverage.add_multiple_results(results)
