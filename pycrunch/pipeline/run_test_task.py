@@ -3,11 +3,12 @@ from queue import Queue
 import time
 
 from pycrunch.api import shared
-from pycrunch.api.serializers import serialize_coverage
+from pycrunch.api.serializers import serialize_test_run
 from pycrunch.api.shared import file_watcher
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.runner.simple_test_runner import SimpleTestRunner
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage
+from pycrunch.session.state import engine
 
 
 def serialize_combined_coverage(combined: CombinedCoverage):
@@ -33,11 +34,20 @@ class RunTestTask(AbstractTask):
 
     def run(self):
         runner = SimpleTestRunner()
+        engine.tests_will_run(self.tests)
+
         results = runner.run(self.tests)
+        engine.tests_did_run(results)
 
         combined_coverage.add_multiple_results(results)
+
+        results_as_json = dict()
+        for k,v in results.items():
+            results_as_json[k] = v.as_json()
+
+
         shared.pipe.push(event_type='test_run_completed',
-                         coverage=dict(all_runs=results),
+                         coverage=dict(all_runs=results_as_json),
                          data=self.tests,
                          timings=dict(start=self.timestamp, end=shared.timestamp()),
                          ),

@@ -3,7 +3,6 @@ from collections import OrderedDict
 
 from coverage import Coverage
 
-from pycrunch.discovery.simple import DiscoveredTest
 
 
 class CoverageRunForSingleFile:
@@ -17,11 +16,11 @@ class CoverageRunForSingleFile:
         return OrderedDict(filename=self.filename, lines_covered=self.lines, analysis=self.analysis, arcs=self.arcs,)
 
 class CoverageRun:
-    def __init__(self, entry_point, time_elapsed, test_metadata, captured_output):
+    def __init__(self, entry_point, time_elapsed, test_metadata, execution_result):
         self.test_metadata = test_metadata
         self.time_elapsed = time_elapsed
         self.entry_point = entry_point
-        self.captured_output = captured_output
+        self.execution_result = execution_result
         self.percentage_covered = -1
         self.files = []
 
@@ -45,34 +44,34 @@ class CoverageRun:
             time_elapsed=round(self.time_elapsed * 1000, 2),
             test_metadata=self.test_metadata,
             files=files_,
-            captured_output=self.captured_output,
+            status=self.execution_result.status,
+            captured_output=self.execution_result.captured_output,
         )
 
 
-def serialize_coverage(cov : Coverage, entry_file, time_elapsed, test_metadata, captured_output):
-    run_results = CoverageRun(entry_file, time_elapsed, test_metadata, captured_output)
+def serialize_test_run(cov : Coverage, entry_file, time_elapsed, test_metadata, execution_result):
+    run_results = CoverageRun(entry_file, time_elapsed, test_metadata, execution_result)
     run_results.parse_lines(cov)
-    return run_results.as_json()
-
-
-def serialize_test(discovered_test: DiscoveredTest):
-    return dict(
-        fqn=discovered_test.fqn,
-        module=discovered_test.module,
-        filename=discovered_test.filename,
-        name=discovered_test.name,
-        state='pending',
-    )
+    return run_results
 
 
 
-def serialize_test_set(test_set):
-    def serialize_module(tests_in_module):
+
+def serialize_test_set_state(test_set):
+
+    from pycrunch.session.state import TestState
+
+    def serialize_test(test_state: TestState):
+        discovered_test = test_state.discovered_test
+        execution_result = test_state.execution_result
         return dict(
-            filename=tests_in_module.filename,
-            tests_found=[dict(name=test_name, filename=tests_in_module.filename, module=tests_in_module.module) for test_name in tests_in_module.tests_found]
+            fqn=discovered_test.fqn,
+            module=discovered_test.module,
+            filename=discovered_test.filename,
+            name=discovered_test.name,
+            state=execution_result.status,
         )
 
     return dict(
-        tests=[serialize_test(t) for t in test_set.tests],
-        grouped=[serialize_module(m) for m in test_set.modules])
+        tests=[serialize_test(v) for (k, v) in test_set.items()],
+        )

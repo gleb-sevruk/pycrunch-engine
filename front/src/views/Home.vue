@@ -79,13 +79,16 @@
     },
     test_run_completed (data) {
       this.test_run = data.coverage
-      for (let fqn in this.test_run.all_runs) {
-        let test_in_list = this.discovery_response.tests.find(_ => _.fqn === fqn)
-        test_in_list.state = 'Completed'
-      }
+      // for (let fqn in this.test_run.all_runs) {
+      //   let test_in_list = this.discovery_response.tests.find(_ => _.fqn === fqn)
+      //   test_in_list.state = 'Completed'
+      // }
     },
     on_socket_event (data){
       console.log('pipe', data)
+      if (data.event_type === 'discovery_did_become_available') {
+        this.discovery_response = data
+      }
       if (data.event_type === 'file_modification') {
         this.file_modification_event(data)
       }

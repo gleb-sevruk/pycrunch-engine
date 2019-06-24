@@ -2,6 +2,8 @@
 import logging
 import os
 
+from pycrunch.session.state import engine
+
 logger = logging.getLogger(__name__)
 
 
@@ -62,6 +64,7 @@ class SimpleTestDiscovery:
             test_set.add_module(TestsInModule(py_file, tests_found, module_name))
 
             logger.warning(f'tests found: {tests_found}')
+
 
         return test_set
 

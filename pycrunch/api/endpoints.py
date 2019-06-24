@@ -9,7 +9,8 @@ from pycrunch.api.shared import file_watcher
 from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.run_test_task import RunTestTask
-from .serializers import serialize_coverage, serialize_test_set
+from pycrunch.session.state import engine
+from .serializers import serialize_test_run
 from flask import Blueprint
 from flask import request
 
@@ -37,17 +38,16 @@ def entry_file():
 @pycrunch_api.route("/discover")
 def discover_tests():
     folder = request.args.get('folder')
-    x = SimpleTestDiscovery()
-    xx = x.find_tests_in_folder(folder)
+    engine.will_start_test_discovery(folder=folder)
 
-    return jsonify(**serialize_test_set(xx), folder=folder)
+
+    return jsonify(dict(ack=True))
 
 
 @pycrunch_api.route("/run-tests", methods=['POST'])
 def run_tests():
 
     tests = request.json.get('tests')
-    entry_point = request.json.get('entry_point')
     execution_pipeline.add_task(RunTestTask(tests))
     return jsonify(tests)
 

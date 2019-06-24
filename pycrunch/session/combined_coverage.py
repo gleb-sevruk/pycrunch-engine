@@ -44,9 +44,10 @@ class CombinedCoverage:
         # todo invalidate\remove outdated runs
 
         for entry_point, test_run in results.items():
-            for file in test_run['files']:
+            test_run_as_json = test_run.as_json()
+            for file in test_run_as_json['files']:
                 file_with_coverage = FileWithCoverage(**file)
-                self.mark_dependency(file_with_coverage.filename, test_run['test_metadata'])
+                self.mark_dependency(file_with_coverage.filename, test_run_as_json['test_metadata'])
 
                 self.mark_coverage(entry_point=entry_point, filename=file_with_coverage.filename, lines_covered=file_with_coverage.lines_covered)
 

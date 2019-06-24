@@ -1,3 +1,4 @@
+import os
 from time import sleep
 
 
@@ -13,8 +14,11 @@ def test_dummy():
 
 def test_x():
     x = 2
+    print('test_x before assert')
+    print(f'PID in test: {os.getpid()}')
+
     assert x == 2
     print('test_method 3')
 
-def test_y():
+def test_z():
     print('test_method y')
