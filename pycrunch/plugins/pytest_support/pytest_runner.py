@@ -53,10 +53,8 @@ class PyTestRunner(_abstract_runner.Runner):
 
     def start_coverage(self):
         cov = coverage.Coverage(config_file=False, branch=True, omit=exclusions.exclude_list)
-        logger.debug('-- before coverage.start')
         # comment this line to be able to debug
         cov.start()
-        logger.debug('-- after coverage.start')
         return cov
 
     def _run_test(self, test: TestMetadata) -> ExecutionResult:

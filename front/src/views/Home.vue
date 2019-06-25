@@ -9,7 +9,7 @@
         <div class="files__single" v-for="test in discovery_response.tests" :key="test.fqn">
           <div class="test-methods">
               <div class="single__test d-flex mt-2" @click="run_test(test)">
-                <div class="alert-secondary px-2 pointer text-capitalize single-test__badge"> {{test.state}} </div>
+                <div class=" px-2 pointer text-capitalize single-test__badge" :class="class_from_state(test)"> {{test.state}} </div>
                 <div class="single-test__name ml-2">{{test.module}} - <span class="text-info">{{test.name}}</span></div>
               </div>
           </div>
@@ -117,6 +117,20 @@
       // let xx = this.discovery_response.modules.flatMap(_ => _.tests_found)
       let xx = this.discovery_response.tests
       return xx
+    },
+    class_from_state (test) {
+      if (test.state === 'pending') {
+        return 'alert-secondary'
+      }
+      if (test.state === 'success') {
+        return 'alert-success'
+      }
+      if (test.state === 'failed') {
+        return 'alert-danger'
+      }
+
+
+      return 'badge-warning'
     }
   },
   computed: {

@@ -54,10 +54,12 @@ class CombinedCoverage:
         file_watcher.watch(self.files.keys())
 
         # pprint(results)
-        for x in self.files.values():
-            pprint(x.filename)
-            pprint(x.lines_with_entrypoints)
-        pass
+        enabled_diagnosticts = False
+        if enabled_diagnosticts:
+            for x in self.files.values():
+                pprint(x.filename)
+                pprint(x.lines_with_entrypoints)
+            pass
 
     def add_test_result(self, module, test_name, coverage):
         self.state[module + '.' + test_name] = coverage
