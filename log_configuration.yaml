@@ -16,7 +16,7 @@ loggers:
   pycrunch.api.socket_handlers:
     level: DEBUG
   pycrunch.watcher:
-    level: DEBUG
+    level: INFO
   pycrunch.api:
     level: INFO
   pycrunch:

@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
   responsible for handling tasks for
     
     - Test run
+    - File tracking
 """
 
 def dispather_thread(arg):

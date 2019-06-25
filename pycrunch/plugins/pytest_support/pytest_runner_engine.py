@@ -16,48 +16,17 @@ from pycrunch.plugins.pytest_support.interception_plugin import PyTestIntercepti
 from pycrunch.runner import _abstract_runner, exclusions
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.runner.interception import capture_stdout
+from pycrunch.shared import TestMetadata
 
 logger = logging.getLogger(__name__)
 
-TestMetadata = namedtuple('TestMetadata', ['filename', 'name', 'module', 'fqn', 'state'])
 
-# todo join 2 classes
 
-class PyTestRunner(_abstract_runner.Runner):
+class PyTestRunnerEngine(_abstract_runner.Runner):
     def __init__(self):
         pass
 
-    def run(self, tests):
-
-        results = dict()
-        for test_to_run in tests:
-            cov = self.start_coverage()
-            try:
-                with capture_stdout() as get_value:
-                    time_start = timestamp()
-                    metadata = TestMetadata(**test_to_run)
-                    execution_result = self._run_test(metadata)
-                    time_end = timestamp()
-                    time_elapsed = time_end - time_start
-                    cov.stop()
-                    fqn = metadata.fqn
-                    captured_output = get_value()
-
-                    execution_result.output_did_become_available(captured_output)
-                    coverage_for_run = serialize_test_run(cov, fqn, time_elapsed, test_metadata=test_to_run, execution_result=execution_result)
-            except Exception as e:
-                logger.exception('error during run', exc_info=e)
-            results[fqn] = coverage_for_run
-
-        return results
-
-    def start_coverage(self):
-        cov = coverage.Coverage(config_file=False, branch=True, omit=exclusions.exclude_list)
-        # comment this line to be able to debug
-        cov.start()
-        return cov
-
-    def _run_test(self, test: TestMetadata) -> ExecutionResult:
+    def run_test(self, test: TestMetadata) -> ExecutionResult:
         execution_result = ExecutionResult()
         try:
             fqn_test_to_run = test.filename + '::' + test.name
@@ -72,8 +41,6 @@ class PyTestRunner(_abstract_runner.Runner):
             print(os.getpid())
             pprint(dict(passed_tests=plugin.passed_tests))
             pprint(dict(failed_tests=plugin.failed_tests))
-
-            # maybe context manager ?
 
             print('testing output interception')
             # print(vars(foo))

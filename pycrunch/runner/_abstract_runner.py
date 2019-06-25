@@ -1,3 +1,6 @@
+from pycrunch.shared import TestMetadata
+
+
 class Runner:
-    def run(self, path_to_python_file):
+    def run_test(self, test : TestMetadata):
         pass

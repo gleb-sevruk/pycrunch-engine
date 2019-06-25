@@ -25,4 +25,4 @@ def test_z():
 
 def test_failing():
     assert 3 == 3
-    assert 1 == 2
+    assert 3 == 2

@@ -1,4 +1,6 @@
 import threading
+from pathlib import Path
+
 from watchgod import watch
 
 from pycrunch.pipeline import execution_pipeline
@@ -20,12 +22,16 @@ class FSWatcher(Watcher):
         logger.debug('thread_proc')
         logger.debug(f'files {self.files}')
 
-        for changes in watch('/Users/gleb/code/PyCrunch/'):
+        logger.debug(f'files {self.files}')
+
+        path = Path('.').absolute()
+        print(path)
+        for changes in watch(path):
             for c in changes:
                 file = c[1]
-                if True or self.should_watch(file):
+                if self.should_watch(file):
                     execution_pipeline.add_task(FileModifiedNotificationTask(file=file))
-                    logger.debug('Added file for pipeline ' + file)
+                    logger.info('Added file for pipeline ' + file)
                 else:
                     logger.debug('non-significant file changed ' + file)
 

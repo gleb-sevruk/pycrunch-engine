@@ -2,6 +2,7 @@ py_test_exclusions = [
     '*_pytest/*',
     '*site-packages/*',
     '*.pytest_cache/*',
+    '*pytest_support/interception_plugin.py',
 
 ]
 
@@ -11,9 +12,10 @@ exclude_list = py_test_exclusions + [
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_frame_eval/pydevd_frame_tracing.py',
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_frame_eval/pydevd_modify_bytecode.py',
     '*site-packages/werkzeug/serving.py',
-    '*runner/simple_test_runner.py',
+    '*runner/test_runner.py',
     '*runner/execution_result.py',
     '*plugins/pytest_support/hot_reload.py',
+    '*plugins/pytest_support/pytest_runner_engine.py',
     '*runner/interception.py'
 
 ]

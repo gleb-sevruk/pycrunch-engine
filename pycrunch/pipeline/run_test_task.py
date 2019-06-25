@@ -2,13 +2,15 @@ from datetime import datetime
 from queue import Queue
 import time
 
+from pycrunch import session
 from pycrunch.api import shared
 from pycrunch.api.serializers import serialize_test_run
 from pycrunch.api.shared import file_watcher
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
-from pycrunch.plugins.pytest_support.pytest_runner import PyTestRunner
-from pycrunch.runner.simple_test_runner import SimpleTestRunner
+from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
+from pycrunch.plugins.simple.simple_runner import SimpleTestRunnerEngine
+from pycrunch.runner.test_runner import TestRunner
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage
 from pycrunch.session.state import engine
 
@@ -35,8 +37,13 @@ class RunTestTask(AbstractTask):
         self.tests = tests
 
     def run(self):
-        # runner = SimpleTestRunner()
-        runner = PyTestRunner()
+        runner_engine = None
+        if session.config.runtime_engine == 'simple':
+            runner_engine = SimpleTestRunnerEngine()
+        elif session.config.runtime_engine == 'pytest':
+            runner_engine = PyTestRunnerEngine()
+
+        runner = TestRunner(runner_engine=runner_engine)
         engine.tests_will_run(self.tests)
         with ModuleCleanup() as cleanup:
             results = runner.run(self.tests)

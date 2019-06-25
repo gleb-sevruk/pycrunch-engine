@@ -12,7 +12,7 @@ def kurlik(a, b):
         return b + 1
 
     print(f'b from arg {b}')
-    if b == 23:
+    if b != 23:
         print('b is equal to ^^')
 
         return a

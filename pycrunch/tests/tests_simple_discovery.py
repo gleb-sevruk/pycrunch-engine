@@ -17,7 +17,6 @@ def test_simple_discovery():
 
     for t in actual.tests:
         if t.filename == expected_path:
-            print('found file')
             if t.name == 'test_simple_discovery':
                 found_flag = True
                 break
