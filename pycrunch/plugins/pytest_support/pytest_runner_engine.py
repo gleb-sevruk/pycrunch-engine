@@ -32,7 +32,6 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
             fqn_test_to_run = test.filename + '::' + test.name
             pprint(fqn_test_to_run)
             plugin = PyTestInterceptionPlugin(tests_to_run=[fqn_test_to_run])
-            print('xxx')
 
             # pytest.main(['tests_two.py::test_x', '-p', 'no:terminal'])
             # q - quite

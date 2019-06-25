@@ -8,14 +8,16 @@ class PyTestInterceptionPlugin:
 
     def pytest_runtest_setup(item):
         # called for running each test in 'a' directory
-        print("setting up", item)
+        # print("setting up", item)
+        pass
 
     def pytest_runtest_logstart(nodeid, location):
         """
             :param str nodeid: full id of the item
             :param location: a triple of ``(filename, linenum, testname)``
         """
-        print(f"pytest_runtest_logstart {location}", nodeid)
+        # print(f"pytest_runtest_logstart {location}", nodeid)
+        pass
 
     def pytest_runtest_logfinish(nodeid, location):
         """ signal the complete finish of running a single test item.
@@ -35,8 +37,8 @@ class PyTestInterceptionPlugin:
         This hook is only called if an exception was raised
         that is not an internal exception like ``skip.Exception``.
         """
-        pprint(call)
-        print(f"pytest_exception_interact {call}")
+        # pprint(call)
+        # print(f"pytest_exception_interact {call}")
 
         # pprint(vars(report))
         pass

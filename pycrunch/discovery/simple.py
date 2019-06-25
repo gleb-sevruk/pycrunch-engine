@@ -45,7 +45,12 @@ class SimpleTestDiscovery:
         else:
             MODULE_DIR = self.root_directory
 
-        sys.path.append(MODULE_DIR)
+        print(sys.path)
+        print(f'MODULE_DIR {MODULE_DIR}')
+
+        sys.path.insert(0, MODULE_DIR)
+        print(f'after append')
+        print(sys.path)
         # The directory containing your modules needs to be on the search path.
 
         # Get the stem names (file name, without directory and '.py') of any
