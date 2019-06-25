@@ -5,8 +5,6 @@ from pycrunch.plugins.pytest_support.hot_reload import unload_candidates
 
 class ModuleCleanup():
     def __init__(self):
-        print('__init__ called')
-        self.init_var = 0
         self.modules_before = []
 
     def __enter__(self):

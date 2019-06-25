@@ -2,8 +2,6 @@
 import logging
 import os
 
-from pycrunch.session.state import engine
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,21 +33,41 @@ class TestsInModule:
 
 
 class SimpleTestDiscovery:
+
+    def __init__(self, root_directory=None):
+        self.root_directory = root_directory
+
     def find_tests_in_folder(self, folder):
         import glob, importlib, os, pathlib, sys
 
-        # The directory containing your modules needs to be on the search path.
-        MODULE_DIR = folder
+        if not self.root_directory:
+            MODULE_DIR = folder
+        else:
+            MODULE_DIR = self.root_directory
+
         sys.path.append(MODULE_DIR)
+        # The directory containing your modules needs to be on the search path.
 
         # Get the stem names (file name, without directory and '.py') of any
         # python files in your directory, load each module by name and run
         # the required function.
-        py_files = glob.glob(os.path.join(MODULE_DIR, '*.py'))
+
+        parent_path = pathlib.Path(MODULE_DIR)
+        folder_path = pathlib.Path(folder)
+        # for x in folder_path.glob('**/*.py'):
+        #     print('-')
+        #     print(module_name_full)
+
+        # py_files = glob.glob(os.path.join(folder, '*.py'))
+        py_files = folder_path.glob('**/*.py')
         test_set = TestSet()
         for py_file in py_files:
-            # todo recursive ?
-            module_name = pathlib.Path(py_file).stem
+            current_file_path = py_file.relative_to(parent_path)
+            if len(current_file_path.parts) > 1:
+                module_name = str.join('.', current_file_path.parts[:-1]) + '.' + current_file_path.stem
+            else:
+                module_name = current_file_path.stem
+            # module_name = pathlib.Path(py_file).stem
             if not self.is_module_with_tests(module_name):
                 continue
 
@@ -61,7 +79,7 @@ class SimpleTestDiscovery:
             # http://forums.cgsociety.org/t/proper-way-of-reloading-a-python-module-with-new-code-without-having-to-restart-maya/1648174/8
             del sys.modules[module_name]
 
-            test_set.add_module(TestsInModule(py_file, tests_found, module_name))
+            test_set.add_module(TestsInModule(str(py_file), tests_found, module_name))
 
             logger.warning(f'tests found: {tests_found}')
 
@@ -76,5 +94,7 @@ class SimpleTestDiscovery:
                 found_methods.append(m)
         return found_methods
 
+
     def is_module_with_tests(self, module_name):
-        return module_name.startswith('tests_') or module_name.endswith('_tests')
+        module_short_name = module_name.split('.')[-1]
+        return module_short_name.startswith('tests_') or module_short_name.endswith('_tests')

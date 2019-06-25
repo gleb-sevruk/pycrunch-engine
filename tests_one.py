@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import traceback
 from datetime import datetime
 from pprint import pprint
 
@@ -13,6 +14,7 @@ def test_pytest_support():
     class Plugin:
         def __init__(self, tests_to_run):
             self.passed_tests = set()
+            self.failed_tests = set()
 
         def pytest_runtest_setup(item):
             # called for running each test in 'a' directory
@@ -34,7 +36,7 @@ def test_pytest_support():
             :param str nodeid: full id of the item
             :param location: a triple of ``(filename, linenum, testname)``
             """
-            print(f"pytest_runtest_logfinish {location}", nodeid)
+            # print(f"pytest_runtest_logfinish {location}", nodeid)
 
         def pytest_exception_interact(node, call, report):
             """called when an exception was raised which can potentially be
@@ -43,8 +45,10 @@ def test_pytest_support():
             This hook is only called if an exception was raised
             that is not an internal exception like ``skip.Exception``.
             """
+            pprint(call)
             print(f"pytest_exception_interact {call}")
-            pprint(vars(report))
+
+            # pprint(vars(report))
             pass
 
         def pytest_runtest_logreport(self, report):
@@ -55,13 +59,10 @@ def test_pytest_support():
                 pass
 
             if report.when == 'call':
-                pass
-            if not report.passed:
-                # print(report.nodeid)
-
-                # pprint(vars(report))
-                self.passed_tests.add(report.nodeid)
-                # pprint(report.longreprtext)
+                if report.passed:
+                    self.passed_tests.add(report.nodeid)
+                if not report.passed:
+                    self.failed_tests.add(report.nodeid)
 
     fqn_test_to_run = 'tests_two.py::test_x'
     plugin = Plugin(tests_to_run=[fqn_test_to_run])
@@ -73,7 +74,8 @@ def test_pytest_support():
         # s - do not capture console logs
         pytest.main([fqn_test_to_run, '-qs'], plugins=[plugin])
         print(os.getpid())
-        pprint(plugin.passed_tests)
+        pprint(dict(passed_tests=plugin.passed_tests))
+        pprint(dict(failed_tests=plugin.failed_tests))
 
     # maybe context manager ?
 
@@ -90,6 +92,7 @@ def test_1():
     # b = a * 12
     print(f'b {b}')
     print('test_method__op 5')
+    assert 0 == 0
 
 def test_6():
     import playground

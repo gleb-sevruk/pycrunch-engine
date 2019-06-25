@@ -17,7 +17,7 @@ def test_x():
     print('test_x before assert')
     print(f'PID in test: {os.getpid()}')
 
-    assert x == 2
+    assert x == 3
     print('test_method 3')
 
 def test_z():
