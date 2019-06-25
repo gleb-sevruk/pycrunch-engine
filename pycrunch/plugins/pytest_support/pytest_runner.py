@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import traceback
 from collections import namedtuple
@@ -6,20 +7,23 @@ import importlib.util
 from pprint import pprint
 
 import coverage
+import pytest
 
 from pycrunch.api.serializers import serialize_test_run
 from pycrunch.api.shared import timestamp
+from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
+from pycrunch.plugins.pytest_support.interception_plugin import PyTestInterceptionPlugin
+from pycrunch.runner import _abstract_runner, exclusions
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.runner.interception import capture_stdout
-from . import _abstract_runner
-from . import exclusions
 
 logger = logging.getLogger(__name__)
 
 TestMetadata = namedtuple('TestMetadata', ['filename', 'name', 'module', 'fqn', 'state'])
 
+# todo join 2 classes
 
-class SimpleTestRunner(_abstract_runner.Runner):
+class PyTestRunner(_abstract_runner.Runner):
     def __init__(self):
         pass
 
@@ -58,20 +62,28 @@ class SimpleTestRunner(_abstract_runner.Runner):
     def _run_test(self, test: TestMetadata) -> ExecutionResult:
         execution_result = ExecutionResult()
         try:
-            logger.debug('before _run_module...')
-            spec = importlib.util.spec_from_file_location("fake.name", test.filename)
-            logger.debug('  spec_from_file_location -> done; importing module...')
+            fqn_test_to_run = test.filename + '::' + test.name
+            pprint(fqn_test_to_run)
+            plugin = PyTestInterceptionPlugin(tests_to_run=[fqn_test_to_run])
+            print('xxx')
 
-            foo = importlib.util.module_from_spec(spec)
+            # pytest.main(['tests_two.py::test_x', '-p', 'no:terminal'])
+            # q - quite
+            # s - do not capture console logs
+            pytest.main([fqn_test_to_run, '-qs'], plugins=[plugin])
+            print(os.getpid())
+            pprint(dict(passed_tests=plugin.passed_tests))
+            pprint(dict(failed_tests=plugin.failed_tests))
 
-            logger.debug('  module_from_spec -> done; going to exec_module...')
-            # logger.warning(f'_run_test->vars {vars(foo)}')
-            spec.loader.exec_module(foo)
-            method_to_call = getattr(foo, test.name, None)
+            # maybe context manager ?
+
+            print('testing output interception')
             # print(vars(foo))
-            if method_to_call:
-                method_to_call()
+            if plugin.guess_run_status(test.name):
                 execution_result.run_did_succeed()
+            else:
+                execution_result.run_did_fail()
+
             # logger.debug('after exec_module')
         except Exception as e:
             etype, value, current_traceback = sys.exc_info()
