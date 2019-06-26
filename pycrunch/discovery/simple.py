@@ -2,6 +2,8 @@
 import logging
 import os
 
+from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
+
 logger = logging.getLogger(__name__)
 
 
@@ -75,14 +77,11 @@ class SimpleTestDiscovery:
             # module_name = pathlib.Path(py_file).stem
             if not self.is_module_with_tests(module_name):
                 continue
-
-            module = importlib.import_module(module_name)
-            tests_found = self.find_tests_in_module(module)
-            # execute as following
-            # method_to_call = getattr(module, 'test_1')
-
-            # http://forums.cgsociety.org/t/proper-way-of-reloading-a-python-module-with-new-code-without-having-to-restart-maya/1648174/8
-            del sys.modules[module_name]
+            with ModuleCleanup() as cleanup:
+                module = importlib.import_module(module_name)
+                tests_found = self.find_tests_in_module(module)
+                # execute as following
+                # method_to_call = getattr(module, 'test_1')
 
             test_set.add_module(TestsInModule(str(py_file), tests_found, module_name))
 

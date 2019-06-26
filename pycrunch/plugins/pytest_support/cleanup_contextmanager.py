@@ -3,6 +3,8 @@ import sys
 from pycrunch.plugins.pytest_support.hot_reload import unload_candidates
 
 
+# http://forums.cgsociety.org/t/proper-way-of-reloading-a-python-module-with-new-code-without-having-to-restart-maya/1648174/8
+
 class ModuleCleanup():
     def __init__(self):
         self.modules_before = []
