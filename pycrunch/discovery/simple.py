@@ -137,6 +137,7 @@ class SimpleTestDiscovery:
         return v.startswith('test_') or v.endswith('_test')
 
     def get_test_case_names_from_class(self, test_case_class):
+        # implementation from standard unitest library
         def is_test_method_in_class(attrname, test_case_class_2=test_case_class):
             startswith = self.looks_like_test_name(attrname)
             can_call = callable(getattr(test_case_class_2, attrname))
