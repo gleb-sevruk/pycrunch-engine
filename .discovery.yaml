@@ -1,0 +1,4 @@
+discovery:
+  exclusions:
+    - front/
+    - test_discovery_specs_demo.py

@@ -3,6 +3,7 @@ import logging
 from pycrunch.api.serializers import serialize_test_set_state
 from pycrunch.api.shared import pipe
 from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.session import config
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +17,12 @@ class EngineState:
     def __init__(self):
         self.all_tests = dict()
         self.folder = ''
+        self.runtime_configuration_ready = False
         pass
 
     def will_start_test_discovery(self, folder):
         from pycrunch.discovery.simple import SimpleTestDiscovery
+        self.prepare_runtime_configuration_if_necessary()
 
         discovery_engine = SimpleTestDiscovery()
         test_set = discovery_engine.find_tests_in_folder(folder)
@@ -60,6 +63,10 @@ class EngineState:
 
         self.notify_clients_about_tests_change()
 
+    def prepare_runtime_configuration_if_necessary(self):
+        if not self.runtime_configuration_ready:
+            self.runtime_configuration_ready = True
+            config.load_runtime_configuration()
 
 
 engine = EngineState()

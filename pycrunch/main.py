@@ -17,8 +17,7 @@ configuration_yaml_ = parent.joinpath('log_configuration.yaml')
 print(configuration_yaml_)
 
 with open(configuration_yaml_, 'r') as f:
-    config = yaml.safe_load(f.read())
-    logging.config.dictConfig(config)
+    logging.config.dictConfig(yaml.safe_load(f.read()))
 
 CORS(app)
 app.config['SECRET_KEY'] = '!pycrunch!'
@@ -30,7 +29,8 @@ import pycrunch.api.socket_handlers
 
 
 def run():
-    shared.socketio.run(app, use_reloader=False, debug=True, extra_files=['log_configuration.yaml'])
+    use_reloader = not True
+    shared.socketio.run(app, use_reloader=use_reloader, debug=True, extra_files=['log_configuration.yaml'])
 
 
 if __name__ == '__main__':
