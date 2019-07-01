@@ -17,6 +17,7 @@ from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
 from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
 from pycrunch.runner.test_runner import TestRunner
+from pycrunch.session import config
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage
 from pycrunch.session.state import engine
 
@@ -84,7 +85,7 @@ class RunTestTask(AbstractTask):
         t = Thread(target=thread_loop)
         t.daemon = True
         t.start()
-        proc = subprocess.check_call(sys.executable + ' /Users/gleb/code/PyCrunch/multiprocess_test_runner.py', cwd='/Users/gleb/code/PyCrunch', shell=True)
+        proc = subprocess.check_call(sys.executable + ' /Users/gleb/code/PyCrunch/multiprocess_test_runner.py', cwd=config.working_directory, shell=True)
         pprint(proc)
         t.join(50)
 

@@ -3,6 +3,7 @@ import json
 import multiprocessing
 import os
 import sys
+from pathlib import Path
 from pprint import pprint
 from time import sleep
 from unittest.mock import Mock
@@ -57,6 +58,7 @@ def run(file_task):
         xxx = TestMetadata(**t)
         # conn.send('running ' + xxx.fqn)
     from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
+    sys.path.insert(0, str(Path('.').absolute()))
 
     r = TestRunner(DjangoRunnerEngine())
     results = r.run(tests_to_run)
@@ -80,5 +82,5 @@ if __name__ == '__main__':
         file.write(os.linesep)
 
     print('zalupa')
-
+    print(Path('.').absolute())
     run(file_task)

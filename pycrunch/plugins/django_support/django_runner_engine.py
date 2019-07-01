@@ -16,6 +16,7 @@ from pycrunch.plugins.pytest_support.interception_plugin import PyTestIntercepti
 from pycrunch.runner import _abstract_runner, exclusions
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.runner.interception import capture_stdout
+from pycrunch.session import config
 from pycrunch.shared import TestMetadata
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class DjangoRunnerEngine(_abstract_runner.Runner):
     def __init__(self):
-
+        config.prepare_django()
         pass
 
     def run_test(self, test: TestMetadata) -> ExecutionResult:
