@@ -1,6 +1,11 @@
+import subprocess
+import sys
 from datetime import datetime
+from multiprocessing.connection import Listener
+from pprint import pprint
 from queue import Queue
 import time
+from threading import Thread
 
 from pycrunch import session
 from pycrunch.api import shared
@@ -36,6 +41,12 @@ class RunTestTask(AbstractTask):
     def __init__(self, tests):
         self.timestamp = shared.timestamp()
         self.tests = tests
+        self.results = None
+
+    def results_available(self, results):
+        print('results avail:')
+        pprint(results)
+        self.results = results
 
     def run(self):
         runner_engine = None
@@ -46,18 +57,51 @@ class RunTestTask(AbstractTask):
         elif session.config.runtime_engine == 'django':
             runner_engine = DjangoRunnerEngine()
 
-
-        runner = TestRunner(runner_engine=runner_engine)
         engine.tests_will_run(self.tests)
-        with ModuleCleanup() as cleanup:
-            results = runner.run(self.tests)
+        address = ('localhost', 6001)  # family is deduced to be 'AF_INET'
+        listener = Listener(address, authkey=b'secret password')
+        # data = '{"tests":[{"fqn":"pycrunch.tests.test_modules_cleanup:test_nested","module":"pycrunch.tests.test_modules_cleanup","filename":"/Users/gleb/code/PyCrunch/pycrunch/tests/test_modules_cleanup.py","name":"test_nested","state":"pending"}]}'
 
-        engine.tests_did_run(results)
+        def thread_loop(params=None):
+            print('Waiting for connection')
+            conn = listener.accept()
+            print('connection accepted from', listener.last_accepted)
+            conn.send(self.tests)
+            while True:
+                msg = conn.recv()
+                # do something with msg
+                if msg == 'close':
+                    conn.close()
+                    break
+                else:
+                    print('got msg from client:')
+                    pprint(msg)
+                    results = msg
+                    self.results_available(results)
 
-        combined_coverage.add_multiple_results(results)
+            listener.close()
+
+        t = Thread(target=thread_loop)
+        t.daemon = True
+        t.start()
+        proc = subprocess.check_call(sys.executable + ' /Users/gleb/code/PyCrunch/multiprocess_test_runner.py', cwd='/Users/gleb/code/PyCrunch', shell=True)
+        pprint(proc)
+        t.join(50)
+
+        # runner = TestRunner(runner_engine=runner_engine)
+        # with ModuleCleanup() as cleanup:
+        #     results = runner.run(self.tests)
+        if self.results is not None:
+            print('results are not none')
+        if self.results is None:
+            print('!!! None in results')
+
+        engine.tests_did_run(self.results)
+
+        combined_coverage.add_multiple_results(self.results)
 
         results_as_json = dict()
-        for k,v in results.items():
+        for k,v in self.results.items():
             results_as_json[k] = v.as_json()
 
 
