@@ -22,14 +22,17 @@ logger = logging.getLogger(__name__)
 
 
 
-class PyTestRunnerEngine(_abstract_runner.Runner):
+class DjangoRunnerEngine(_abstract_runner.Runner):
     def __init__(self):
-        # import django
-        # django.setup()
 
         pass
 
     def run_test(self, test: TestMetadata) -> ExecutionResult:
+        # import django
+        # django.setup()
+        # from django.apps import apps
+        # apps.set_available_apps([])
+
         execution_result = ExecutionResult()
         try:
             fqn_test_to_run = test.filename + '::' + test.name

@@ -7,9 +7,10 @@ from pycrunch.api import shared
 from pycrunch.api.serializers import serialize_test_run
 from pycrunch.api.shared import file_watcher
 from pycrunch.pipeline.abstract_task import AbstractTask
+from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
-from pycrunch.plugins.simple.simple_runner import SimpleTestRunnerEngine
+from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
 from pycrunch.runner.test_runner import TestRunner
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage
 from pycrunch.session.state import engine
@@ -42,6 +43,9 @@ class RunTestTask(AbstractTask):
             runner_engine = SimpleTestRunnerEngine()
         elif session.config.runtime_engine == 'pytest':
             runner_engine = PyTestRunnerEngine()
+        elif session.config.runtime_engine == 'django':
+            runner_engine = DjangoRunnerEngine()
+
 
         runner = TestRunner(runner_engine=runner_engine)
         engine.tests_will_run(self.tests)

@@ -73,27 +73,30 @@ class SimpleTestDiscovery:
         # py_files = glob.glob(os.path.join(folder, '*.py'))
         py_files = folder_path.glob('**/*.py')
         test_set = TestSet()
-        for py_file in py_files:
-            # print(py_file)
-            current_file_path = py_file.relative_to(parent_path)
-            if self.is_excluded_via_configuration(current_file_path):
-                continue
+        self.configuration.prepare_django()
+        with ModuleCleanup() as cleanup:
 
-            if len(current_file_path.parts) > 1:
-                module_name = str.join('.', current_file_path.parts[:-1]) + '.' + current_file_path.stem
-            else:
-                module_name = current_file_path.stem
-            # module_name = pathlib.Path(py_file).stem
-            if not self.is_module_with_tests(module_name):
-                continue
+            for py_file in py_files:
+                # print(py_file)
+                current_file_path = py_file.relative_to(parent_path)
+                if self.is_excluded_via_configuration(current_file_path):
+                    continue
 
-            with ModuleCleanup() as cleanup:
+                if len(current_file_path.parts) > 1:
+                    module_name = str.join('.', current_file_path.parts[:-1]) + '.' + current_file_path.stem
+                else:
+                    module_name = current_file_path.stem
+                # module_name = pathlib.Path(py_file).stem
+                if not self.is_module_with_tests(module_name):
+                    continue
+
+                print('importing ' + module_name)
                 module = importlib.import_module(module_name)
                 tests_found = self.find_tests_in_module(module)
                 # execute as following
                 # method_to_call = getattr(module, 'test_1')
 
-            test_set.add_module(TestsInModule(str(py_file), tests_found, module_name))
+                test_set.add_module(TestsInModule(str(py_file), tests_found, module_name))
 
             logger.warning(f'tests found: {tests_found}')
 
@@ -114,9 +117,9 @@ class SimpleTestDiscovery:
             function_or_variable_or_class = getattr(module, v)
             is_class = inspect.isclass(function_or_variable_or_class)
             if is_class and issubclass(function_or_variable_or_class, sys.modules["unittest"].TestCase):
-                print(f'{v} : {function_or_variable_or_class} issubclass of unittest')
+                # print(f'{v} : {function_or_variable_or_class} issubclass of unittest')
                 attr = getattr(function_or_variable_or_class, "__test__", True)
-                print(attr)
+                # print(attr)
                 names = self.get_test_case_names_from_class(function_or_variable_or_class)
                 names = map(lambda _: v + '::' + _, names)
                 found_methods.extend(names)

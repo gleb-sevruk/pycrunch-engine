@@ -25,6 +25,7 @@ class FSWatcher(Watcher):
         logger.debug(f'files {self.files}')
 
         path = Path('.').absolute()
+        print('watching this:...')
         print(path)
         for changes in watch(path):
             for c in changes:

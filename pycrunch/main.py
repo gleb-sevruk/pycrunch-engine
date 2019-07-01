@@ -15,9 +15,9 @@ parent = Path(__file__).parent
 print(parent)
 configuration_yaml_ = parent.joinpath('log_configuration.yaml')
 print(configuration_yaml_)
-
 with open(configuration_yaml_, 'r') as f:
     logging.config.dictConfig(yaml.safe_load(f.read()))
+
 
 CORS(app)
 app.config['SECRET_KEY'] = '!pycrunch!'

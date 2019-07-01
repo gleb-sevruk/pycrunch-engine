@@ -24,16 +24,6 @@ pycrunch_api = Blueprint('pycrunch_api', __name__)
 def hello():
     return "Nothing here"
 
-def get_files():
- return [
-     '/Users/gleb/code/PyCrunch/tests.py',
-     '/Users/gleb/code/PyCrunch/playground.py',
- ]
-
-@pycrunch_api.route("/entry-files")
-def entry_file():
-    return jsonify(dict(entry_files=get_files()))
-
 
 @pycrunch_api.route("/discover")
 def discover_tests():
@@ -44,10 +34,21 @@ def discover_tests():
     return jsonify(dict(ack=True))
 
 
+@pycrunch_api.route("/diagnostics")
+def queue_diagnostics():
+    engine.will_start_diagnostics_collection()
+
+
+    return jsonify(dict(ack=True))
+
+
+
 @pycrunch_api.route("/run-tests", methods=['POST'])
 def run_tests():
 
     tests = request.json.get('tests')
+    logger.info('Running tests...')
+    logger.info(tests)
     execution_pipeline.add_task(RunTestTask(tests))
     return jsonify(tests)
 

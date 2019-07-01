@@ -4,6 +4,7 @@ from pycrunch.api.serializers import serialize_test_set_state
 from pycrunch.api.shared import pipe
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.session import config
+from pycrunch.session.diagnostics import diagnostic_engine
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,11 @@ class EngineState:
         engine.test_discovery_will_become_available(test_set, folder=folder)
 
         pass
+
+    def will_start_diagnostics_collection(self):
+        logger.info('will_start_diagnostics_collection')
+        pipe.push(event_type='diagnostics_did_become_available', engine=config.runtime_engine, **diagnostic_engine.summary())
+        logger.info('diagnostics_did_become_available')
 
     def test_discovery_will_become_available(self, test_set, folder):
         """

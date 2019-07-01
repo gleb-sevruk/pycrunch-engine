@@ -43,8 +43,12 @@
   export default {
   name: 'home',
   data () {
+    let f = '/Users/gleb/code/bc/f7-insuredportal/ios_build'
+    f = '/Users/gleb/code/bc/briteapps-admin'
+    // let f = '/Users/gleb/code/python_sandbox'
+    // f = '/Users/gleb/code/PyCrunch'
     return {
-      folder: '/Users/gleb/code/PyCrunch/',
+      folder: f,
       entry_files: [],
       test_run: null,
       combined_coverage: null,

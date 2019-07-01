@@ -4,7 +4,7 @@
 
     <div id="nav" class="text-center">
       <router-link to="/">Main</router-link> |
-      <router-link to="/more">More</router-link>
+      <router-link to="/more">Diagnostics</router-link>
     </div>
     <router-view/>
   </div>

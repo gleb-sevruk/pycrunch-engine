@@ -4,15 +4,22 @@ from unittest.mock import mock_open
 from pycrunch import session
 
 
-def test_pytest_engine_by_default():
+def test_django_engine_by_default():
     sut = create_sut()
-    assert sut.runtime_engine == 'pytest'
+    assert sut.runtime_engine == 'django'
 
 
 def test_can_change_to_simple_engine():
     sut = create_sut()
     sut.runtime_engine_will_change('simple')
     assert sut.runtime_engine == 'simple'
+
+
+def test_can_change_to_django_engine():
+    sut = create_sut()
+    sut.runtime_engine_will_change('django')
+    assert sut.runtime_engine == 'django'
+
 
 def create_sut():
     return session.configuration.Configuration()
