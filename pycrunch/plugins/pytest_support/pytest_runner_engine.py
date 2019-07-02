@@ -32,8 +32,10 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
     def run_test(self, test: TestMetadata) -> ExecutionResult:
         execution_result = ExecutionResult()
         try:
+            # fqn_test_to_run = test.filename + '::' + test.name + ' - PID ' + str(os.getpid())
             fqn_test_to_run = test.filename + '::' + test.name
             pprint(fqn_test_to_run)
+            pprint(os.getpid())
             plugin = PyTestInterceptionPlugin(tests_to_run=[fqn_test_to_run])
 
             # pytest.main(['tests_two.py::test_x', '-p', 'no:terminal'])

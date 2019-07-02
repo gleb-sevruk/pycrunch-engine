@@ -23,8 +23,11 @@ class Configuration:
     def prepare_django(self):
         if self.runtime_engine == 'django' and not self.django_ready:
             logger.info('!!! Importing Django and calling django.setup')
-            import django
-            django.setup()
+            try:
+                import django
+                django.setup()
+            except Exception as e:
+                logger.exception('Failed to import or set up django! Are you sure it is django project?', exc_info=e)
             self.django_ready = True
 
 

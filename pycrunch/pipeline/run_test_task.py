@@ -11,6 +11,7 @@ from pycrunch import session
 from pycrunch.api import shared
 from pycrunch.api.serializers import serialize_test_run
 from pycrunch.api.shared import file_watcher
+from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
@@ -59,36 +60,10 @@ class RunTestTask(AbstractTask):
             runner_engine = DjangoRunnerEngine()
 
         engine.tests_will_run(self.tests)
-        address = ('localhost', 6001)  # family is deduced to be 'AF_INET'
-        listener = Listener(address, authkey=b'secret password')
-        # data = '{"tests":[{"fqn":"pycrunch.tests.test_modules_cleanup:test_nested","module":"pycrunch.tests.test_modules_cleanup","filename":"/Users/gleb/code/PyCrunch/pycrunch/tests/test_modules_cleanup.py","name":"test_nested","state":"pending"}]}'
 
-        def thread_loop(params=None):
-            print('Waiting for connection')
-            conn = listener.accept()
-            print('connection accepted from', listener.last_accepted)
-            conn.send(self.tests)
-            while True:
-                msg = conn.recv()
-                # do something with msg
-                if msg == 'close':
-                    conn.close()
-                    break
-                else:
-                    print('got msg from client:')
-                    pprint(msg)
-                    results = msg
-                    self.results_available(results)
-
-            listener.close()
-
-        t = Thread(target=thread_loop)
-        t.daemon = True
-        t.start()
-        proc = subprocess.check_call(sys.executable + ' /Users/gleb/code/PyCrunch/multiprocess_test_runner.py', cwd=config.working_directory, shell=True)
-        pprint(proc)
-        t.join(50)
-
+        runner = MultiprocessTestRunner(30)
+        runner.run(tests=self.tests)
+        self.results = runner.results
         # runner = TestRunner(runner_engine=runner_engine)
         # with ModuleCleanup() as cleanup:
         #     results = runner.run(self.tests)

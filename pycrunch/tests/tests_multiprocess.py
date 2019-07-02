@@ -29,7 +29,7 @@ def test_single_multiprocess():
     t = Thread(target=thread_loop)
     t.daemon = True
     t.start()
-    proc = subprocess.check_call(sys.executable +' /Users/gleb/code/PyCrunch/multiprocess_test_runner.py', cwd='/Users/gleb/code/PyCrunch', shell=True)
+    proc = subprocess.check_call(sys.executable +' /Users/gleb/code/PyCrunch/multiprocess_child_main.py', cwd='/Users/gleb/code/PyCrunch', shell=True)
     pprint(proc)
     t.join(50)
     print('Timeout exceed')

@@ -1,5 +1,6 @@
 
 import io
+from pathlib import Path
 
 from flask import jsonify, Response
 from flask_socketio import send
@@ -28,7 +29,9 @@ def hello():
 @pycrunch_api.route("/discover")
 def discover_tests():
     folder = request.args.get('folder')
-    engine.will_start_test_discovery(folder=folder)
+    folder_auto = str(Path('.').absolute())
+    logger.info(f'folder is: {folder_auto}')
+    engine.will_start_test_discovery(folder=folder_auto)
 
 
     return jsonify(dict(ack=True))

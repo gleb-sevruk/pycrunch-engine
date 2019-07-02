@@ -60,6 +60,7 @@ def run(file_task):
     from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
     sys.path.insert(0, str(Path('.').absolute()))
 
+    # r = TestRunner(PyTestRunnerEngine())
     r = TestRunner(DjangoRunnerEngine())
     results = r.run(tests_to_run)
     conn.send(results)
