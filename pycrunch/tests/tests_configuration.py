@@ -36,6 +36,8 @@ discovery:
   exclusions:
    - directory_1
    - directory_2
+engine:
+  runtime: simple
 '''
 def test_exclusion_list():
     with mock.patch('io.open', mock_open(read_data=read_data)) as x:
@@ -44,3 +46,9 @@ def test_exclusion_list():
         assert 'directory_1' in sut.discovery_exclusions
         assert 'directory_2' in sut.discovery_exclusions
         assert 'directory_3' not in sut.discovery_exclusions
+
+def test_runtime_engine_from_config():
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert sut.runtime_engine == 'simple'

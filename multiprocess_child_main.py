@@ -9,32 +9,10 @@ from time import sleep
 from unittest.mock import Mock
 
 from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
+from pycrunch.session import config
 
 
-class MyFancyClass(object):
-
-    def __init__(self, name):
-        self.name = name
-
-    def do_something(self):
-        proc_name = multiprocessing.current_process().name
-        pprint(len(list(sys.modules)))
-        pprint('in sub^')
-
-        print('Doing something fancy in %s for %s!' % (proc_name, self.name))
-
-
-def run_in_separate_process(q, res):
-    obj = q.get()
-    obj.do_something()
-    # sleep()
-    from pycrunch import session
-    ee = session.config.runtime_engine
-    res.put(f'abc {len(list(sys.modules))}: engine: {ee}')
-    res.put('bbb')
-
-
-def run(file_task):
+def run(file_task, engine_to_use):
     from pycrunch.shared import TestMetadata
 
     from multiprocessing.connection import Client
@@ -57,11 +35,22 @@ def run(file_task):
     for t in tests_to_run:
         xxx = TestMetadata(**t)
         # conn.send('running ' + xxx.fqn)
-    from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
+    runner_engine = None
+    # add root of django project
     sys.path.insert(0, str(Path('.').absolute()))
 
-    # r = TestRunner(PyTestRunnerEngine())
-    r = TestRunner(DjangoRunnerEngine())
+    from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
+    if engine_to_use == 'pytest':
+        runner_engine = PyTestRunnerEngine()
+    elif engine_to_use == 'django':
+        runner_engine = DjangoRunnerEngine()
+    else:
+        print('using default engine => pytest')
+        runner_engine = PyTestRunnerEngine()
+
+
+
+    r = TestRunner(runner_engine)
     results = r.run(tests_to_run)
     conn.send(results)
 
@@ -75,13 +64,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyCrunch CLI')
 
     parser.add_argument('--file', help='The file instead of network socket')
+    parser.add_argument('--engine', help='Engine used, one of [pytest, django, simple]')
     args = parser.parse_args()
     file_task = args.file
-
-    with open('/Users/gleb/code/PyCrunch/child_process.log', 'a')  as file:
+    engine_to_use = args.engine
+    if engine_to_use:
+        config.runtime_engine_will_change(engine_to_use)
+    with open('/Users/gleb/code/PyCrunch/child_process.log', 'a') as file:
         file.writelines(['huita',''])
         file.write(os.linesep)
 
     print('zalupa')
     print(Path('.').absolute())
-    run(file_task)
+    run(file_task=file_task, engine_to_use=engine_to_use)

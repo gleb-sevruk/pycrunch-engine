@@ -48,7 +48,7 @@ class MultiprocessTestRunner:
         t = Thread(target=thread_loop)
         t.daemon = True
         t.start()
-        hardcoded_path = ' /Users/gleb/code/PyCrunch/multiprocess_child_main.py'
+        hardcoded_path = ' /Users/gleb/code/PyCrunch/multiprocess_child_main.py ' + f'--engine={config.runtime_engine}'
         proc = subprocess.check_call(sys.executable + hardcoded_path, cwd=config.working_directory, shell=True)
         pprint(proc)
         # isAlive() after join() to decide whether a timeout happened -- if the

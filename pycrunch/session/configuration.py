@@ -21,6 +21,7 @@ class Configuration:
         self.runtime_engine = new_engine
 
     def prepare_django(self):
+        # if not self.django_ready:
         if self.runtime_engine == 'django' and not self.django_ready:
             logger.info('!!! Importing Django and calling django.setup')
             try:
@@ -36,7 +37,7 @@ class Configuration:
             raise Exception(f'engine {new_engine} not available. Possible options: {self.available_engines}')
 
     def load_runtime_configuration(self):
-        joinpath = self.working_directory.joinpath('.discovery.yaml')
+        joinpath = self.working_directory.joinpath('.pycrunch-config.yaml')
         print(str(joinpath.absolute()))
         print(joinpath)
         try:
@@ -46,8 +47,13 @@ class Configuration:
                 if discovery:
                     exc = discovery.get('exclusions', None)
                     if not hasattr(exc, "__len__"):
-                        raise Exception('.discovery.yaml: discovery->exclusions should be array')
+                        raise Exception('.pycrunch-config.yaml: discovery->exclusions should be array')
                     self.discovery_exclusions = tuple(exc)
+                engine_config = x.get('engine', None)
+                if engine_config:
+                    runtime_engine_name = engine_config.get('runtime', None)
+                    if runtime_engine_name:
+                        self.runtime_engine_will_change(runtime_engine_name)
                 print(x)
                 print(f)
         except:
