@@ -7,12 +7,14 @@ from flask_cors import CORS
 
 from pycrunch.api import shared
 from pycrunch.api import pycrunch_api
+from pycrunch.session import config
 
 app = Flask(__name__)
 
 shared.socketio.init_app(app=app)
 parent = Path(__file__).parent
 print(parent)
+config.set_engine_directory(parent.parent)
 configuration_yaml_ = parent.joinpath('log_configuration.yaml')
 print(configuration_yaml_)
 with open(configuration_yaml_, 'r') as f:

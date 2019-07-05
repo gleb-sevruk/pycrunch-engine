@@ -70,7 +70,7 @@ if __name__ == '__main__':
     engine_to_use = args.engine
     if engine_to_use:
         config.runtime_engine_will_change(engine_to_use)
-    with open('/Users/gleb/code/PyCrunch/child_process.log', 'a') as file:
+    with open(f'.{os.sep}child_process.log', 'a') as file:
         file.writelines(['huita',''])
         file.write(os.linesep)
 

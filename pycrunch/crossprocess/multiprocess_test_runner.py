@@ -1,6 +1,7 @@
 import socket
 import subprocess
 import sys
+import os
 from multiprocessing.connection import Listener
 from pprint import pprint
 from threading import Thread
@@ -49,7 +50,8 @@ class MultiprocessTestRunner:
         t = Thread(target=thread_loop)
         t.daemon = True
         t.start()
-        hardcoded_path = ' /Users/gleb/code/PyCrunch/multiprocess_child_main.py ' + f'--engine={config.runtime_engine}'
+        engine_root = f' {config.engine_directory}{os.sep}multiprocess_child_main.py '
+        hardcoded_path = engine_root + f'--engine={config.runtime_engine}'
         proc = subprocess.check_call(sys.executable + hardcoded_path, cwd=config.working_directory, shell=True)
         pprint(proc)
         # isAlive() after join() to decide whether a timeout happened -- if the

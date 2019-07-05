@@ -13,6 +13,7 @@ class Configuration:
         self.working_directory = Path('.')
         self.runtime_engine = 'django'
         self.django_ready = False
+        self.engine_directory = 'unknown'
         # self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
 
@@ -35,6 +36,9 @@ class Configuration:
     def throw_if_not_supported_engine(self, new_engine):
         if new_engine not in self.available_engines:
             raise Exception(f'engine {new_engine} not available. Possible options: {self.available_engines}')
+
+    def set_engine_directory(self, engine_directory):
+        self.engine_directory = engine_directory
 
     def load_runtime_configuration(self):
         joinpath = self.working_directory.joinpath('.pycrunch-config.yaml')

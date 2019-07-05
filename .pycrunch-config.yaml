@@ -1,6 +1,7 @@
 discovery:
   exclusions:
     - front/
+    - front\
     - test_discovery_specs_demo.py
 
 engine:
