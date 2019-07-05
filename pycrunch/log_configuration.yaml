@@ -19,6 +19,8 @@ loggers:
     level: INFO
   pycrunch.api:
     level: INFO
+  pycrunch.api.endpoints:
+    level: WARN
   pycrunch:
     level: DEBUG
   sampleLogger:

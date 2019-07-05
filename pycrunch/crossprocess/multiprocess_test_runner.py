@@ -1,3 +1,4 @@
+import socket
 import subprocess
 import sys
 from multiprocessing.connection import Listener
@@ -23,7 +24,7 @@ class MultiprocessTestRunner:
         listener = Listener(address, authkey=b'secret password')
 
         # data = '{"tests":[{"fqn":"pycrunch.tests.test_modules_cleanup:test_nested","module":"pycrunch.tests.test_modules_cleanup","filename":"/Users/gleb/code/PyCrunch/pycrunch/tests/test_modules_cleanup.py","name":"test_nested","state":"pending"}]}'
-
+        # socket.setdefaulttimeout(60)
         def thread_loop(params=None):
             print('Waiting for connection')
             conn = listener.accept()

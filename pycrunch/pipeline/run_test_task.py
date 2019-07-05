@@ -19,23 +19,9 @@ from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEn
 from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
 from pycrunch.runner.test_runner import TestRunner
 from pycrunch.session import config
-from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage
+from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage, serialize_combined_coverage
 from pycrunch.session.state import engine
 
-
-def serialize_combined_coverage(combined: CombinedCoverage):
-    return [
-        dict(
-            filename=x.filename,
-            lines_with_entrypoints=compute_lines(x)) for x in combined.files.values()
-    ]
-
-
-def compute_lines(x):
-    zzz = {line_number:list(entry_points) for (line_number, entry_points) in x.lines_with_entrypoints.items()}
-    return zzz
-
-    # return result
 
 
 class RunTestTask(AbstractTask):
@@ -91,6 +77,7 @@ class RunTestTask(AbstractTask):
         shared.pipe.push(event_type='combined_coverage_updated',
                          combined_coverage=serialized,
                          dependencies={entry_point: list(filenames) for entry_point, filenames in combined_coverage.dependencies.items() },
+                         aggregated_results={fqn: dict(test_run_short_info) for fqn, test_run_short_info in combined_coverage.aggregated_results.items()},
                          timings=dict(start=self.timestamp, end=shared.timestamp()),
                          ),
         pass;

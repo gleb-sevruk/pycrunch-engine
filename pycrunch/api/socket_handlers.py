@@ -5,6 +5,7 @@ import uuid
 from flask import url_for, session, current_app, request
 from flask_socketio import emit, send
 
+from pycrunch.api.shared import pipe
 from pycrunch.runner.pipeline_dispatcher import dispather_thread
 from . import shared
 
@@ -23,7 +24,7 @@ def handle_json(json):
     logger.debug(session['userid'])
     # url_for1 = url_for('my event', _external=True)
     # logger.debug('url + ' + url_for1)
-    emit('event', {'data': 'Connected'})
+    pipe.push(event_type='connected', **{'data': 'Connected'})
     logger.debug('received json 2: ' + str(json))
 
 @shared.socketio.on('my event')
@@ -40,7 +41,7 @@ def test_connect():
     global thread
     logger.debug('Client test_connected')
 
-    emit('event', {'data': 'Connected'})
+    pipe.push(event_type='connected', **{'data': 'Connected test_connected' })
     with thread_lock:
         if thread is None:
             thread = shared.socketio.start_background_task(target=dispather_thread, arg=42)
