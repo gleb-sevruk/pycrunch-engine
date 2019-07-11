@@ -10,14 +10,12 @@ from threading import Thread
 from pycrunch import session
 from pycrunch.api import shared
 from pycrunch.api.serializers import serialize_test_run
-from pycrunch.api.shared import file_watcher
 from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
 from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
-from pycrunch.runner.test_runner import TestRunner
 from pycrunch.session import config
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage, serialize_combined_coverage
 from pycrunch.session.state import engine

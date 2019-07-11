@@ -10,7 +10,6 @@ import coverage
 import pytest
 
 from pycrunch.api.serializers import serialize_test_run
-from pycrunch.api.shared import timestamp
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.plugins.pytest_support.interception_plugin import PyTestInterceptionPlugin
 from pycrunch.runner import _abstract_runner, exclusions

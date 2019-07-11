@@ -4,7 +4,6 @@ from pathlib import Path
 from watchgod import watch
 
 from pycrunch.pipeline import execution_pipeline
-from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
 from ._abstract_watcher import Watcher
 
 import logging
@@ -19,6 +18,8 @@ class FSWatcher(Watcher):
         self.files = []
 
     def thread_proc(self):
+        from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
+
         logger.debug('thread_proc')
         logger.debug(f'files {self.files}')
 
