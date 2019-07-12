@@ -6,6 +6,7 @@ from unittest.test import loader
 
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.session import config
+from pycrunch.session.file_map import test_map
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,8 @@ class SimpleTestDiscovery:
         self.root_directory = root_directory
         self.configuration = configuration if configuration is not None else config
 
-    def find_tests_in_folder(self, folder):
+    def find_tests_in_folder(self, folder, search_only_in = None):
+
         import glob, importlib, os, pathlib, sys
 
         if not self.root_directory:
@@ -74,18 +76,22 @@ class SimpleTestDiscovery:
         py_files = folder_path.glob('**/*.py')
         test_set = TestSet()
         self.configuration.prepare_django()
+
         with ModuleCleanup() as cleanup:
 
             for py_file in py_files:
+
+                if search_only_in:
+                    if str(py_file) not in search_only_in:
+                        continue
+
+
                 # print(py_file)
                 current_file_path = py_file.relative_to(parent_path)
                 if self.is_excluded_via_configuration(current_file_path):
                     continue
 
-                if len(current_file_path.parts) > 1:
-                    module_name = str.join('.', current_file_path.parts[:-1]) + '.' + current_file_path.stem
-                else:
-                    module_name = current_file_path.stem
+                module_name = self.compute_module_name_from_path(current_file_path)
                 # module_name = pathlib.Path(py_file).stem
                 if not self.is_module_with_tests(module_name):
                     continue
@@ -96,12 +102,22 @@ class SimpleTestDiscovery:
                 # execute as following
                 # method_to_call = getattr(module, 'test_1')
 
-                test_set.add_module(TestsInModule(str(py_file), tests_found, module_name))
+                filename = str(py_file)
 
-            logger.warning(f'tests found: {tests_found}')
+                test_map.did_found_tests_in_file(filename, tests_found, module_name)
+                test_set.add_module(TestsInModule(filename, tests_found, module_name))
+
+                logger.warning(f'tests found: {tests_found}')
 
 
         return test_set
+
+    def compute_module_name_from_path(self, current_file_path):
+        if len(current_file_path.parts) > 1:
+            module_name = str.join('.', current_file_path.parts[:-1]) + '.' + current_file_path.stem
+        else:
+            module_name = current_file_path.stem
+        return module_name
 
     def is_excluded_via_configuration(self, current_file_path):
         s = str(current_file_path)

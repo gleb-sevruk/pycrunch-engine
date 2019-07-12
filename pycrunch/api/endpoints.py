@@ -29,9 +29,7 @@ def hello():
 @pycrunch_api.route("/discover")
 def discover_tests():
     folder = request.args.get('folder')
-    folder_auto = str(Path('.').absolute())
-    logger.info(f'folder is: {folder_auto}')
-    engine.will_start_test_discovery(folder=folder_auto)
+    engine.will_start_test_discovery()
 
 
     return jsonify(dict(ack=True))

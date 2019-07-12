@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from pycrunch.api.serializers import serialize_test_set_state
 from pycrunch.api.shared import pipe
@@ -17,18 +18,19 @@ class TestState:
 class EngineState:
     def __init__(self):
         self.all_tests = dict()
-        self.folder = ''
+        folder_auto = str(Path('.').absolute())
+        logger.info(f'folder is: {folder_auto}')
+        self.folder = folder_auto
         self.runtime_configuration_ready = False
         pass
 
-    def will_start_test_discovery(self, folder):
+    def will_start_test_discovery(self):
         from pycrunch.discovery.simple import SimpleTestDiscovery
         self.prepare_runtime_configuration_if_necessary()
 
         discovery_engine = SimpleTestDiscovery()
-        test_set = discovery_engine.find_tests_in_folder(folder)
-        self.folder = folder
-        engine.test_discovery_will_become_available(test_set, folder=folder)
+        test_set = discovery_engine.find_tests_in_folder(self.folder)
+        engine.test_discovery_will_become_available(test_set)
 
         pass
 
@@ -37,7 +39,7 @@ class EngineState:
         pipe.push(event_type='diagnostics_did_become_available', engine=config.runtime_engine, **diagnostic_engine.summary())
         logger.info('diagnostics_did_become_available')
 
-    def test_discovery_will_become_available(self, test_set, folder):
+    def test_discovery_will_become_available(self, test_set):
         """
         :type test_set: pycrunch.discovery.simple.TestSet
         """
