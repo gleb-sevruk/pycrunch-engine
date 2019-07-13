@@ -17,7 +17,7 @@ class TestMap:
         self.map[filename] = new_list
 
     def get_immutable_tests_for_file(self, filename):
-        return list(self.map.get(filename))
+        return list(self.map.get(filename, set()))
 
 
 test_map = TestMap()

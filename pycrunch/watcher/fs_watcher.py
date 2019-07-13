@@ -1,8 +1,9 @@
 import threading
 from pathlib import Path
 
-from watchgod import watch
+from watchgod import watch, Change
 
+from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
 from ._abstract_watcher import Watcher
 
@@ -30,8 +31,13 @@ class FSWatcher(Watcher):
         print(path)
         for changes in watch(path):
             for c in changes:
+                change_type = c[0]
+                force = False
+                if change_type == Change.added:
+                    force = True
+
                 file = c[1]
-                if self.should_watch(file):
+                if force or self.should_watch(file):
                     execution_pipeline.add_task(FileModifiedNotificationTask(file=file))
                     logger.info('Added file for pipeline ' + file)
                 else:
