@@ -19,5 +19,11 @@ class TestMap:
     def get_immutable_tests_for_file(self, filename):
         return list(self.map.get(filename, set()))
 
+    def test_exist(self, filename, fqn):
+        if fqn in self.map[filename]:
+            return True
+
+        return False
+
 
 test_map = TestMap()

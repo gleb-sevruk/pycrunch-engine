@@ -36,20 +36,40 @@ class CombinedCoverage:
                    line 2 -> [test2]
     """
     def __init__(self):
+        # filename -> FileStatistics
         self.files = dict()
-        self.dependencies = defaultdict(list)
+
+        # all files involved in execution of test.
+        # FQN will end up showing in multiple files if dependent file was used during run
+        # filename.py -> set(fqn, fqn)
+        self.dependencies = defaultdict(set)
         self.file_dependencies_by_tests = defaultdict(set)
         #  in format
         #   {
         #       module:test_name : { status:failed },
         #       module_1:test_name_1 : { status:success },
         #    }
-        self.aggregated_results = defaultdict(dict)
+        # self.aggregated_results = defaultdict(dict)
         pass
 
-    def mark_dependency(self, filename, test_metadata):
-        if test_metadata['fqn'] not in self.dependencies[filename]:
-            self.dependencies[filename].append(test_metadata)
+    def mark_dependency(self, filename, fqn):
+        if fqn not in self.dependencies[filename]:
+            self.dependencies[filename].add(fqn)
+
+    def test_did_removed(self, fqn):
+        # clear dependencies
+        for filename in self.dependencies:
+            self.dependencies[filename].discard(fqn)
+
+        del self.file_dependencies_by_tests[fqn]
+
+        # remove line hits from all files
+        for stale_file in self.files:
+            self.ensure_file_statistics_exist(stale_file)
+            statistics = self.files[stale_file]
+            statistics.clear_file_from_test(fqn=fqn)
+
+
 
     def mark_coverage(self, fqn, filename, lines_covered, test_run):
         self.ensure_file_statistics_exist(filename)
@@ -67,12 +87,11 @@ class CombinedCoverage:
         for fqn, test_run in results.items():
             test_run = test_run
 
-            self.aggregated_results[fqn] = dict(state=test_run.execution_result.status)
-            self.clean_coverage_in_stale_file(fqn, test_run)
+            self.clean_coverage_in_stale_files(fqn, test_run)
             for file in test_run.files:
 
                 file_with_coverage = FileWithCoverage(filename=file.filename, lines_covered=file.lines, analysis=file.analysis, arcs=file.arcs)
-                self.mark_dependency(file_with_coverage.filename, test_run.test_metadata)
+                self.mark_dependency(file_with_coverage.filename, test_run.test_metadata['fqn'])
 
                 self.mark_coverage(fqn=fqn, filename=file_with_coverage.filename, lines_covered=file_with_coverage.lines_covered, test_run=test_run)
 
@@ -86,7 +105,7 @@ class CombinedCoverage:
                 pprint(x.lines_with_entrypoints)
             pass
 
-    def clean_coverage_in_stale_file(self, fqn, test_run):
+    def clean_coverage_in_stale_files(self, fqn, test_run):
         # if file was not hit at all, we need to clear combined coverage there from previous runs
         previous_files = set(self.file_dependencies_by_tests[fqn])
         files = set()

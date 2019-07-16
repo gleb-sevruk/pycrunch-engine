@@ -11,6 +11,7 @@ from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.run_test_task import RunTestTask
 from pycrunch.session.state import engine
+from pycrunch.shared.models import all_tests
 from .serializers import serialize_test_run
 from flask import Blueprint
 from flask import request
@@ -50,7 +51,13 @@ def run_tests():
     tests = request.json.get('tests')
     logger.info('Running tests...')
     logger.info(tests)
-    execution_pipeline.add_task(RunTestTask(tests))
+    fqns = set()
+    for test in tests:
+        fqns.add(test['fqn'])
+
+    tests_to_run = all_tests.collect_by_fqn(fqns)
+
+    execution_pipeline.add_task(RunTestTask(tests_to_run))
     return jsonify(tests)
 
 

@@ -41,10 +41,11 @@ class FileModifiedNotificationTask(AbstractTask):
             if t not in old_map:
                 added_tests.add(t)
 
-        execution_plan = list()
+        execution_plan = set()
         for new_test in possibly_new_tests.tests:
             if new_test.fqn in new_map:
-                execution_plan.append(dict(fqn=new_test.fqn, filename=new_test.filename, name=new_test.name, module=new_test.module, state='recently_added'))
+                # todo should depend on execution mode
+                execution_plan.add(new_test.fqn)
 
 
 
@@ -52,13 +53,13 @@ class FileModifiedNotificationTask(AbstractTask):
         if dependencies:
             impacted_tests = dependencies[self.file]
 
-            for test in impacted_tests:
-                if test['fqn'] not in removed_tests:
-                    execution_plan.append(test)
+            for fqn in impacted_tests:
+                if fqn not in removed_tests:
+                    execution_plan.add(fqn)
                 else:
-                    print(f"test {test['fqn']} removed from execution plan")
-
-            execution_pipeline.add_task(RunTestTask(execution_plan))
+                    print(f"test {fqn} removed from execution plan")
+            tests_to_run = state.engine.all_tests.collect_by_fqn(execution_plan)
+            execution_pipeline.add_task(RunTestTask(tests_to_run))
 
         pass;
 

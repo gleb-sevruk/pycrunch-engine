@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 from coverage import Coverage
 
+from pycrunch.shared.models import TestState
 
 
 class CoverageRunForSingleFile:
@@ -58,8 +59,6 @@ def serialize_test_run(cov : Coverage, entry_file, time_elapsed, test_metadata, 
 
 
 def serialize_test_set_state(test_set):
-
-    from pycrunch.session.state import TestState
 
     def serialize_test(test_state: TestState):
         discovered_test = test_state.discovered_test

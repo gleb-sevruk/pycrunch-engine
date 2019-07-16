@@ -9,7 +9,7 @@ from threading import Thread
 
 from pycrunch import session
 from pycrunch.api import shared
-from pycrunch.api.serializers import serialize_test_run
+from pycrunch.api.serializers import serialize_test_run, serialize_test_set_state
 from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
@@ -19,7 +19,7 @@ from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
 from pycrunch.session import config
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage, serialize_combined_coverage
 from pycrunch.session.state import engine
-
+from pycrunch.shared import TestMetadata
 
 
 class RunTestTask(AbstractTask):
@@ -44,9 +44,12 @@ class RunTestTask(AbstractTask):
             runner_engine = DjangoRunnerEngine()
 
         engine.tests_will_run(self.tests)
+        converted_tests = list()
+        for test in self.tests:
+            converted_tests.append(dict(fqn=test.discovered_test.fqn, filename=test.discovered_test.filename,name=test.discovered_test.name, module=test.discovered_test.module, state='converted'))
 
         runner = MultiprocessTestRunner(30)
-        runner.run(tests=self.tests)
+        runner.run(tests=converted_tests)
         self.results = runner.results
         # runner = TestRunner(runner_engine=runner_engine)
         # with ModuleCleanup() as cleanup:
@@ -67,7 +70,7 @@ class RunTestTask(AbstractTask):
 
         shared.pipe.push(event_type='test_run_completed',
                          coverage=dict(all_runs=results_as_json),
-                         data=self.tests,
+                         # data=serialize_test_set_state(self.tests),
                          timings=dict(start=self.timestamp, end=shared.timestamp()),
                          ),
 
@@ -75,9 +78,10 @@ class RunTestTask(AbstractTask):
         shared.pipe.push(event_type='combined_coverage_updated',
                          combined_coverage=serialized,
                          dependencies={entry_point: list(filenames) for entry_point, filenames in combined_coverage.dependencies.items() },
-                         aggregated_results={fqn: dict(test_run_short_info) for fqn, test_run_short_info in combined_coverage.aggregated_results.items()},
+                         aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
                          timings=dict(start=self.timestamp, end=shared.timestamp()),
                          ),
         pass;
+
 
 # https://stackoverflow.com/questions/45369128/python-multithreading-queue
