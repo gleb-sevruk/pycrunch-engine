@@ -18,6 +18,9 @@
       </template>
     </div>
     <div class="test-run ml-3">
+<!--      <pre>{{combined_coverage2}}</pre>-->
+
+
 <!--      {{test_run}}-->
       <div class="all-files" v-if="test_run" >
         <div class="test-run__file mt-4" v-for="run in test_run.all_runs" :key="run.entry_point">
@@ -52,6 +55,7 @@
       entry_files: [],
       test_run: null,
       combined_coverage: null,
+      combined_coverage2: null,
       file_contents: null,
       dependencies: null,
       discovery_response: null,
@@ -78,7 +82,8 @@
       let file = data.modified_file
       let dependent_tests = this.dependencies[file]
       if (dependent_tests) {
-        this.run_specified_tests(dependent_tests)
+        // should be handled on engine
+        // this.run_specified_tests(dependent_tests)
       }
     },
     test_run_completed (data) {
@@ -100,7 +105,10 @@
         this.test_run_completed(data)
       }
       if (data.event_type === 'combined_coverage_updated') {
+
         this.combined_coverage = data.combined_coverage
+        this.combined_coverage2 = JSON.stringify(data, null, 4);
+
         this.dependencies = data.dependencies
       }
 

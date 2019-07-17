@@ -6,12 +6,14 @@ from multiprocessing.connection import Listener
 from pprint import pprint
 from threading import Thread
 
+from pycrunch.introspection.history import execution_history
 from pycrunch.session import config
 
 
 class MultiprocessTestRunner:
 
-    def __init__(self, timeout):
+    def __init__(self, timeout, timeline):
+        self.timeline = timeline
         self.timeout = timeout
         self.results = None
 
@@ -27,10 +29,13 @@ class MultiprocessTestRunner:
         # data = '{"tests":[{"fqn":"pycrunch.tests.test_modules_cleanup:test_nested","module":"pycrunch.tests.test_modules_cleanup","filename":"/Users/gleb/code/PyCrunch/pycrunch/tests/test_modules_cleanup.py","name":"test_nested","state":"pending"}]}'
         # socket.setdefaulttimeout(60)
         def thread_loop(params=None):
+            self.timeline.mark_event('Entered TCP thread')
             print('Waiting for connection')
             conn = listener.accept()
             print('connection accepted from', listener.last_accepted)
+            self.timeline.mark_event('TCP: Accepted connection')
             conn.send(tests)
+            self.timeline.mark_event('TCP: Sent tests to be run...')
             while True:
                 poll_result = conn.poll(timeout=1)
                 msg = conn.recv()
@@ -41,20 +46,28 @@ class MultiprocessTestRunner:
                     break
                 else:
                     print('got msg from client:')
-                    pprint(msg)
-                    results = msg
-                    self.results_did_become_available(results)
+                    # pprint(msg)
+                    if msg.kind == 'test_run_results':
+                        results = msg.data_to_send
+                        self.timeline.mark_event('TCP: Got test run results from subprocess')
+                        self.results_did_become_available(results)
+                    if msg.kind == 'timings':
+                        self.timeline.mark_event('TCP: Got timings from subprocess')
+                        execution_history.save(msg.data_to_send)
+
 
             listener.close()
-
+        self.timeline.mark_event('Creating tcp thread')
         t = Thread(target=thread_loop)
         t.daemon = True
         t.start()
         engine_root = f' {config.engine_directory}{os.sep}multiprocess_child_main.py '
         hardcoded_path = engine_root + f'--engine={config.runtime_engine}'
+        self.timeline.mark_event('Subprocess: starting...')
         proc = subprocess.check_call(sys.executable + hardcoded_path, cwd=config.working_directory, shell=True)
+        self.timeline.mark_event('Subprocess: completed.')
         pprint(proc)
         # isAlive() after join() to decide whether a timeout happened -- if the
         #         thread is still alive, the join() call timed out.
         t.join(self.timeout)
-        print(f'thread completed: {t.isAlive()}')
+        print(f'thread completed: isAlive: {t.isAlive()}')

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from pycrunch.api.serializers import serialize_test_set_state
 from pycrunch.api.shared import pipe
+from pycrunch.introspection.history import execution_history
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.session import config
 from pycrunch.session.diagnostics import diagnostic_engine
@@ -36,6 +37,9 @@ class EngineState:
         logger.info('will_start_diagnostics_collection')
         pipe.push(event_type='diagnostics_did_become_available', engine=config.runtime_engine, **diagnostic_engine.summary())
         logger.info('diagnostics_did_become_available')
+
+    def will_send_timings(self):
+        pipe.push(event_type='execution_history_did_become_available', **execution_history.to_json(), folder=self.folder)
 
     def test_discovery_will_become_available(self, test_set):
         """

@@ -43,6 +43,12 @@ def queue_diagnostics():
 
     return jsonify(dict(ack=True))
 
+@pycrunch_api.route("/timings")
+def queue_timings():
+    engine.will_send_timings()
+
+
+    return jsonify(dict(ack=True))
 
 
 @pycrunch_api.route("/run-tests", methods=['POST'])

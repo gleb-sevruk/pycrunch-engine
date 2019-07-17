@@ -29,7 +29,7 @@ def test_non_supported_engine_throws():
     import pytest
     sut = create_sut()
     with pytest.raises(Exception):
-        sut.runtime_engine_will_change('not-supported')
+        sut.runtime_engine_will_change('n-s')
 
 read_data = '''
 discovery:
