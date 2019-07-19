@@ -1,15 +1,7 @@
-import subprocess
-import sys
-from datetime import datetime
-from multiprocessing.connection import Listener
 from pprint import pprint
-from queue import Queue
-import time
-from threading import Thread
 
 from pycrunch import session
 from pycrunch.api import shared
-from pycrunch.api.serializers import serialize_test_run, serialize_test_set_state
 from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
@@ -17,7 +9,7 @@ from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
 from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
 from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
-from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage, serialize_combined_coverage
+from pycrunch.session.combined_coverage import combined_coverage, serialize_combined_coverage
 from pycrunch.session.state import engine
 
 

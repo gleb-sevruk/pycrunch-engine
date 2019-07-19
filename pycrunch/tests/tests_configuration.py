@@ -92,3 +92,27 @@ def test_environment_vars():
         assert 'insuredportal.settings' == sut.environment_vars.get('DJANGO_SETTINGS')
         assert 'test' == sut.environment_vars.get('ENV2')
         assert sut.environment_vars.get('NOT') == None
+
+
+
+def test_path_map_config_read():
+    read_data = '''
+    discovery:
+      exclusions:
+       - directory_1
+       - directory_2
+    engine:
+      runtime: simple
+      mode: manual
+    env:
+      DJANGO_SETTINGS: insuredportal.settings
+      ENV2: test
+    path-mapping:
+      /code: /localfs/easyproject 
+    '''
+
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert '/code' == sut.path_mapping.path_in_container
+        assert '/localfs/easyproject' == sut.path_mapping.path_on_local_ide

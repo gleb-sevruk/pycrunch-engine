@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 from coverage import Coverage
 
+from pycrunch.session import config
 from pycrunch.shared.models import TestState
 
 
@@ -14,7 +15,7 @@ class CoverageRunForSingleFile:
         self.filename = filename
 
     def as_json(self):
-        return OrderedDict(filename=self.filename, lines_covered=self.lines, analysis=self.analysis, arcs=self.arcs,)
+        return OrderedDict(filename=config.path_mapping.map_to_local_fs(self.filename), lines_covered=self.lines, analysis=self.analysis, arcs=self.arcs,)
 
 class CoverageRun:
     def __init__(self, entry_point, time_elapsed, test_metadata, execution_result):
@@ -72,7 +73,7 @@ def serialize_test_set_state(test_set):
         return dict(
             fqn=discovered_test.fqn,
             module=discovered_test.module,
-            filename=discovered_test.filename,
+            filename=config.path_mapping.map_to_local_fs(discovered_test.filename),
             name=discovered_test.name,
             state=execution_result.status,
             pinned=test_state.pinned,

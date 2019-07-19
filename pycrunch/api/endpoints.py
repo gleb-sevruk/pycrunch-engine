@@ -10,6 +10,7 @@ from pycrunch.api.shared import file_watcher
 from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.run_test_task import RunTestTask
+from pycrunch.session import config
 from pycrunch.session.state import engine
 from pycrunch.shared.models import all_tests
 from .serializers import serialize_test_run
@@ -93,7 +94,8 @@ def run_tests():
 def download_file():
     filename = request.args.get('file')
     logger.debug('download_file ' + filename)
-    my_file = io.FileIO(filename, 'r')
+    target_file = config.path_mapping.map_local_to_remote(filename)
+    my_file = io.FileIO(target_file, 'r')
     content = my_file.read()
     return Response(content, mimetype='application/x-python-code')
 

@@ -18,10 +18,13 @@
       </template>
     </div>
     <div class="test-run ml-3">
+      <el-checkbox v-model="show_more">Show more detailed information</el-checkbox>
+      <div v-if="show_more">
       <pre>{{combined_coverage2}}</pre>
 
 
       {{test_run}}
+      </div>
       <div class="all-files" v-if="test_run" >
         <div class="test-run__file mt-4" v-for="run in test_run.all_runs" :key="run.entry_point">
           <code>{{run.time_elapsed}}ms | {{run.entry_point}}</code>
@@ -59,6 +62,7 @@
       file_contents: null,
       dependencies: null,
       discovery_response: null,
+      show_more: false,
     }
   },
   components: {

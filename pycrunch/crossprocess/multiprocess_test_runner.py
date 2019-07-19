@@ -61,7 +61,7 @@ class MultiprocessTestRunner:
         t = Thread(target=thread_loop)
         t.daemon = True
         t.start()
-        engine_root = f' {config.engine_directory}{os.sep}multiprocess_child_main.py '
+        engine_root = f' {config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py '
         hardcoded_path = engine_root + f'--engine={config.runtime_engine}'
         self.timeline.mark_event('Subprocess: starting...')
 

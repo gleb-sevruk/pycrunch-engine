@@ -7,6 +7,29 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
+
+class NoPathMapping:
+    def map_to_local_fs(self, filename):
+        return filename
+
+    def map_local_to_remote(self, filename):
+        return filename
+
+
+class PathMapping:
+    def __init__(self, path_in_container, path_on_local_ide):
+        self.path_on_local_ide = path_on_local_ide
+        self.path_in_container = path_in_container
+
+    def map_to_local_fs(self, filename: str):
+        return filename.replace(self.path_in_container, self.path_on_local_ide, 1)
+
+    def map_local_to_remote(self, filename):
+        return filename.replace(self.path_on_local_ide, self.path_in_container, 1)
+
+class PycrunchException(Exception):
+    pass
+
 class Configuration:
     def __init__(self):
         self.allowed_modes = ['auto', 'manual', 'pinned']
@@ -20,6 +43,7 @@ class Configuration:
         # self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
         self.environment_vars = dict()
+        self.path_mapping = NoPathMapping()
 
     def runtime_engine_will_change(self, new_engine):
         self.throw_if_not_supported_engine(new_engine)
@@ -71,10 +95,14 @@ class Configuration:
                 additional_env = x.get('env', None)
                 if additional_env:
                     self.apply_additional_env(additional_env)
+                path_mapping = x.get('path-mapping', None)
+                if path_mapping:
+                    self.apply_path_mapping(path_mapping)
                 print(x)
                 print(f)
         except Exception as e:
             print("Exception during processing configuration\n" + str(e))
+            raise PycrunchException('configuration parse failed', e)
 
     def configuration_file_path(self):
         return self.working_directory.joinpath('.pycrunch-config.yaml')
@@ -112,6 +140,12 @@ class Configuration:
         print(additional_env)
         for env in additional_env:
             self.environment_vars[env] = additional_env[env]
+
+    def apply_path_mapping(self, path_mapping):
+        print('custom path map')
+        for p in path_mapping:
+            # only one for now
+            self.path_mapping = PathMapping(p, path_mapping[p])
 
 
 config = Configuration()

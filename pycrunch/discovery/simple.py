@@ -1,8 +1,6 @@
 import inspect
 import logging
-import os
 import sys
-from unittest.test import loader
 
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.session import config

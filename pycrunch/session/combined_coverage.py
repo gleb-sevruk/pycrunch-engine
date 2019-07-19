@@ -1,6 +1,8 @@
 from collections import defaultdict
 
 from pycrunch.api.shared import file_watcher
+from pycrunch.session import config
+
 
 class FileWithCoverage:
     def __init__(self, filename, lines_covered, analysis, arcs):
@@ -123,7 +125,7 @@ class CombinedCoverage:
 def serialize_combined_coverage(combined: CombinedCoverage):
     return [
         dict(
-            filename=x.filename,
+            filename=config.path_mapping.map_to_local_fs(x.filename),
             lines_with_entrypoints=compute_lines(x)) for x in combined.files.values()
     ]
 

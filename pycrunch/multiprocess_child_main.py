@@ -42,6 +42,8 @@ def run(file_task, engine_to_use, timeline):
     runner_engine = None
     # add root of django project
     sys.path.insert(0, str(Path('.').absolute()))
+    sys.path.insert(0, '/code')
+
     timeline.mark_event('Deciding on runner engine...')
 
     from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
@@ -55,7 +57,7 @@ def run(file_task, engine_to_use, timeline):
         runner_engine = PyTestRunnerEngine()
 
     # should have env from pycrunch config
-    # print(environ)
+    print(environ)
 
     r = TestRunner(runner_engine)
     timeline.mark_event('Run: about to run tests')

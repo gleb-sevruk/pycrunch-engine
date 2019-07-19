@@ -32,7 +32,7 @@ import pycrunch.api.socket_handlers
 
 def run():
     use_reloader = not True
-    shared.socketio.run(app, use_reloader=use_reloader, debug=True, extra_files=['log_configuration.yaml'])
+    shared.socketio.run(app, use_reloader=use_reloader, debug=True, extra_files=['log_configuration.yaml'], host='0.0.0.0')
 
 
 if __name__ == '__main__':

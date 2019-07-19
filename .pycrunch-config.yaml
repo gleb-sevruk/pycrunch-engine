@@ -12,3 +12,5 @@ pinned-tests:
 - tests_two:test_z
 - pycrunch.tests.tests_configuration:test_environment_vars
 - tests_one:test_regexp
+#path-mapping:
+#  /Users/gleb/code/PyCrunch: /zalupa/konskaya
