@@ -1,3 +1,5 @@
+from os import environ
+
 from pycrunch.introspection.timings import Timeline
 import argparse
 
@@ -52,7 +54,8 @@ def run(file_task, engine_to_use, timeline):
         print('using default engine => pytest')
         runner_engine = PyTestRunnerEngine()
 
-
+    # should have env from pycrunch config
+    # print(environ)
 
     r = TestRunner(runner_engine)
     timeline.mark_event('Run: about to run tests')

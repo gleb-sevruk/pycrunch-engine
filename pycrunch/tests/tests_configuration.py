@@ -71,3 +71,24 @@ def test_runtime_engine_from_config():
         sut = create_sut()
         sut.load_runtime_configuration()
         assert sut.runtime_engine == 'simple'
+
+def test_environment_vars():
+    read_data = '''
+    discovery:
+      exclusions:
+       - directory_1
+       - directory_2
+    engine:
+      runtime: simple
+      mode: manual
+    env:
+      DJANGO_SETTINGS: insuredportal.settings
+      ENV2: test
+    '''
+
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert 'insuredportal.settings' == sut.environment_vars.get('DJANGO_SETTINGS')
+        assert 'test' == sut.environment_vars.get('ENV2')
+        assert sut.environment_vars.get('NOT') == None

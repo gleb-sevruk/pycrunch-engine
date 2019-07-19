@@ -19,6 +19,7 @@ class Configuration:
         self.pinned_tests = set()
         # self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
+        self.environment_vars = dict()
 
     def runtime_engine_will_change(self, new_engine):
         self.throw_if_not_supported_engine(new_engine)
@@ -67,6 +68,9 @@ class Configuration:
                 pinned_tests = x.get('pinned-tests', None)
                 if pinned_tests:
                     self.apply_pinned_tests(pinned_tests)
+                additional_env = x.get('env', None)
+                if additional_env:
+                    self.apply_additional_env(additional_env)
                 print(x)
                 print(f)
         except Exception as e:
@@ -103,6 +107,11 @@ class Configuration:
         self.pinned_tests = set()
         for fqn in pinned_tests:
             self.pinned_tests.add(fqn)
+
+    def apply_additional_env(self, additional_env):
+        print(additional_env)
+        for env in additional_env:
+            self.environment_vars[env] = additional_env[env]
 
 
 config = Configuration()

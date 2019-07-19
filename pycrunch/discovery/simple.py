@@ -76,8 +76,11 @@ class SimpleTestDiscovery:
         # py_files = glob.glob(os.path.join(folder, '*.py'))
         py_files = folder_path.glob('**/*.py')
         test_set = TestSet()
-        self.configuration.prepare_django()
+        from os import environ
+        for env_name, env_value in config.environment_vars.items():
+            environ[env_name] = env_value
 
+        self.configuration.prepare_django()
         with ModuleCleanup() as cleanup:
 
             for py_file in py_files:

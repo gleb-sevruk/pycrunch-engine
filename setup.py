@@ -1,4 +1,5 @@
-from setuptools import setup
+import setuptools
+from distutils.core import setup
 
 setup(name='pycrunch-engine',
       version='0.1',
@@ -7,7 +8,8 @@ setup(name='pycrunch-engine',
       author='Gleb Sevruk',
       author_email='sevruk.gleb@gmail.com',
       license='MIT',
-      packages=['pycrunch'],
+      packages=setuptools.find_packages(),
+      setup_requires=['wheel'],
       entry_points={
           'console_scripts': ['pycrunch-engine=pycrunch.main:run'],
       },
