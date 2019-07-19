@@ -6,7 +6,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from pycrunch.api import shared
-from pycrunch.api import pycrunch_api
+from pycrunch.api.endpoints import pycrunch_api
 from pycrunch.session import config
 
 app = Flask(__name__)

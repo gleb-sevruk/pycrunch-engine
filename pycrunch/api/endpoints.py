@@ -51,6 +51,27 @@ def queue_timings():
     return jsonify(dict(ack=True))
 
 
+@pycrunch_api.route("/pin-tests", methods=['POST'])
+def pin_tests():
+    # fqns = array of strings[]
+    fqns = request.json.get('fqns')
+    engine.tests_will_pin(fqns)
+    return jsonify(dict(ack=True))
+
+
+@pycrunch_api.route("/engine-mode", methods=['POST'])
+def engine_mode():
+    new_mode = request.json.get('mode')
+    engine.engine_mode_will_change(new_mode)
+    return jsonify(dict(ack=True))
+
+@pycrunch_api.route("/unpin-tests", methods=['POST'])
+def unpin_tests():
+    # fqns = array of strings[]
+    fqns = request.json.get('fqns')
+    engine.tests_will_unpin(fqns)
+    return jsonify(dict(ack=True))
+
 @pycrunch_api.route("/run-tests", methods=['POST'])
 def run_tests():
 

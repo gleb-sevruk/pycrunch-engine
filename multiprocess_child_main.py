@@ -1,25 +1,21 @@
-import argparse
-import json
-import multiprocessing
-import os
-import sys
-from pathlib import Path
-from pprint import pprint
-from time import sleep
-from unittest.mock import Mock
-
-from pycrunch.crossprocess.tcp_message import TcpMessage
 from pycrunch.introspection.timings import Timeline
-from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
-from pycrunch.session import config
+import argparse
 
 
 def run(file_task, engine_to_use, timeline):
     timeline.mark_event('Run: inside method, imports')
-    from pycrunch.shared import TestMetadata
+    import json
+    import sys
+    from pathlib import Path
+    from pprint import pprint
+    from unittest.mock import Mock
+
+    from pycrunch.crossprocess.tcp_message import TcpMessage
 
     from multiprocessing.connection import Client
+    timeline.mark_event('Run: imported multiprocessing.connection')
     from pycrunch.runner.test_runner import TestRunner
+    timeline.mark_event('Run: imported TestRunner')
 
     timeline.mark_event('Run: imports done')
 
@@ -50,6 +46,7 @@ def run(file_task, engine_to_use, timeline):
     if engine_to_use == 'pytest':
         runner_engine = PyTestRunnerEngine()
     elif engine_to_use == 'django':
+        from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
         runner_engine = DjangoRunnerEngine()
     else:
         print('using default engine => pytest')
@@ -59,11 +56,15 @@ def run(file_task, engine_to_use, timeline):
 
     r = TestRunner(runner_engine)
     timeline.mark_event('Run: about to run tests')
-    results = r.run(tests_to_run)
-    timeline.mark_event('Run: Completed, sending results')
+    try:
+        results = r.run(tests_to_run)
+        timeline.mark_event('Run: Completed, sending results')
 
-    conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
-    timeline.mark_event('TCP: send complete')
+        conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
+        timeline.mark_event('TCP: send complete')
+    except Exception as e:
+        timeline.mark_event('Run: exception during execution')
+
     timeline.stop()
     conn.send(TcpMessage(kind='timings', data_to_send=timeline))
 
@@ -91,6 +92,8 @@ if __name__ == '__main__':
     file_task = args.file
     engine_to_use = args.engine
     if engine_to_use:
+        from pycrunch.session import config
+
         config.runtime_engine_will_change(engine_to_use)
     # with open(f'.{os.sep}child_process.log', 'a') as file:
     #     file.writelines(['huita',''])

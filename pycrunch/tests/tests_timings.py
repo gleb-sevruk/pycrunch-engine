@@ -73,7 +73,7 @@ def test_serialization():
     #       3.1 ... 4.1 double_nested
     #  5 end root
     sut.start()
-
+    # assert 1 == 2
     sut.begin_nested_interval('nested_1')
 
     sut.begin_nested_interval('a')
@@ -99,6 +99,7 @@ def test_serialization():
 
     sut.begin_nested_interval('2.2.1')
     sut.end_nested_interval()
+
 
     sut.end_nested_interval()
 

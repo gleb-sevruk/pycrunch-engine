@@ -2,7 +2,7 @@ import socket
 import subprocess
 import sys
 import os
-from multiprocessing.connection import Listener
+from multiprocessing.connection import Listener, Client
 from pprint import pprint
 from threading import Thread
 
@@ -64,9 +64,19 @@ class MultiprocessTestRunner:
         engine_root = f' {config.engine_directory}{os.sep}multiprocess_child_main.py '
         hardcoded_path = engine_root + f'--engine={config.runtime_engine}'
         self.timeline.mark_event('Subprocess: starting...')
-        proc = subprocess.check_call(sys.executable + hardcoded_path, cwd=config.working_directory, shell=True)
+
+        try:
+            proc = subprocess.check_call(sys.executable + hardcoded_path, cwd=config.working_directory, shell=True)
+            pprint(proc)
+        except Exception as e:
+            print('Exception in subprocess, need restart :(' + str(e))
+            self.timeline.mark_event('Subprocess: exception during test run.')
+            address = ('localhost', 6001)
+            conn = Client(address, authkey=b'secret password')
+            conn.send('close')
+            # self.results = dict()
+
         self.timeline.mark_event('Subprocess: completed.')
-        pprint(proc)
         # isAlive() after join() to decide whether a timeout happened -- if the
         #         thread is still alive, the join() call timed out.
         t.join(self.timeout)

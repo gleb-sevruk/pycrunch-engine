@@ -58,9 +58,28 @@ class FileModifiedNotificationTask(AbstractTask):
                     execution_plan.add(fqn)
                 else:
                     print(f"test {fqn} removed from execution plan")
+
+            if state.config.engine_mode == 'manual':
+                print('Manual mode, tests wont run. Consider switching engine mode to auto')
+                return
+
             tests_to_run = state.engine.all_tests.collect_by_fqn(execution_plan)
-            execution_pipeline.add_task(RunTestTask(tests_to_run))
+            dirty_tests = self.consider_engine_mode(tests_to_run)
+            execution_pipeline.add_task(RunTestTask(dirty_tests))
 
         pass;
+
+    def consider_engine_mode(self, tests_to_run):
+        if state.config.engine_mode == 'auto':
+            return tests_to_run
+
+        if state.config.engine_mode == 'pinned':
+            only_pinned = []
+            for test in tests_to_run:
+                if test.pinned:
+                    only_pinned.append(test)
+            return only_pinned
+        print('Cannot filter by engine mode.')
+        return tests_to_run
 
 # https://stackoverflow.com/questions/45369128/python-multithreading-queue

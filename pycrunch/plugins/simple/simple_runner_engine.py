@@ -1,19 +1,16 @@
+import importlib.util
 import logging
+import sys
+import traceback
 
 from pycrunch.runner import _abstract_runner
 from pycrunch.runner.execution_result import ExecutionResult
-
-from pycrunch.shared import TestMetadata
-import sys
-import traceback
-from collections import namedtuple
-import importlib.util
 
 logger = logging.getLogger(__name__)
 
 
 class SimpleTestRunnerEngine(_abstract_runner.Runner):
-    def run_test(self, test: TestMetadata) -> ExecutionResult:
+    def run_test(self, test) -> ExecutionResult:
         execution_result = ExecutionResult()
         try:
             logger.debug('before _run_module...')

@@ -15,13 +15,10 @@ from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
-from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
 from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
-from pycrunch.session import config
 from pycrunch.session.combined_coverage import combined_coverage, CombinedCoverage, serialize_combined_coverage
 from pycrunch.session.state import engine
-from pycrunch.shared import TestMetadata
 
 
 class RunTestTask(AbstractTask):
@@ -66,6 +63,9 @@ class RunTestTask(AbstractTask):
             print('!!! None in results')
 
         self.timeline.mark_event('before tests_did_run')
+        if not self.results:
+            self.results = dict()
+
         engine.tests_did_run(self.results)
 
         self.timeline.mark_event('Postprocessing: combined coverage, line hits, dependency tree')

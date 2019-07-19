@@ -1,8 +1,11 @@
 discovery:
   exclusions:
-    - front/
-    - front\
-    - test_discovery_specs_demo.py
-
+  - front/
+  - front\
+  - test_discovery_specs_demo.py
 engine:
   runtime: pytest
+pinned-tests:
+- tests_two:test_dummy
+- tests_two:test_z
+- tests_one:test_regexp

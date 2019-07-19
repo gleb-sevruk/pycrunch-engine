@@ -1,9 +1,13 @@
-from collections import namedtuple, defaultdict
-from pprint import pprint
+from collections import defaultdict
 
 from pycrunch.api.shared import file_watcher
 
-FileWithCoverage = namedtuple('FileWithCoverage', ['filename', 'lines_covered', 'analysis', 'arcs'])
+class FileWithCoverage:
+    def __init__(self, filename, lines_covered, analysis, arcs):
+        self.arcs = arcs
+        self.analysis = analysis
+        self.lines_covered = lines_covered
+        self.filename = filename
 
 
 class FileStatistics:
@@ -61,7 +65,8 @@ class CombinedCoverage:
         for filename in self.dependencies:
             self.dependencies[filename].discard(fqn)
 
-        del self.file_dependencies_by_tests[fqn]
+        if fqn in self.file_dependencies_by_tests:
+            del self.file_dependencies_by_tests[fqn]
 
         # remove line hits from all files
         for stale_file in self.files:
@@ -97,13 +102,7 @@ class CombinedCoverage:
 
         file_watcher.watch(self.files.keys())
 
-        # pprint(results)
-        enabled_diagnosticts = False
-        if enabled_diagnosticts:
-            for x in self.files.values():
-                pprint(x.filename)
-                pprint(x.lines_with_entrypoints)
-            pass
+
 
     def clean_coverage_in_stale_files(self, fqn, test_run):
         # if file was not hit at all, we need to clear combined coverage there from previous runs

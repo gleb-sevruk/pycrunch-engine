@@ -34,6 +34,13 @@ class CoverageRun:
         for f in coverage_data.measured_files():
             lines = coverage_data.lines(f)
             arcs = coverage_data.arcs(f)
+            #         * The file name for the module.
+            #         * A list of line numbers of executable statements.
+            #         * A list of line numbers of excluded statements.
+            #         * A list of line numbers of statements not run (missing from
+            #           execution).
+            #         * A readable formatted string of the missing line numbers.
+            # // todo exclude lines hits
             analysis = cov.analysis2(f)
             self.files.append(CoverageRunForSingleFile(f, lines, arcs, analysis))
 
@@ -59,7 +66,6 @@ def serialize_test_run(cov : Coverage, entry_file, time_elapsed, test_metadata, 
 
 
 def serialize_test_set_state(test_set):
-
     def serialize_test(test_state: TestState):
         discovered_test = test_state.discovered_test
         execution_result = test_state.execution_result
@@ -69,6 +75,7 @@ def serialize_test_set_state(test_set):
             filename=discovered_test.filename,
             name=discovered_test.name,
             state=execution_result.status,
+            pinned=test_state.pinned,
         )
 
     return dict(

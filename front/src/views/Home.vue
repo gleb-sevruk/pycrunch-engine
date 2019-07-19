@@ -18,10 +18,10 @@
       </template>
     </div>
     <div class="test-run ml-3">
-<!--      <pre>{{combined_coverage2}}</pre>-->
+      <pre>{{combined_coverage2}}</pre>
 
 
-<!--      {{test_run}}-->
+      {{test_run}}
       <div class="all-files" v-if="test_run" >
         <div class="test-run__file mt-4" v-for="run in test_run.all_runs" :key="run.entry_point">
           <code>{{run.time_elapsed}}ms | {{run.entry_point}}</code>

@@ -23,6 +23,8 @@ class EngineState:
         self.runtime_configuration_ready = False
         pass
 
+
+
     def will_start_test_discovery(self):
         from pycrunch.discovery.simple import SimpleTestDiscovery
         self.prepare_runtime_configuration_if_necessary()
@@ -46,7 +48,8 @@ class EngineState:
         :type test_set: pycrunch.discovery.simple.TestSet
         """
         for discovered_test in test_set.tests:
-            self.all_tests.test_discovered(discovered_test.fqn, discovered_test)
+            is_pinned = config.is_test_pinned(discovered_test.fqn)
+            self.all_tests.test_discovered(discovered_test.fqn, discovered_test, is_pinned)
 
         self.all_tests.discard_tests_not_in_map()
         self.notify_clients_about_tests_change()
@@ -69,6 +72,27 @@ class EngineState:
             self.all_tests.test_did_run(k, v)
 
         self.notify_clients_about_tests_change()
+
+    def tests_will_pin(self, fqns):
+        for fqn in fqns:
+            self.all_tests.pin_test(fqn)
+        self.notify_clients_about_tests_change()
+
+        self.save_pinned_state()
+
+
+    def tests_will_unpin(self, fqns):
+        for fqn in fqns:
+            self.all_tests.unpin_test(fqn)
+
+        self.save_pinned_state()
+        self.notify_clients_about_tests_change()
+
+    def save_pinned_state(self):
+        config.save_pinned_tests_config(self.all_tests.get_pinned_tests())
+
+    def engine_mode_will_change(self, new_mode):
+        config.runtime_mode_will_change(new_mode)
 
     def prepare_runtime_configuration_if_necessary(self):
         if not self.runtime_configuration_ready:
