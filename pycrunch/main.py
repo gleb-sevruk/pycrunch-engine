@@ -31,8 +31,17 @@ import pycrunch.api.socket_handlers
 
 
 def run():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int,
+                        help="Port number to listen")
+    args = parser.parse_args()
+    port = 5000
+    if args.port:
+        port = args.port
+    print(f'PyCrunch port will be {port}')
     use_reloader = not True
-    shared.socketio.run(app, use_reloader=use_reloader, debug=True, extra_files=['log_configuration.yaml'], host='0.0.0.0')
+    shared.socketio.run(app, use_reloader=use_reloader, debug=True, extra_files=['log_configuration.yaml'], host='0.0.0.0', port=port)
 
 
 if __name__ == '__main__':
