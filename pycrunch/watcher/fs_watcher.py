@@ -1,7 +1,7 @@
 import threading
 from pathlib import Path
 
-from watchgod import watch, Change
+from watchgod import watch, Change, PythonWatcher
 
 from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
@@ -29,7 +29,7 @@ class FSWatcher(Watcher):
         path = Path('.').absolute()
         print('watching this:...')
         print(path)
-        for changes in watch(path):
+        for changes in watch(path, watcher_cls=PythonWatcher):
             for c in changes:
                 change_type = c[0]
                 force = False
@@ -53,6 +53,7 @@ class FSWatcher(Watcher):
         with self.thread_lock:
             if self.thread is None:
                 logger.info('Starting watch thread...')
+                # logger.info('NOT')
                 self.thread = threading.Thread(target=self.thread_proc)
                 self.thread.start()
 

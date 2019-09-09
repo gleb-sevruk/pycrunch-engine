@@ -152,7 +152,7 @@ class SimpleTestDiscovery:
 
     def is_module_with_tests(self, module_name):
         module_short_name = module_name.split('.')[-1]
-        return module_short_name.startswith(('test_', 'tests_')) or module_short_name.endswith(('_test', '_tests'))
+        return module_short_name.startswith(('test_', 'tests_')) or module_short_name.endswith(('_test','tests', '_tests'))
 
     def looks_like_test_name(self, v):
         return v.startswith('test_') or v.endswith('_test')

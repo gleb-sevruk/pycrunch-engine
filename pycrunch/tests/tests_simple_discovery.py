@@ -31,10 +31,10 @@ def test_module_with_tests_simple():
     assert sut.is_module_with_tests('tests_simple')
     assert sut.is_module_with_tests('simple_tests')
 
-
 def test_module_with_tests_nested():
     sut = SimpleTestDiscovery('')
     assert sut.is_module_with_tests('nested.tests_simple')
+    assert sut.is_module_with_tests('api_tests.tests')
     assert sut.is_module_with_tests('nested.even_more.tests_simple')
 
 

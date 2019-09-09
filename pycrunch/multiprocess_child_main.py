@@ -42,6 +42,7 @@ def run(file_task, engine_to_use, timeline):
     runner_engine = None
     # add root of django project
     sys.path.insert(0, str(Path('.').absolute()))
+    # todo ???
     sys.path.insert(0, '/code')
 
     timeline.mark_event('Deciding on runner engine...')
