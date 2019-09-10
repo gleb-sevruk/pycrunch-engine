@@ -46,7 +46,9 @@ class PyTestInterceptionPlugin:
     def pytest_runtest_logreport(self, report):
         # pprint(vars(report))
         if report.when == 'setup':
-            pass
+            if report.outcome == 'skipped':
+                self.passed_tests.add(report.nodeid)
+
         if report.when == 'teardown':
             pass
 

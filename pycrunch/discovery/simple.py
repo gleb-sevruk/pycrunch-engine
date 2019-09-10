@@ -53,12 +53,12 @@ class SimpleTestDiscovery:
         else:
             MODULE_DIR = self.root_directory
 
-        print(sys.path)
-        print(f'MODULE_DIR {MODULE_DIR}')
+        logger.debug(sys.path)
+        logger.debug(f'MODULE_DIR {MODULE_DIR}')
         if not MODULE_DIR in sys.path:
             sys.path.insert(0, MODULE_DIR)
-            print(f'after append')
-            print(sys.path)
+            logger.debug(f'after append')
+            logger.debug(sys.path)
         # The directory containing your modules needs to be on the search path.
 
         # Get the stem names (file name, without directory and '.py') of any
@@ -98,7 +98,7 @@ class SimpleTestDiscovery:
                 if not self.is_module_with_tests(module_name):
                     continue
 
-                print('importing ' + module_name)
+                logger.warning('importing ' + module_name)
                 module = importlib.import_module(module_name)
                 tests_found = self.find_tests_in_module(module)
                 # execute as following

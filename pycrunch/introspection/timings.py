@@ -73,7 +73,6 @@ class Timeline:
         return self.root.duration()
 
     def begin_nested_interval(self, name):
-
         self.intervals_stack.append(self.current_interval().begin_nested_interval(name))
 
     def current_interval(self):

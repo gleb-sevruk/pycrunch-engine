@@ -1,4 +1,3 @@
-import socket
 import subprocess
 import sys
 import os
@@ -23,6 +22,7 @@ class MultiprocessTestRunner:
         self.results = results
 
     def run(self, tests):
+        # todo should be dynamic??
         address = ('localhost', 6001)  # family is deduced to be 'AF_INET'
         listener = Listener(address, authkey=b'secret password')
 
@@ -67,7 +67,6 @@ class MultiprocessTestRunner:
 
         try:
             proc = subprocess.check_call(sys.executable + hardcoded_path, cwd=config.working_directory, shell=True)
-            pprint(proc)
         except Exception as e:
             print('Exception in subprocess, need restart :(' + str(e))
             self.timeline.mark_event('Subprocess: exception during test run.')

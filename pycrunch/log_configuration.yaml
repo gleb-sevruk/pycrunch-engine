@@ -17,7 +17,11 @@ loggers:
     level: DEBUG
   pycrunch.watcher:
     level: INFO
+  watchgod:
+    level: DEBUG
   pycrunch.api:
+    level: INFO
+  pycrunch.shared.models:
     level: INFO
   pycrunch.api.endpoints:
     level: WARN

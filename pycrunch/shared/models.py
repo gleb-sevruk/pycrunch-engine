@@ -1,6 +1,10 @@
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.session.combined_coverage import combined_coverage
 from pycrunch.session.file_map import test_map
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class TestMetadata:
     def __init__(self, filename, name, module, fqn, state):
@@ -51,9 +55,20 @@ class AllTests:
     def collect_by_fqn(self, fqns):
         result = list()
         for fqn in fqns:
-            result.append(self.tests[fqn])
+            logger.info(f'collecting {fqn} for run')
+
+            current_test = self.tests[fqn]
+            self.log_test_details(current_test)
+            result.append(current_test)
 
         return result
+
+    def log_test_details(self, current_test):
+        logger.debug(f'---')
+        logger.debug(f'current_test filename is {current_test.discovered_test.filename}')
+        logger.debug(f'current_test fqn is {current_test.discovered_test.fqn}')
+        logger.debug(f'current_test module is {current_test.discovered_test.module}')
+        logger.debug(f'---')
 
     def get_pinned_tests(self):
         result = set()

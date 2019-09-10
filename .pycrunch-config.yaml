@@ -2,15 +2,14 @@ discovery:
   exclusions:
   - front/
   - front\
+  - build/
   - test_discovery_specs_demo.py
 engine:
   runtime: pytest
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:
-- tests_two:test_dummy
-- tests_two:test_z
 - pycrunch.tests.tests_configuration:test_environment_vars
+- tests_two:test_dummy
 - tests_one:test_regexp
-#path-mapping:
-#  /Users/gleb/code/PyCrunch: /zalupa/konskaya
+- tests_two:test_z
