@@ -1,17 +1,17 @@
-#Quick start
+# Quick start
 
 `pip install pycrunch-engine`
 
 _Flask users should be careful and experiment with engine in isolated environment. This plugin (during beta) depends on Flask._
 
-##How to run:
-###Using PyCharm Connector extension
+## How to run:
+### Using PyCharm Connector extension
  
  Open your project in PyCharm, and select "Run/Restart PyCrunch Engine"
 
 Engine will be started automatically, and you will be able to see your test in PyCrunch plugin window
 
-###Manual (Without PyCharm)
+### Manual (Without PyCharm)
 
 In python project root, run: 
 
@@ -53,7 +53,7 @@ env:
 
 Configuration File may be checked-in the to source control, to allow other developers to use engine.
 
-######Beta restriction
+###### Beta restriction
 For Django, you probably need to disable logging, pasting following line in your settings file:
 ```python
 LOGGING_CONFIG = None
@@ -61,7 +61,7 @@ LOGGING_CONFIG = None
 ```
 This issue is already on roadmap and will be addressed soon. 
 
-##Django Support Details
+## Django Support Details
 
  Primary goal of extension is to run as fast as possible.
  
@@ -88,7 +88,7 @@ env:
   DJANGO_SETTINGS_MODULE: djangoapp.settings.pycrunch_local
 ```
  
- ##Running in Docker 
+ ## Running in Docker 
  
 Some developers are using docker or docker-compose to set up environment and run development server in docker container
 
@@ -118,7 +118,7 @@ You will probably need to rebuild containers using `docker-compose up --build` i
 From PyCharm extension menu, select "Connect to Custom PyCrunch Engine"
 
 
-###Contacts:
+### Contacts:
  
  https://pycrunch.com
  
