@@ -4,6 +4,8 @@
 
 _Flask users should be careful and experiment with engine in isolated environment. This plugin (during beta) depends on Flask._
 
+PyCrunch is written and supports Python 3.6+.
+
 ## How to run:
 ### Using PyCharm Connector extension
 
