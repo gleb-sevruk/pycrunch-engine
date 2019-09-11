@@ -6,6 +6,9 @@ _Flask users should be careful and experiment with engine in isolated environmen
 
 ## How to run:
 ### Using PyCharm Connector extension
+
+ Download extension and install it from disk using PyCharm
+ https://pycrunch-dist.s3.eu-central-1.amazonaws.com/pycrunch-intellij-connector-0.5-SNAPSHOT.zip
  
  Open your project in PyCharm, and select "Run/Restart PyCrunch Engine"
 
