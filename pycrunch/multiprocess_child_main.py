@@ -9,7 +9,7 @@ def run(file_task, engine_to_use, timeline):
     import json
     import sys
     from pathlib import Path
-    from pprint import pprint
+    # from pprint import pprint
     from unittest.mock import Mock
 
     from pycrunch.crossprocess.tcp_message import TcpMessage
@@ -25,6 +25,7 @@ def run(file_task, engine_to_use, timeline):
     tests_to_run = []
     if not file_task:
         timeline.mark_event('TCP: Opening connection')
+        # todo : should be dynamic
         address = ('localhost', 6001)
         conn = Client(address, authkey=b'secret password')
         tests_to_run = conn.recv()
@@ -37,7 +38,7 @@ def run(file_task, engine_to_use, timeline):
             test_configuration = task_def
             tests_to_run = json.loads(test_configuration)['tests']
 
-    pprint(test_configuration)
+    # pprint(test_configuration)
 
     runner_engine = None
     # add root of django project
@@ -58,7 +59,7 @@ def run(file_task, engine_to_use, timeline):
         runner_engine = PyTestRunnerEngine()
 
     # should have env from pycrunch config
-    print(environ)
+    # print(environ)
 
     r = TestRunner(runner_engine)
     timeline.mark_event('Run: about to run tests')

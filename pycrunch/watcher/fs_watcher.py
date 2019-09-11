@@ -5,6 +5,7 @@ from watchgod import watch, Change, PythonWatcher
 
 from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
+from pycrunch.pipeline.file_removed_task import FileRemovedTask
 from ._abstract_watcher import Watcher
 
 import logging
@@ -16,7 +17,7 @@ class FSWatcher(Watcher):
     def __init__(self):
         self.thread_lock = threading.Lock()
         self.thread = None
-        self.files = []
+        self.files = set()
 
     def thread_proc(self):
         from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
@@ -32,14 +33,21 @@ class FSWatcher(Watcher):
         for changes in watch(path, watcher_cls=PythonWatcher):
             for c in changes:
                 change_type = c[0]
+
                 force = False
                 if change_type == Change.added:
                     force = True
 
                 file = c[1]
+                logger.info(f'File watcher alarm: file: `{file}` type `{change_type}` ')
+
                 if force or self.should_watch(file):
-                    execution_pipeline.add_task(FileModifiedNotificationTask(file=file))
-                    logger.info('Added file for pipeline ' + file)
+                    if change_type == Change.deleted:
+                        execution_pipeline.add_task(FileRemovedTask(file=file))
+                        logger.info('Added file removal for pipeline ' + file)
+                    else:
+                        execution_pipeline.add_task(FileModifiedNotificationTask(file=file))
+                        logger.info('Added file modification for pipeline ' + file)
                 else:
                     logger.debug('non-significant file changed ' + file)
 
@@ -49,7 +57,11 @@ class FSWatcher(Watcher):
 
     def watch(self, files):
         logger.debug('watch...')
-        self.files = files
+        self.files.update(files)
+        logger.debug(f"Total files to watch: {len(self.files)}")
+        self.start_thread_if_not_running()
+
+    def start_thread_if_not_running(self):
         with self.thread_lock:
             if self.thread is None:
                 logger.info('Starting watch thread...')

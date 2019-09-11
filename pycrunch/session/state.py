@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 from pycrunch.api.serializers import serialize_test_set_state
-from pycrunch.api.shared import pipe
+from pycrunch.api.shared import pipe, file_watcher
 from pycrunch.introspection.history import execution_history
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.session import config
@@ -32,6 +32,8 @@ class EngineState:
         discovery_engine = SimpleTestDiscovery()
         test_set = discovery_engine.find_tests_in_folder(self.folder)
         engine.test_discovery_will_become_available(test_set)
+        file_watcher.watch(test_set.files)
+
 
         pass
 

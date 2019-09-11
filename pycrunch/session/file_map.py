@@ -19,6 +19,9 @@ class TestMap:
     def get_immutable_tests_for_file(self, filename):
         return list(self.map.get(filename, set()))
 
+    def file_did_removed(self, filename):
+        self.map.pop(filename)
+
     def test_exist(self, filename, fqn):
         if fqn in self.map[filename]:
             return True

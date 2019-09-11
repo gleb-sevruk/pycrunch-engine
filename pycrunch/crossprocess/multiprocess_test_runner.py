@@ -8,6 +8,9 @@ from threading import Thread
 from pycrunch.introspection.history import execution_history
 from pycrunch.session import config
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MultiprocessTestRunner:
 
@@ -17,8 +20,8 @@ class MultiprocessTestRunner:
         self.results = None
 
     def results_did_become_available(self, results):
-        print('results avail:')
-        pprint(results)
+        logger.debug('results avail:')
+        logger.debug(results)
         self.results = results
 
     def run(self, tests):
@@ -30,9 +33,9 @@ class MultiprocessTestRunner:
         # socket.setdefaulttimeout(60)
         def thread_loop(params=None):
             self.timeline.mark_event('Entered TCP thread')
-            print('Waiting for connection')
+            logger.debug('Waiting for connection')
             conn = listener.accept()
-            print('connection accepted from', listener.last_accepted)
+            logger.debug('connection accepted from {listener.last_accepted}')
             self.timeline.mark_event('TCP: Accepted connection')
             conn.send(tests)
             self.timeline.mark_event('TCP: Sent tests to be run...')
@@ -41,11 +44,11 @@ class MultiprocessTestRunner:
                 msg = conn.recv()
                 # do something with msg
                 if msg == 'close':
-                    print('close TCP client...')
+                    logger.debug('close TCP client...')
                     conn.close()
                     break
                 else:
-                    print('got msg from client:')
+                    logger.debug('got msg from client:')
                     # pprint(msg)
                     if msg.kind == 'test_run_results':
                         results = msg.data_to_send
@@ -68,7 +71,7 @@ class MultiprocessTestRunner:
         try:
             proc = subprocess.check_call(sys.executable + hardcoded_path, cwd=config.working_directory, shell=True)
         except Exception as e:
-            print('Exception in subprocess, need restart :(' + str(e))
+            logger.error('Exception in subprocess, need restart :(' + str(e))
             self.timeline.mark_event('Subprocess: exception during test run.')
             address = ('localhost', 6001)
             conn = Client(address, authkey=b'secret password')
@@ -79,4 +82,4 @@ class MultiprocessTestRunner:
         # isAlive() after join() to decide whether a timeout happened -- if the
         #         thread is still alive, the join() call timed out.
         t.join(self.timeout)
-        print(f'thread completed: isAlive: {t.isAlive()}')
+        logger.debug(f'thread completed: isAlive: {t.isAlive()}')

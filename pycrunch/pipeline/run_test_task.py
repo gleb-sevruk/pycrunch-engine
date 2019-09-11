@@ -12,6 +12,9 @@ from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
 from pycrunch.session.combined_coverage import combined_coverage, serialize_combined_coverage
 from pycrunch.session.state import engine
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class RunTestTask(AbstractTask):
 
@@ -50,9 +53,9 @@ class RunTestTask(AbstractTask):
         # with ModuleCleanup() as cleanup:
         #     results = runner.run(self.tests)
         if self.results is not None:
-            print('results are not none')
+            logger.debug('results are not none')
         if self.results is None:
-            print('!!! None in results')
+            logger.error('!!! None in results')
 
         self.timeline.mark_event('before tests_did_run')
         if not self.results:
