@@ -1,6 +1,6 @@
 <template>
   <div class="about">
-    <pc-socket-test @pipeline="on_socket_event"/>
+    <pc-socket-test @pipeline="on_socket_event" @did-connect="run_diagnostics"/>
 
     <h3>Summary:</h3>
     <template v-if="diagnostics">
@@ -33,6 +33,7 @@
   import PcSocket from './PcSocket'
   import config from '@/config'
   import axios from 'axios'
+  import {mapState} from 'vuex'
 
   export default {
     name: 'home',
@@ -46,17 +47,12 @@
       'pc-socket-test' : PcSocket,
     },
     async mounted () {
-      let url = config.api_url + '/diagnostics'
 
-      try {
-        await axios.get(url)
-      }
-      catch (e) {
-        this.$notify.error({title: 'Error', message: e.message + ` at ${url}`, })
-      }
     },
     methods: {
-
+      run_diagnostics() {
+        this.websocket.emit('my event', {action: 'diagnostics'});
+      },
       test_run_completed (data) {
         this.test_run = data.coverage
         // for (let fqn in this.test_run.all_runs) {
@@ -73,6 +69,7 @@
 
     },
     computed: {
+      ...mapState(['websocket']),
       envs () {
         if (!this.diagnostics) {
           return []

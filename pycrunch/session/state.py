@@ -37,6 +37,8 @@ class EngineState:
         pass
 
     def will_start_diagnostics_collection(self):
+        self.prepare_runtime_configuration_if_necessary()
+
         logger.info('will_start_diagnostics_collection')
         pipe.push(event_type='diagnostics_did_become_available', engine=config.runtime_engine, **diagnostic_engine.summary())
         logger.info('diagnostics_did_become_available')
