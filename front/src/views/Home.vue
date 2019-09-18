@@ -83,6 +83,9 @@
     // catch (e) {
     //   this.$notify.error({title: 'Error', message: e.message + ` at ${discovery_url}`, })
     // }
+    if (this.websocket) {
+      this.run_discovery()
+    }
   },
   methods: {
     run_discovery() {

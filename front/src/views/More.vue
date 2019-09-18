@@ -47,7 +47,9 @@
       'pc-socket-test' : PcSocket,
     },
     async mounted () {
-
+      if (this.websocket) {
+        this.run_diagnostics()
+      }
     },
     methods: {
       run_diagnostics() {

@@ -26,7 +26,6 @@
     },
 
     async mounted() {
-      console.log('this.file', this.file)
       await this.load_file()
       this.loading = false
 
@@ -58,7 +57,6 @@
         if (!file) {
           return []
         }
-        console.log('file', file)
         file = file.file_content
         let splited = this.splitLines(file)
         let my_map = splited.map((line, index) => {

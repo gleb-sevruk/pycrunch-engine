@@ -15,7 +15,6 @@ export default new Vuex.Store({
     socket_did_receive_event(state, event) {
       if (event.event_type === 'file_did_load') {
         let file_content = String.fromCharCode.apply(null, new Uint8Array(event.file_contents));
-        console.log('file_did_load', event.filename)
         state.file_map.push({filename:event.filename, file_content:file_content})
 
       }
