@@ -11,7 +11,7 @@ from pycrunch.shared.models import all_tests
 
 logger = logging.getLogger(__name__)
 
-
+from pycrunch.discovery.simple import SimpleTestDiscovery
                                                                                                                                                         
 class EngineState:
     def __init__(self):
@@ -26,13 +26,12 @@ class EngineState:
 
 
     def will_start_test_discovery(self):
-        from pycrunch.discovery.simple import SimpleTestDiscovery
+
         self.prepare_runtime_configuration_if_necessary()
 
         discovery_engine = SimpleTestDiscovery()
         test_set = discovery_engine.find_tests_in_folder(self.folder)
         engine.test_discovery_will_become_available(test_set)
-        file_watcher.watch(test_set.files)
 
 
         pass
@@ -56,6 +55,8 @@ class EngineState:
         self.all_tests.discard_tests_not_in_map()
         self.notify_clients_about_tests_change()
         logger.info('discovery_did_become_available')
+        logger.info(f'Adding files for watch: {test_set.files}')
+        file_watcher.watch(test_set.files)
 
     def notify_clients_about_tests_change(self):
         logger.info('notify_clients_about_tests_change')

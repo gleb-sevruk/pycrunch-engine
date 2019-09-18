@@ -34,7 +34,7 @@ class Interval:
         join = " ".join([" " for x in range(1, indent + 1)])
         print(f'{join}  {self.name} [{self.started_at} ... {self.stopped_at}] ({self.duration():.3f} seconds)')
         for evt in self.events:
-            print(f'    {join}  [event]  {evt.name} at {evt.timestamp} (in {self.name})')
+            print(f'    {join}  [event] [{evt.relative_timestamp()}] {evt.name} at {evt.timestamp} (in {self.name}) ')
 
         for interval in self.intervals:
             interval.to_console(indent=indent+3)

@@ -61,7 +61,7 @@ def run(file_task, engine_to_use, timeline):
     # should have env from pycrunch config
     # print(environ)
 
-    r = TestRunner(runner_engine)
+    r = TestRunner(runner_engine, timeline)
     timeline.mark_event('Run: about to run tests')
     try:
         results = r.run(tests_to_run)
@@ -106,7 +106,6 @@ if __name__ == '__main__':
     #     file.writelines(['huita',''])
     #     file.write(os.linesep)
     #
-    # print('zalupa')
     # print(Path('.').absolute())
     timeline.mark_event('Before run')
 
