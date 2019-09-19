@@ -35,7 +35,7 @@ class MultiprocessTestRunner:
             self.timeline.mark_event('Entered TCP thread')
             logger.debug('Waiting for connection')
             conn = listener.accept()
-            logger.debug('connection accepted from {listener.last_accepted}')
+            logger.debug(f'connection accepted from {listener.last_accepted}')
             self.timeline.mark_event('TCP: Accepted connection')
             conn.send(tests)
             self.timeline.mark_event('TCP: Sent tests to be run...')

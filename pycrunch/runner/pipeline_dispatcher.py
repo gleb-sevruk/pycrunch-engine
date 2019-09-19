@@ -12,13 +12,15 @@ logger = logging.getLogger(__name__)
     - File tracking
 """
 
-def dispather_thread(arg):
+async def dispather_thread():
     logger.debug('Dispatcher thread -- Start')
     count = 1
     while True:
-        task = execution_pipeline.get_task()
+        print('inside event loop')
+        task = await execution_pipeline.get_task()
+        print('received task...')
         try:
-            task.run()
+            await task.run()
         except Exception as e:
             logger.exception('Exception in dispatcher_thread, ', exc_info=e)
 

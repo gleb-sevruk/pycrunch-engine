@@ -3,6 +3,7 @@ discovery:
   - front/
   - front\
   - build/
+ # - pycrunch/tests
   - test_discovery_specs_demo.py
 engine:
   runtime: pytest

@@ -33,6 +33,10 @@ loggers:
     propagate: no
   werkzeug:
     level: ERROR
+  engineio:
+    level: WARN
+  socketio:
+    level: WARN
 
 root:
   level: DEBUG

@@ -13,6 +13,7 @@
     },
     mounted () {
       let socket = io.connect(config.api_url);
+      console.log('before connect')
       socket.on('connect', () => {
         console.log('WS connect')
         this.socket_did_connect(socket)

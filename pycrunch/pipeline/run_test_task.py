@@ -30,7 +30,7 @@ class RunTestTask(AbstractTask):
         pprint(results)
         self.results = results
 
-    def run(self):
+    async def run(self):
         self.timeline.mark_event('run')
         runner_engine = None
         if session.config.runtime_engine == 'simple':
@@ -40,7 +40,7 @@ class RunTestTask(AbstractTask):
         elif session.config.runtime_engine == 'django':
             runner_engine = DjangoRunnerEngine()
 
-        engine.tests_will_run(self.tests)
+        await engine.tests_will_run(self.tests)
         converted_tests = list()
         for test in self.tests:
             converted_tests.append(dict(fqn=test.discovered_test.fqn, filename=test.discovered_test.filename,name=test.discovered_test.name, module=test.discovered_test.module, state='converted'))
@@ -61,7 +61,7 @@ class RunTestTask(AbstractTask):
         if not self.results:
             self.results = dict()
 
-        engine.tests_did_run(self.results)
+        await engine.tests_did_run(self.results)
 
         self.timeline.mark_event('Postprocessing: combined coverage, line hits, dependency tree')
         combined_coverage.add_multiple_results(self.results)
@@ -74,7 +74,7 @@ class RunTestTask(AbstractTask):
 
         self.timeline.mark_event('Sending: test_run_completed event')
 
-        shared.pipe.push(event_type='test_run_completed',
+        await shared.pipe.push(event_type='test_run_completed',
                          coverage=dict(all_runs=results_as_json),
                          # data=serialize_test_set_state(self.tests),
                          timings=dict(start=self.timestamp, end=shared.timestamp()),
@@ -85,7 +85,7 @@ class RunTestTask(AbstractTask):
         self.timeline.mark_event('Completed combined coverage serialization')
 
         self.timeline.mark_event('Send: combined coverage over WS')
-        shared.pipe.push(event_type='combined_coverage_updated',
+        await shared.pipe.push(event_type='combined_coverage_updated',
                          combined_coverage=serialized,
                          dependencies={entry_point: list(filenames) for entry_point, filenames in combined_coverage.dependencies.items() },
                          aggregated_results=engine.all_tests.legacy_aggregated_statuses(),

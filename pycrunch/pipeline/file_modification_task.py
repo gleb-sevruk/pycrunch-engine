@@ -15,8 +15,8 @@ class FileModifiedNotificationTask(AbstractTask):
         self.file = file
         self.timestamp = time.time()
 
-    def run(self):
-        shared.pipe.push(event_type='file_modification',
+    async def run(self):
+        await shared.pipe.push(event_type='file_modification',
                          modified_file=self.file,
                          ts=self.timestamp,
                          )
@@ -29,7 +29,7 @@ class FileModifiedNotificationTask(AbstractTask):
         discovery = SimpleTestDiscovery()
         old_map = test_map.get_immutable_tests_for_file(self.file)
         possibly_new_tests = discovery.find_tests_in_folder(state.engine.folder, search_only_in=[self.file])
-        state.engine.test_discovery_will_become_available(possibly_new_tests)
+        await state.engine.test_discovery_will_become_available(possibly_new_tests)
         new_map = test_map.get_immutable_tests_for_file(self.file)
         removed_tests = set()
         added_tests = set()

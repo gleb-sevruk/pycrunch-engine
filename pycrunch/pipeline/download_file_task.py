@@ -12,12 +12,12 @@ class DownloadFileTask(AbstractTask):
     def __init__(self, filename):
         self.filename = filename
 
-    def run(self):
+    async def run(self):
         target_file = config.path_mapping.map_local_to_remote(self.filename)
         my_file = io.FileIO(target_file, 'r')
         content = my_file.read()
-        logger.warning(f'sending file {self.filename}')
-        shared.pipe.push(event_type='file_did_load',
+        logger.debug(f'sending file {self.filename}')
+        await shared.pipe.push(event_type='file_did_load',
                          filename=self.filename,
                          file_contents=content,
                          )
