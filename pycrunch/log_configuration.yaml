@@ -15,6 +15,8 @@ loggers:
     level: DEBUG
   pycrunch.api.socket_handlers:
     level: DEBUG
+  pycrunch.crossprocess.multiprocess_test_runner:
+    level: INFO
   pycrunch.watcher:
     level: INFO
   watchgod:
