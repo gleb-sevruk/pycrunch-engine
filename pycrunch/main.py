@@ -11,11 +11,11 @@ from pycrunch import web_ui
 from pycrunch.session import config
 
 
-parent = Path(__file__).parent
-print(parent)
-engine_directory = parent.parent
+package_directory = Path(__file__).parent
+print(package_directory)
+engine_directory = package_directory.parent
 config.set_engine_directory(engine_directory)
-configuration_yaml_ = parent.joinpath('log_configuration.yaml')
+configuration_yaml_ = package_directory.joinpath('log_configuration.yaml')
 print(configuration_yaml_)
 with open(configuration_yaml_, 'r') as f:
     logging.config.dictConfig(yaml.safe_load(f.read()))
@@ -73,7 +73,7 @@ def run():
 
     sio.attach(app)
     # This will enable PyCrunch web interface
-    web_ui.enable_for_aiohttp(app, engine_directory)
+    web_ui.enable_for_aiohttp(app, package_directory)
 
     loop = asyncio.get_event_loop()
     loop.set_debug(True)
