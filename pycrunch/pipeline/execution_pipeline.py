@@ -11,7 +11,7 @@ class ExecutionPipeline:
         self.q = Queue()
 
     def add_task(self, task):
-        logger.warning('Received task in queue')
+        logger.debug('Received task in queue')
         self.q.put_nowait(task)
 
     async def get_task(self):

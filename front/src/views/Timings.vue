@@ -4,7 +4,7 @@
 
     <h3>Summary Timings:</h3>
     <template v-if="timings">
-      <div class="timing" v-for="timing in timings.results" :key="timing.name">
+      <div class="timing mb-5" v-for="timing in timings.results" :key="timing.name">
         <div class="tl-name">{{timing.timeline_name}}</div>
 <!--        {{timing}}-->
         <div class="event" v-for="t in timing.intervals" :key="t.name">
@@ -15,6 +15,23 @@
           <div class="evts ml-5" v-for="e in t.events" :key="e.name">
             {{e.name}} - {{e.timestamp}}
 
+          </div>
+<!--          how about adding 3-layer deep interval for recursive rendering?? -->
+          <div class="nested-intervals ml-5" v-if="t.intervals && t.intervals.length > 0">
+            <h5 class="mt-4">Nested Intervals</h5>
+
+            <div class="nester-interval__list" v-for="(nested_array, index) in t.intervals" :key="index">
+              <div class="nester-interval__single mt-3" v-for="(interval, index) in nested_array" :key="index">
+                {{interval.name}} - Duration - {{interval.duration}} seconds
+                <h6 class="title">
+                  Events:
+                </h6>
+                <div class="evts ml-5" v-for="e in interval.events" :key="e.name">
+                  {{e.name}} - {{e.timestamp}}
+
+                </div>
+            </div>
+            </div>
           </div>
         </div>
 

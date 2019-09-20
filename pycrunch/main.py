@@ -1,5 +1,4 @@
-
-
+import asyncio
 import logging.config
 import os
 from pathlib import Path
@@ -8,12 +7,14 @@ import aiohttp
 import yaml
 from aiohttp import web
 
+from pycrunch import web_ui
 from pycrunch.session import config
 
 
 parent = Path(__file__).parent
 print(parent)
-config.set_engine_directory(parent.parent)
+engine_directory = parent.parent
+config.set_engine_directory(engine_directory)
 configuration_yaml_ = parent.joinpath('log_configuration.yaml')
 print(configuration_yaml_)
 with open(configuration_yaml_, 'r') as f:
@@ -71,15 +72,11 @@ def run():
     app = web.Application()
 
     sio.attach(app)
+    # This will enable PyCrunch web interface
+    web_ui.enable_for_aiohttp(app, engine_directory)
 
-    async def root_handler(request):
-        return aiohttp.web.HTTPFound('/ui/index.html')
-
-    app.router.add_route('*', '/ui/', root_handler)
-    app.add_routes([web.static('/ui', 'front/dist')])
-    app.add_routes([web.static('/js', 'front/dist/js')])
-    app.add_routes([web.static('/css', 'front/dist/css')])
-
+    loop = asyncio.get_event_loop()
+    loop.set_debug(True)
     web.run_app(app, port=port, host='0.0.0.0')
     # app.listen(port=port, address='0.0.0.0')
     # tornado.ioloop.IOLoop.current().start()

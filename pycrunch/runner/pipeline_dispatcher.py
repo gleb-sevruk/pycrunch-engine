@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 """
 
 async def dispather_thread():
-    logger.debug('Dispatcher thread -- Start')
+    logger.info('Dispatcher thread -- Start')
     count = 1
     while True:
-        print('inside event loop')
+        logger.debug('Dispatcher thread -- inside event loop, waiting for task...')
         task = await execution_pipeline.get_task()
-        print('received task...')
+        logger.debug('Dispatcher thread -- received task...')
         try:
             await task.run()
         except Exception as e:

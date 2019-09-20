@@ -69,10 +69,10 @@ async def handle_my_custom_event(sid, json):
     if action == 'pin-tests':
         # fqns = array of strings[]
         fqns = json.get('fqns')
-        engine.tests_will_pin(fqns)
+        await engine.tests_will_pin(fqns)
     if action == 'unpin-tests':
         fqns = json.get('fqns')
-        engine.tests_will_unpin(fqns)
+        await engine.tests_will_unpin(fqns)
     if action == 'engine-mode':
         new_mode = json.get('mode')
         engine.engine_mode_will_change(new_mode)

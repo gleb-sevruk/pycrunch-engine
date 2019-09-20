@@ -67,12 +67,15 @@ def run(file_task, engine_to_use, timeline):
         results = r.run(tests_to_run)
         timeline.mark_event('Run: Completed, sending results')
 
+        # import pydevd_pycharm
+        # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
         conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
         timeline.mark_event('TCP: send complete')
     except Exception as e:
         timeline.mark_event('Run: exception during execution')
 
     timeline.stop()
+    # timeline.to_console()
     conn.send(TcpMessage(kind='timings', data_to_send=timeline))
 
     conn.send('close')
@@ -84,6 +87,10 @@ def run(file_task, engine_to_use, timeline):
 
 
 if __name__ == '__main__':
+    # import pydevd_pycharm
+    #
+    # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
+
     timeline = Timeline('multiprocess run engine')
     timeline.start()
     timeline.mark_event('__main__')
@@ -94,6 +101,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--file', help='The file instead of network socket')
     parser.add_argument('--engine', help='Engine used, one of [pytest, django, simple]')
+
     args = parser.parse_args()
     timeline.mark_event('ArgumentParser: parse_args completed')
     file_task = args.file

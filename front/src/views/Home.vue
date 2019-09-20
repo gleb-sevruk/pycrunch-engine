@@ -5,8 +5,7 @@
     <el-tag v-if="!websocket" type="danger" class="ml-5">No socket connection</el-tag>
     <el-tag v-if="websocket" type="success" class="ml-5">Connected to websocket</el-tag>
     <div class="files ml-5">
-      <div class="text-secondary mb-4">Folder: {{folder}}</div>
-      <div class="text-secondary">Discovered tests:</div>
+      <div class="text-secondary mb-4">Discovered tests:</div>
       <template v-if="discovery_response">
         <div class="files__single" v-for="test in discovery_response.tests" :key="test.fqn">
           <div class="test-methods">
@@ -52,12 +51,7 @@
   export default {
   name: 'home',
   data () {
-    let f = '/Users/gleb/code/bc/f7-insuredportal/ios_build'
-    f = '/Users/gleb/code/bc/briteapps-admin'
-    // let f = '/Users/gleb/code/python_sandbox'
-    // f = '/Users/gleb/code/PyCrunch'
     return {
-      folder: f,
       entry_files: [],
       test_run: null,
       combined_coverage: null,
