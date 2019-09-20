@@ -38,6 +38,7 @@ def run():
         port = args.port
     print(f'PyCrunch port will be {port}')
     print(f'PyCrunch Web-UI at http://0.0.0.0:{port}/ui/')
+    print(f'                or http://127.0.0.1:{port}/ui/')
     use_reloader = not True
 
     from pycrunch.api.shared import sio
