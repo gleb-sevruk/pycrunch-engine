@@ -1,7 +1,8 @@
+import asyncio
 import threading
 from pathlib import Path
 
-from watchgod import watch, Change, PythonWatcher
+from watchgod import watch, Change, PythonWatcher, awatch
 
 from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
@@ -19,7 +20,7 @@ class FSWatcher(Watcher):
         self.thread = None
         self.files = set()
 
-    def thread_proc(self):
+    async def thread_proc(self):
         from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
 
         logger.debug('thread_proc')
@@ -30,7 +31,7 @@ class FSWatcher(Watcher):
         path = Path('.').absolute()
         print('watching this:...')
         print(path)
-        for changes in watch(path, watcher_cls=PythonWatcher):
+        async for changes in awatch(path, watcher_cls=PythonWatcher):
             for c in changes:
                 change_type = c[0]
 
@@ -66,8 +67,12 @@ class FSWatcher(Watcher):
             if self.thread is None:
                 logger.info('Starting watch thread...')
                 # logger.info('NOT')
-                self.thread = threading.Thread(target=self.thread_proc)
-                self.thread.start()
+
+                # self.thread = threading.Thread(target=self.thread_proc)
+                # self.thread.start()
+                self.thread = True
+                loop = asyncio.get_event_loop()
+                loop.create_task(self.thread_proc())
 
     def should_watch(self, file):
         return file in self.files

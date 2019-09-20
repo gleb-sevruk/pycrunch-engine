@@ -10,9 +10,9 @@ class FileRemovedTask(AbstractTask):
         self.file = file
         self.timestamp = time.time()
 
-    def run(self):
+    async def run(self):
         from pycrunch.session import state
-        shared.pipe.push(event_type='file_modification',
+        await shared.pipe.push(event_type='file_modification',
                          modified_file=self.file,
                          ts=self.timestamp,
                          )

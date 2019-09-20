@@ -11,10 +11,16 @@ handlers:
     formatter: simple
     stream: ext://sys.stdout
 loggers:
+  pycrunch.pipeline:
+    level: INFO
+  pycrunch.runner.pipeline_dispatcher:
+    level: INFO
   pycrunch.runner:
     level: DEBUG
   pycrunch.api.socket_handlers:
-    level: DEBUG
+    level: INFO
+  pycrunch.crossprocess.multiprocess_test_runner:
+    level: INFO
   pycrunch.watcher:
     level: INFO
   watchgod:
@@ -33,6 +39,10 @@ loggers:
     propagate: no
   werkzeug:
     level: ERROR
+  engineio:
+    level: WARN
+  socketio:
+    level: WARN
 
 root:
   level: DEBUG

@@ -16,7 +16,9 @@ exclude_list = py_test_exclusions + [
     '*runner/execution_result.py',
     '*plugins/pytest_support/hot_reload.py',
     '*plugins/pytest_support/pytest_runner_engine.py',
-    '*runner/interception.py'
+    '*runner/interception.py',
+    '*pycrunch/introspection/*',
+    '*pycrunch/shared/models.py'
 
 ]
 

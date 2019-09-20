@@ -1,10 +1,10 @@
 <template>
   <div class="about">
-    <pc-socket-test @pipeline="on_socket_event"/>
+    <pc-socket-test @pipeline="on_socket_event"  @did-connect="run_timings"/>
 
     <h3>Summary Timings:</h3>
     <template v-if="timings">
-      <div class="timing" v-for="timing in timings.results" :key="timing.name">
+      <div class="timing mb-5" v-for="timing in timings.results" :key="timing.name">
         <div class="tl-name">{{timing.timeline_name}}</div>
 <!--        {{timing}}-->
         <div class="event" v-for="t in timing.intervals" :key="t.name">
@@ -16,6 +16,23 @@
             {{e.name}} - {{e.timestamp}}
 
           </div>
+<!--          how about adding 3-layer deep interval for recursive rendering?? -->
+          <div class="nested-intervals ml-5" v-if="t.intervals && t.intervals.length > 0">
+            <h5 class="mt-4">Nested Intervals</h5>
+
+            <div class="nester-interval__list" v-for="(nested_array, index) in t.intervals" :key="index">
+              <div class="nester-interval__single mt-3" v-for="(interval, index) in nested_array" :key="index">
+                {{interval.name}} - Duration - {{interval.duration}} seconds
+                <h6 class="title">
+                  Events:
+                </h6>
+                <div class="evts ml-5" v-for="e in interval.events" :key="e.name">
+                  {{e.name}} - {{e.timestamp}}
+
+                </div>
+            </div>
+            </div>
+          </div>
         </div>
 
         </div>
@@ -26,6 +43,7 @@
   import PcSocket from './PcSocket'
   import config from '@/config'
   import axios from 'axios'
+  import {mapState} from 'vuex'
 
   export default {
     name: 'home',
@@ -39,17 +57,14 @@
       'pc-socket-test' : PcSocket,
     },
     async mounted () {
-      let url = config.api_url + '/timings'
-
-      try {
-        await axios.get(url)
-      }
-      catch (e) {
-        this.$notify.error({title: 'Error', message: e.message + ` at ${url}`, })
+      if (this.websocket) {
+        this.run_timings()
       }
     },
     methods: {
-
+      run_timings () {
+        this.websocket.emit('my event', {action: 'timings'});
+      },
 
       on_socket_event (data){
         console.log('pipe', data)
@@ -60,6 +75,7 @@
 
     },
     computed: {
+      ...mapState(['websocket']),
       envs () {
         if (!this.diagnostics) {
           return []

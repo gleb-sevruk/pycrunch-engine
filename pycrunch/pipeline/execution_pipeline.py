@@ -1,6 +1,9 @@
-from queue import Queue
+from asyncio import Queue
 
 from pycrunch.pipeline.abstract_task import AbstractTask
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ExecutionPipeline:
@@ -8,10 +11,11 @@ class ExecutionPipeline:
         self.q = Queue()
 
     def add_task(self, task):
-        self.q.put(task)
+        logger.debug('Received task in queue')
+        self.q.put_nowait(task)
 
-    def get_task(self) -> AbstractTask:
-        return self.q.get(block=True)
+    async def get_task(self):
+        return await self.q.get()
 
 
 execution_pipeline = ExecutionPipeline()

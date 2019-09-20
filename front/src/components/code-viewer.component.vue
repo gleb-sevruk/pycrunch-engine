@@ -8,33 +8,35 @@
 </template>
 
 <script>
-  import axios from 'axios'
-  import config from '../config'
+  import {mapActions, mapGetters} from 'vuex'
 
   export default {
     props: ['filename', 'coverage'],
     name: 'pc-code-viewer',
     data () {
       return {
-        file: null,
         loading: true,
       }
     },
     updated () {
-      this.load_file()
+      if (!this.getFileByName(this.filename)) {
+        this.load_file()
+      }
 
     },
 
     async mounted() {
-      console.log('this.file', this.file)
       await this.load_file()
       this.loading = false
 
     },
     methods: {
+      ...mapActions(['queue_file_load']),
       async load_file() {
-        let x = await axios.get(config.api_url + '/file', {params: {file: this.filename}})
-        this.file = x.data
+        this.queue_file_load(this.filename)
+
+        // let x = await axios.get(config.api_url + '/file', {params: {file: this.filename}})
+        // this.file = x.data
       },
       splitLines (t) {
         if (!t) {
@@ -43,16 +45,20 @@
         return t.split(/\r\n|\r|\n/)
       },
       async download_file (filename) {
-        let x = await axios.get(config.api_url + '/file', {params: {file:filename}})
-        return x.data
+        this.queue_file_load(filename)
+        // let x = await axios.get(config.api_url + '/file', {params: {file:filename}})
+        // return x.data
       },
     },
     computed: {
+      ...mapGetters(['getFileByName']),
       lines () {
-        if (!this.file) {
+        let file = this.getFileByName(this.filename)
+        if (!file) {
           return []
         }
-        let splited = this.splitLines(this.file)
+        file = file.file_content
+        let splited = this.splitLines(file)
         let my_map = splited.map((line, index) => {
           let line_number = index + 1
           let state = '-'

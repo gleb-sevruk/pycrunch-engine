@@ -1,10 +1,11 @@
 <template>
   <div class="home">
     <hr/>
-    <pc-socket-test @pipeline="on_socket_event"/>
+    <pc-socket-test @pipeline="on_socket_event" @did-connect="run_discovery"/>
+    <el-tag v-if="!websocket" type="danger" class="ml-5">No socket connection</el-tag>
+    <el-tag v-if="websocket" type="success" class="ml-5">Connected to websocket</el-tag>
     <div class="files ml-5">
-      <div class="text-secondary mb-4">Folder: {{folder}}</div>
-      <div class="text-secondary">Discovered tests:</div>
+      <div class="text-secondary mb-4">Discovered tests:</div>
       <template v-if="discovery_response">
         <div class="files__single" v-for="test in discovery_response.tests" :key="test.fqn">
           <div class="test-methods">
@@ -45,16 +46,12 @@
   import config from '@/config'
   import CodeViewer from '../components/code-viewer.component'
   import PcSocket from './PcSocket'
+  import {mapState} from 'vuex'
 
   export default {
   name: 'home',
   data () {
-    let f = '/Users/gleb/code/bc/f7-insuredportal/ios_build'
-    f = '/Users/gleb/code/bc/briteapps-admin'
-    // let f = '/Users/gleb/code/python_sandbox'
-    // f = '/Users/gleb/code/PyCrunch'
     return {
-      folder: f,
       entry_files: [],
       test_run: null,
       combined_coverage: null,
@@ -70,24 +67,31 @@
     'pc-code-viewer' : CodeViewer,
   },
   async mounted () {
-    let url = config.api_url + '/discover'
-
-    try {
-      let x = await axios.get(url, {params: {folder: this.folder}})
-      this.discovery_response = x.data
-      // x = await this.run_coverage()
-    }
-    catch (e) {
-      this.$notify.error({title: 'Error', message: e.message + ` at ${url}`, })
+    // let discovery_url = config.api_url + '/discover'
+    //
+    // try {
+    //   let x = await axios.get(discovery_url, {params: {folder: this.folder}})
+    //   this.discovery_response = x.data
+    //   // x = await this.run_coverage()
+    // }
+    // catch (e) {
+    //   this.$notify.error({title: 'Error', message: e.message + ` at ${discovery_url}`, })
+    // }
+    if (this.websocket) {
+      this.run_discovery()
     }
   },
   methods: {
+    run_discovery() {
+      console.log('discovery posting!')
+      console.log('ws is: ', this.websocket)
+      this.websocket.emit('my event', {action: 'discovery'});
+    },
     file_modification_event: function (data) {
       let file = data.modified_file
       let dependent_tests = this.dependencies[file]
       if (dependent_tests) {
         // should be handled on engine
-        // this.run_specified_tests(dependent_tests)
       }
     },
     test_run_completed (data) {
@@ -118,15 +122,19 @@
 
     },
     async run_test (test) {
-       await axios.post(config.api_url + '/run-tests', {tests: [ test ]})
-      // this.test_run = x.data
+      await this.run_specified_tests([test ])
     },
     async run_all_tests () {
        await this.run_specified_tests(this.get_all_tests())
 
     },
     async run_specified_tests (tests) {
-      await axios.post(config.api_url + '/run-tests', { tests })
+      this.websocket.emit('my event',
+        {
+          action: 'run-tests',
+          tests: tests,
+        });
+      // await axios.post(config.api_url + '/run-tests', { tests })
 
     },
     get_all_tests () {
@@ -150,6 +158,7 @@
     }
   },
   computed: {
+    ...mapState(['websocket']),
 
   },
 

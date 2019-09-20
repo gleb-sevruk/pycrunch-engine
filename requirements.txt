@@ -1,7 +1,6 @@
 coverage==4.5.3
-Flask==1.0.2
-flask-cors==3.0.7
-flask-socketio==3.3.2
-# wtf?
-# redis==3.2.1
-watchdog==0.9.0
+pytest==4.6.3
+watchgod
+python-socketio
+aiohttp
+PyYAML
