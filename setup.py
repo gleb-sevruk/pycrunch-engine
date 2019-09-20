@@ -2,7 +2,7 @@ import setuptools
 from distutils.core import setup
 
 setup(name='pycrunch-engine',
-      version='0.6',
+      version='0.6.1',
       description='Automatic Test Runner Engine',
       url='http://github.com/gleb-sevruk/pycrunch-engine',
       author='Gleb Sevruk',
