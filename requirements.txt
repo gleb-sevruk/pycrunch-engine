@@ -4,3 +4,4 @@ watchgod
 python-socketio
 aiohttp
 PyYAML
+pytest-asyncio
