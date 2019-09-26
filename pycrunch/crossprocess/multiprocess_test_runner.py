@@ -26,7 +26,7 @@ class MultiprocessTestRunner:
     async def run(self, tests):
         self.timeline.mark_event(f'Splitting into CPU tasks. Total tests to run: {len(tests)}')
         #
-        self.tasks = TestRunScheduler(cpu_cores=8).schedule_into_tasks(tests)
+        self.tasks = TestRunScheduler(cpu_cores=config.cpu_cores, threshold=config.multiprocessing_threshold).schedule_into_tasks(tests)
         self.timeline.mark_event('Creating tcp thread')
 
         loop = asyncio.get_event_loop()

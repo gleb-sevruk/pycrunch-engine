@@ -7,8 +7,9 @@ class TestRunScheduler():
     # Do not split up to 5 tasks
     threshold = 5
 
-    def __init__(self, cpu_cores):
+    def __init__(self, cpu_cores, threshold):
         self.cpu_cores = cpu_cores
+        self.threshold = threshold
 
     def schedule_into_tasks(self, tests):
         list_of_tasks = []

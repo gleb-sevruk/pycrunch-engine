@@ -1,4 +1,5 @@
 import io
+import multiprocessing
 from pathlib import Path
 
 import logging
@@ -40,6 +41,8 @@ class Configuration:
         self.engine_directory = 'unknown'
         self.engine_mode = 'auto'
         self.pinned_tests = set()
+        self.cpu_cores = self.get_default_cpu_cores()
+        self.multiprocessing_threshold = 5
         # self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
         self.environment_vars = dict()
@@ -88,6 +91,13 @@ class Configuration:
                     runtime_mode = engine_config.get('mode', None)
                     if runtime_mode:
                         self.runtime_mode_will_change(runtime_mode)
+                    cpu_cores = engine_config.get('cpu-cores', None)
+                    if cpu_cores:
+                        self.cpu_cores_will_change(cpu_cores)
+                    multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
+                    if multiprocess_threshold:
+                        self.multiprocess_threshold_will_change(multiprocess_threshold)
+
 
                 pinned_tests = x.get('pinned-tests', None)
                 if pinned_tests:
@@ -146,6 +156,23 @@ class Configuration:
         for p in path_mapping:
             # only one for now
             self.path_mapping = PathMapping(p, path_mapping[p])
+
+    def cpu_cores_will_change(self, cpu_cores):
+        self.cpu_cores = cpu_cores
+        pass
+
+    def get_default_cpu_cores(self):
+        cores = multiprocessing.cpu_count()
+        if cores > 8:
+            return 4
+
+        if cores <= 2:
+            return 1
+
+        return round(cores / 2)
+
+    def multiprocess_threshold_will_change(self, multiprocessing_threshold):
+        self.multiprocessing_threshold = multiprocessing_threshold
 
 
 config = Configuration()

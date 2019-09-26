@@ -87,4 +87,4 @@ def test_51_should_be_in_four_tasks():
 
 
 def create_sut():
-    return TestRunScheduler(cpu_cores=4)
+    return TestRunScheduler(cpu_cores=4, threshold=5)
