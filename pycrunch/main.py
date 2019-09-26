@@ -24,7 +24,11 @@ with open(configuration_yaml_, 'r') as f:
 
 
 import socketio
+import sys
 
+if sys.platform == 'win32':
+    policy = asyncio.get_event_loop_policy()
+    policy._loop_factory = asyncio.ProactorEventLoop
 
 
 def run():
@@ -75,11 +79,8 @@ def run():
     sio.attach(app)
     # This will enable PyCrunch web interface
     web_ui.enable_for_aiohttp(app, package_directory)
-    import sys
 
-    if sys.platform == 'win32':
-        loop = asyncio.ProactorEventLoop()
-        asyncio.set_event_loop(loop)
+
 
     loop = asyncio.get_event_loop()
     loop.set_debug(True)

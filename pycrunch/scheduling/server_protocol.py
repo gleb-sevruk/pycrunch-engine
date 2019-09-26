@@ -50,6 +50,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
 
 
     def process_single_message(self, msg):
+        print('process_single_message ' + msg.kind)
         if msg.kind == 'handshake':
             found_task = self.find_task_with_id(msg)
             if found_task is None:
@@ -76,7 +77,8 @@ class TestRunnerServerProtocol(asyncio.Protocol):
         try:
             msg = self.message_queue.get_nowait()
         except Empty as e:
-            print('process_messages: nothing to process')
+            pass
+            # print('process_messages: nothing to process')
         return msg
 
     def connection_lost(self, ex = None):

@@ -7,9 +7,9 @@ discovery:
 engine:
   runtime: pytest
   # maximum number of concurrent test runners
-  cpu-cores: 5
+  cpu-cores: 4
   # minimum number of tests to schedule per core (5 by default)
-  multiprocessing-threshold: 1
+  multiprocessing-threshold: 4
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:
