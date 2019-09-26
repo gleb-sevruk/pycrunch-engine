@@ -6,6 +6,7 @@ class HandshakeMessage(AbstractMessage):
     def __init__(self, task_id):
         self.task_id = task_id
         self.kind = 'handshake'
+        # self.bytes_junk = bytearray(998765)
 
 class ScheduledTaskDefinitionMessage(AbstractMessage):
     def __init__(self, task):

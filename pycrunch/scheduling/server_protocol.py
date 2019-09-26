@@ -1,12 +1,16 @@
 
 import asyncio
+import io
 import pickle
+import struct
+from queue import Queue, Empty
 
 from pycrunch.introspection.history import execution_history
+from pycrunch.networking.protocol_state import ProtocolState
 from pycrunch.scheduling.messages import ScheduledTaskDefinitionMessage
 
 
-class EchoServerProtocol(asyncio.Protocol):
+class TestRunnerServerProtocol(asyncio.Protocol):
     # 1 object - 1 connection
     def __init__(self, tasks, completion_future, timeline):
         self.timeline = timeline
@@ -15,6 +19,13 @@ class EchoServerProtocol(asyncio.Protocol):
         self.transport = None
         # Will be determined after handshake
         self.task_id = None
+        self.message_queue = Queue()
+
+        self.need_more_data = False
+        self.message_length = 0
+        self.read_so_far = 0
+        self.message_buffer = None
+        self.state_machine = ProtocolState(self.message_queue)
 
     def connection_made(self, transport):
         peername = transport.get_extra_info('peername')
@@ -22,9 +33,23 @@ class EchoServerProtocol(asyncio.Protocol):
         print(transport)
         self.transport = transport
 
+    def feed_datagram(self, data):
+        self.state_machine.feed(data)
+
     def data_received(self, data):
-        msg = pickle.loads(data) # type AbstractMessage
-        print('Data received: ' + format(msg.kind))
+        self.feed_datagram(data)
+        self.process_messages()
+
+    def process_messages(self):
+        while True:
+            msg = self.try_get_next_message()
+            if not msg:
+                break
+
+            self.process_single_message(msg)
+
+
+    def process_single_message(self, msg):
         if msg.kind == 'handshake':
             found_task = self.find_task_with_id(msg)
             if found_task is None:
@@ -38,14 +63,24 @@ class EchoServerProtocol(asyncio.Protocol):
             results = msg.results
             self.timeline.mark_event('TCP: Got test run results from subprocess')
             self.results_did_become_available(results)
-            self.completion_future.set_result(results)
         if msg.kind == 'timings':
             self.timeline.mark_event('TCP: Got timings from subprocess')
             execution_history.save(msg.timeline)
         if msg.kind == 'close':
             print('Close the client socket')
             self.transport.close()
-            # self.completion_future.set_result(True)
+            self.completion_future.set_result(self.results)
+
+    def try_get_next_message(self):
+        msg = None
+        try:
+            msg = self.message_queue.get_nowait()
+        except Empty as e:
+            print('process_messages: nothing to process')
+        return msg
+
+    def connection_lost(self, ex = None):
+        self.completion_future.set_result(self.results)
 
     def find_task_with_id(self, msg):
         found_task = None

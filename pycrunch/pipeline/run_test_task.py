@@ -9,7 +9,6 @@ from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
 from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
 from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
-from pycrunch.scheduling.neo_multiprocess_test_runner import NeoMultiprocessTestRunner
 from pycrunch.session.combined_coverage import combined_coverage, serialize_combined_coverage
 from pycrunch.session.state import engine
 
@@ -46,7 +45,7 @@ class RunTestTask(AbstractTask):
         for test in self.tests:
             converted_tests.append(dict(fqn=test.discovered_test.fqn, filename=test.discovered_test.filename,name=test.discovered_test.name, module=test.discovered_test.module, state='converted'))
 
-        runner = NeoMultiprocessTestRunner(30, self.timeline)
+        runner = MultiprocessTestRunner(timeout=30, timeline=self.timeline)
         self.timeline.mark_event('before running tests')
         await runner.run(tests=converted_tests)
         self.results = runner.results

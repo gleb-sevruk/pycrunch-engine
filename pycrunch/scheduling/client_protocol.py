@@ -1,5 +1,7 @@
 import asyncio
 import pickle
+import struct
+import time
 
 from pycrunch.runner.test_runner import TestRunner
 from pycrunch.scheduling.messages import CloseConnectionMessage, HandshakeMessage, TestResultsAvailableMessage, TestRunTimingsMessage
@@ -24,7 +26,7 @@ class EchoClientProtocol(asyncio.Protocol):
         msg = HandshakeMessage(self.task_id)
         msg_bites = pickle.dumps(msg)
         print(f'[{self.connection_counter}]Handshake sent: {msg.task_id}')
-        transport.write(msg_bites)
+        self.send_with_header(msg_bites)
 
 
 
@@ -67,7 +69,7 @@ class EchoClientProtocol(asyncio.Protocol):
                 # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
                 msg = TestResultsAvailableMessage(results)
                 bytes_to_send = pickle.dumps(msg)
-                self.transport.write(bytes_to_send)
+                self.send_with_header(bytes_to_send)
                 timeline.mark_event('TCP: results sent')
                 # conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
             except Exception as e:
@@ -75,21 +77,29 @@ class EchoClientProtocol(asyncio.Protocol):
 
             timeline.stop()
             # timeline.to_console()
+            # time.sleep(0.01)
             msg = TestRunTimingsMessage(timeline)
-            bytes_to_send = pickle.dumps(msg)
-            self.transport.write(bytes_to_send)
+            bytes_to_send1 = pickle.dumps(msg)
+            # xxx = bytearray(12345678)
+            self.send_with_header(bytes_to_send1)
 
+            # time.sleep(0.01)
             msg = CloseConnectionMessage(self.task_id)
-            bytes_to_send = pickle.dumps(msg)
-            self.transport.write(bytes_to_send)
-            self.on_con_lost.set_result(True)
+            bytes_to_send2 = pickle.dumps(msg)
+            self.send_with_header(bytes_to_send2)
+
+    def send_with_header(self, bytes_to_send):
+        # we use format: {length}{payload} to deal with TCP coalescing
+        length_of_message = len(bytes_to_send)
+        header_bytes = struct.pack("i", length_of_message)
+        self.transport.write(header_bytes + bytes_to_send)
 
     def mark_all_done(self):
         print(f'[{self.connection_counter}] mark_all_done')
 
         send_this = CloseConnectionMessage(self.task_id)
         bytes_to_send = pickle.dumps(send_this)
-        self.transport.write(bytes_to_send)
+        self.send_with_header(bytes_to_send)
 
     def connection_lost(self, exc):
         print(f'[{self.connection_counter}]The server closed the connection')
