@@ -9,6 +9,10 @@ from pycrunch.introspection.history import execution_history
 from pycrunch.networking.protocol_state import ProtocolState
 from pycrunch.scheduling.messages import ScheduledTaskDefinitionMessage
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class TestRunnerServerProtocol(asyncio.Protocol):
     # 1 object - 1 connection
@@ -29,8 +33,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
 
     def connection_made(self, transport):
         peername = transport.get_extra_info('peername')
-        print(f'Connection from {peername}')
-        print(transport)
+        logger.debug(f'Connection from {peername}')
         self.transport = transport
 
     def feed_datagram(self, data):
@@ -50,13 +53,13 @@ class TestRunnerServerProtocol(asyncio.Protocol):
 
 
     def process_single_message(self, msg):
-        print('process_single_message ' + msg.kind)
+        logger.info(f'process_single_message - {msg.kind}')
         if msg.kind == 'handshake':
             found_task = self.find_task_with_id(msg)
             if found_task is None:
                 raise Exception('no task found for subprocess. ')
 
-            print('sending task definition, ' + found_task.id)
+            logger.debug(f'sending task definition, {found_task.id}')
             msg_to_reply = ScheduledTaskDefinitionMessage(task=found_task)
             bytes_msg = pickle.dumps(msg_to_reply)
             self.transport.write(bytes_msg)
@@ -68,7 +71,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
             self.timeline.mark_event('TCP: Got timings from subprocess')
             execution_history.save(msg.timeline)
         if msg.kind == 'close':
-            print('Close the client socket')
+            logger.debug('Close the client socket')
             self.transport.close()
             self.completion_future.set_result(self.results)
 

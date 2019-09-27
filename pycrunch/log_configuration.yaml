@@ -13,6 +13,7 @@ handlers:
 loggers:
   pycrunch.pipeline:
     level: INFO
+
   pycrunch.runner.pipeline_dispatcher:
     level: INFO
   pycrunch.runner:
@@ -31,6 +32,8 @@ loggers:
     level: INFO
   pycrunch.api.endpoints:
     level: WARN
+  pycrunch.scheduling:
+    level: INFO
   pycrunch:
     level: DEBUG
   sampleLogger:

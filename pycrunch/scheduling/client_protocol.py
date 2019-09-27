@@ -25,7 +25,7 @@ class EchoClientProtocol(asyncio.Protocol):
         self.transport = transport
         msg = HandshakeMessage(self.task_id)
         msg_bites = pickle.dumps(msg)
-        print(f'[{self.connection_counter}]Handshake sent: {msg.task_id}')
+        # print(f'[{self.connection_counter}]Handshake sent: {msg.task_id}')
         self.send_with_header(msg_bites)
 
 
@@ -36,10 +36,9 @@ class EchoClientProtocol(asyncio.Protocol):
         if msg.kind == 'test-run-task':
             # import pydevd_pycharm
             # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
-            print(f'[{self.connection_counter}]Data received: test-run-task')
-            print(f'[{self.connection_counter}]task_id: {msg.task.id}')
+            print(f'[{msg.task.id}]Data received: test-run-task;')
             timeline = self.timeline
-            timeline.mark_event('TCP: Received tests to run')
+            timeline.mark_event(f'TCP: Received tests to run; id: {msg.task.id}')
 
             runner_engine = None
             # add root of django project
@@ -60,8 +59,9 @@ class EchoClientProtocol(asyncio.Protocol):
             # print(environ)
 
             r = TestRunner(runner_engine, timeline)
-            timeline.mark_event('Run: about to run tests')
+            timeline.mark_event(f'Run: about to run tests')
             try:
+                timeline.mark_event(f'Run: total tests planned: {len(msg.task.tests)}')
                 results = r.run(msg.task.tests)
                 timeline.mark_event('Run: Completed, sending results')
 
@@ -95,14 +95,14 @@ class EchoClientProtocol(asyncio.Protocol):
         self.transport.write(header_bytes + bytes_to_send)
 
     def mark_all_done(self):
-        print(f'[{self.connection_counter}] mark_all_done')
+        # print(f'[{self.connection_counter}] mark_all_done')
 
         send_this = CloseConnectionMessage(self.task_id)
         bytes_to_send = pickle.dumps(send_this)
         self.send_with_header(bytes_to_send)
 
     def connection_lost(self, exc):
-        print(f'[{self.connection_counter}]The server closed the connection unexpectedly')
+        print(f'[{self.task_id}]The connection to server closed')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):
