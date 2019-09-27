@@ -29,9 +29,10 @@ class CoverageRun:
 
     def parse_lines(self, cov):
         output_file = io.StringIO()
-        self.percentage_covered = round(cov.report(file=output_file), 2)
+        # todo: this should not exist, 0.3 seconds to run
+        # self.percentage_covered = round(cov.report(file=output_file), 2)
         coverage_data = cov.get_data()
-
+        # todo following lines are CPU-heavy, change it, or minimize:
         for f in coverage_data.measured_files():
             lines = coverage_data.lines(f)
             arcs = coverage_data.arcs(f)

@@ -116,3 +116,67 @@ def test_path_map_config_read():
         sut.load_runtime_configuration()
         assert '/code' == sut.path_mapping.path_in_container
         assert '/localfs/easyproject' == sut.path_mapping.path_on_local_ide
+
+
+
+def test_cpu_cores_considered():
+    read_data = '''
+    discovery:
+      exclusions:
+       - directory_1
+       - directory_2
+    engine:
+      runtime: simple
+      cpu-cores: 42
+    '''
+
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert sut.cpu_cores == 42
+
+def test_cpu_cores_by_default_no_more_than_4():
+    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+        # lets just use 4 by default to not burn machine
+        multiprocessing_mock.cpu_count.return_value = 16
+        sut = create_sut()
+        assert sut.cpu_cores == 4
+
+
+def test_two_cores_use_1_by_default():
+    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+        multiprocessing_mock.cpu_count.return_value = 2
+        sut = create_sut()
+        assert sut.cpu_cores == 1
+
+def test_one_core_use_1_by_default():
+    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+        multiprocessing_mock.cpu_count.return_value = 1
+        sut = create_sut()
+        assert sut.cpu_cores == 1
+
+def test_from_3_to_7_cores_use_half_of_them_by_default():
+    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+        # lets just use 4 by default to not burn machine
+        multiprocessing_mock.cpu_count.return_value = 6
+        sut = create_sut()
+        assert sut.cpu_cores == 3
+
+
+def test_multiprocessing_threshold_considered():
+    read_data = '''
+    engine:
+      runtime: simple
+      multiprocessing-threshold: 1
+    '''
+
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert sut.multiprocessing_threshold == 1
+
+
+def test_multiprocessing_threshold_by_default_5():
+    sut = create_sut()
+    # minimum number of tests to schedule per core
+    assert sut.multiprocessing_threshold == 5

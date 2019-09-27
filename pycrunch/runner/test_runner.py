@@ -42,11 +42,15 @@ class TestRunner():
                     if not DISABLE_COVERAGE:
                         cov.stop()
 
+                    self.timeline.mark_event('Coverage stopped')
                     fqn = metadata.fqn
                     captured_output = get_value()
+                    self.timeline.mark_event('Received captured output')
 
                     execution_result.output_did_become_available(captured_output)
+                    self.timeline.mark_event('Before coverage serialization')
                     coverage_for_run = serialize_test_run(cov, fqn, time_elapsed, test_metadata=test_to_run, execution_result=execution_result)
+                    self.timeline.mark_event('After coverage serialization')
             except Exception as e:
                 self.timeline.mark_event('Test execution exception.')
                 pass
