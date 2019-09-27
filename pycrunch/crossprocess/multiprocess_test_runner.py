@@ -52,6 +52,7 @@ class MultiprocessTestRunner:
             child_waiters.append(coro.wait())
 
         print('begin waiting for completion')
+        # await asyncio.wait_for(asyncio.gather(*child_waiters), 5)
         await asyncio.gather(*child_waiters)
         print('end waiting for completion')
 

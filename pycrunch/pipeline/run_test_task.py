@@ -6,9 +6,6 @@ from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunne
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
-from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
-from pycrunch.plugins.pytest_support.pytest_runner_engine import  PyTestRunnerEngine
-from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine
 from pycrunch.session.combined_coverage import combined_coverage, serialize_combined_coverage
 from pycrunch.session.state import engine
 
@@ -32,13 +29,6 @@ class RunTestTask(AbstractTask):
 
     async def run(self):
         self.timeline.mark_event('run')
-        runner_engine = None
-        if session.config.runtime_engine == 'simple':
-            runner_engine = SimpleTestRunnerEngine()
-        elif session.config.runtime_engine == 'pytest':
-            runner_engine = PyTestRunnerEngine()
-        elif session.config.runtime_engine == 'django':
-            runner_engine = DjangoRunnerEngine()
 
         await engine.tests_will_run(self.tests)
         converted_tests = list()

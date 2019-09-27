@@ -2,7 +2,7 @@
 
 `pip install pycrunch-engine`
 
-_Flask users should be careful and experiment with engine in isolated environment. This plugin (during beta) depends on Flask._
+_This engine depends on `aiohttp`, you may need to check cross-dependencies if your project also uses `aiohttp`_
 
 PyCrunch is written and supports Python 3.6+.
 

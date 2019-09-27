@@ -97,10 +97,13 @@ class SimpleTestDiscovery:
                 # module_name = pathlib.Path(py_file).stem
                 if not self.is_module_with_tests(module_name):
                     continue
-
-                logger.warning('importing ' + module_name)
-                module = importlib.import_module(module_name)
-                tests_found = self.find_tests_in_module(module)
+                try:
+                    logger.warning('importing ' + module_name)
+                    module = importlib.import_module(module_name)
+                    tests_found = self.find_tests_in_module(module)
+                except Exception as ex:
+                    logger.exception(f'importing {module_name} failed with exception: ' + str(ex))
+                    continue
                 # execute as following
                 # method_to_call = getattr(module, 'test_1')
 

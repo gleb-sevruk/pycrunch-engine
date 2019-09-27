@@ -4,6 +4,7 @@ discovery:
   - front\
   - build/
   - test_discovery_specs_demo.py
+#   - test_runner.py
 engine:
   runtime: pytest
   # maximum number of concurrent test runners

@@ -102,7 +102,7 @@ class EchoClientProtocol(asyncio.Protocol):
         self.send_with_header(bytes_to_send)
 
     def connection_lost(self, exc):
-        print(f'[{self.connection_counter}]The server closed the connection')
+        print(f'[{self.connection_counter}]The server closed the connection unexpectedly')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):
