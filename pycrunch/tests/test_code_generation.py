@@ -7,5 +7,5 @@ def test_{number}():
 
 """
     # useful for testing a lot of tests
-    for x in range(1, 1000):
+    for x in range(1, 50):
         print(template.replace('{number}', str(x)))

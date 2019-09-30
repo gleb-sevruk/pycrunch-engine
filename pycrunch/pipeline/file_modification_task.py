@@ -27,8 +27,12 @@ class FileModifiedNotificationTask(AbstractTask):
         # run impacted tests and newly discovered
 
         discovery = SimpleTestDiscovery()
+        old_ast = test_map.ast_map.files.get(self.file)
+
         old_map = test_map.get_immutable_tests_for_file(self.file)
         possibly_new_tests = discovery.find_tests_in_folder(state.engine.folder, search_only_in=[self.file])
+        new_ast = test_map.ast_map.files.get(self.file)
+        ast_diff = self.diff_ast(old_ast, new_ast)
         await state.engine.test_discovery_will_become_available(possibly_new_tests)
         new_map = test_map.get_immutable_tests_for_file(self.file)
         removed_tests = set()
@@ -64,12 +68,22 @@ class FileModifiedNotificationTask(AbstractTask):
                 return
 
             tests_to_run = state.engine.all_tests.collect_by_fqn(execution_plan)
-            dirty_tests = self.consider_engine_mode(tests_to_run)
+            dirty_tests = self.consider_engine_mode(tests_to_run, ast_diff=ast_diff)
             execution_pipeline.add_task(RunTestTask(dirty_tests))
 
         pass;
 
-    def consider_engine_mode(self, tests_to_run):
+    def consider_engine_mode(self, tests_to_run, ast_diff):
+        use_ast_diff = True
+        if use_ast_diff:
+            # method names, no fqn
+            only_ast_dirty = []
+            for test in tests_to_run:
+                contains_in_diff = test.discovered_test.name in ast_diff
+                if contains_in_diff:
+                    only_ast_dirty.append(test)
+            return only_ast_dirty
+
         if state.config.engine_mode == 'auto':
             return tests_to_run
 
@@ -81,5 +95,16 @@ class FileModifiedNotificationTask(AbstractTask):
             return only_pinned
         print('Cannot filter by engine mode.')
         return tests_to_run
+
+    def diff_ast(self, old_ast, new_ast):
+        dirty_ast = set()
+        for test_meta in new_ast.methods_map.values():
+            old_method =  old_ast.methods_map.get(test_meta.method_name, None)
+            if old_method:
+                is_dirty = test_meta.checksum != old_method.checksum
+                print(f'is_dirty !!!! --> {test_meta.method_name}  -- {is_dirty}')
+                if is_dirty:
+                    dirty_ast.add(test_meta.method_name)
+        return dirty_ast
 
 # https://stackoverflow.com/questions/45369128/python-multithreading-queue
