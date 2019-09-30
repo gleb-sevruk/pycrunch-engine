@@ -59,6 +59,9 @@ class PyTestInterceptionPlugin:
                 self.failed_tests.add(report.nodeid)
 
     def guess_run_status(self, test_name):
+        if len(self.failed_tests) > 0:
+            return False
+
         if len(self.passed_tests) <= 0:
             return False
         else:
