@@ -17,7 +17,7 @@ class TestMap:
         for test in test_names:
             new_list.add(module_name + ':' + test)
 
-        self.ast_map.add_file(filename)
+        # self.ast_map.add_file(filename)
         self.map[filename] = new_list
 
     def get_immutable_tests_for_file(self, filename):

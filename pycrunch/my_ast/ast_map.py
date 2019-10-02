@@ -44,7 +44,10 @@ class AstMap:
                 method_start = node.lineno
                 method_end = self.try_find_ending(node)
                 method_name = node.name
-                string_with_dump = ast.dump(node)
+                dump = ast.dump(node)
+                print(dump)
+                print(f'start->end: {method_start}->{method_end}')
+                string_with_dump = dump
                 # is this recipe for disaster waiting?
                 checksum = hashlib.sha512(string_with_dump.encode()).hexdigest()
                 # print(checksum)

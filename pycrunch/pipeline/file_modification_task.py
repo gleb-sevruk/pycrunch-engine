@@ -27,12 +27,12 @@ class FileModifiedNotificationTask(AbstractTask):
         # run impacted tests and newly discovered
 
         discovery = SimpleTestDiscovery()
-        old_ast = test_map.ast_map.files.get(self.file)
+        # old_ast = test_map.ast_map.files.get(self.file)
 
         old_map = test_map.get_immutable_tests_for_file(self.file)
         possibly_new_tests = discovery.find_tests_in_folder(state.engine.folder, search_only_in=[self.file])
-        new_ast = test_map.ast_map.files.get(self.file)
-        ast_diff = self.diff_ast(old_ast, new_ast)
+        # new_ast = test_map.ast_map.files.get(self.file)
+        # ast_diff = self.diff_ast(old_ast, new_ast)
         await state.engine.test_discovery_will_become_available(possibly_new_tests)
         new_map = test_map.get_immutable_tests_for_file(self.file)
         removed_tests = set()
@@ -68,13 +68,14 @@ class FileModifiedNotificationTask(AbstractTask):
                 return
 
             tests_to_run = state.engine.all_tests.collect_by_fqn(execution_plan)
-            dirty_tests = self.consider_engine_mode(tests_to_run, ast_diff=ast_diff)
+            # dirty_tests = self.consider_engine_mode(tests_to_run, ast_diff=ast_diff)
+            dirty_tests = self.consider_engine_mode(tests_to_run)
             execution_pipeline.add_task(RunTestTask(dirty_tests))
 
         pass;
 
-    def consider_engine_mode(self, tests_to_run, ast_diff):
-        use_ast_diff = True
+    def consider_engine_mode(self, tests_to_run, ast_diff=None):
+        use_ast_diff = False
         if use_ast_diff:
             # method names, no fqn
             only_ast_dirty = []

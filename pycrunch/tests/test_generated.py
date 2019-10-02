@@ -7,7 +7,7 @@ def test_1():
 
 
 def test_2():
-    print('number is 2')
+    print('number is 3  ')
 
 
 

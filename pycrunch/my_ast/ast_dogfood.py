@@ -1,4 +1,6 @@
 def method_a():
+    print('a!')
+    print('b!')
     pass
 
 class Cat:
