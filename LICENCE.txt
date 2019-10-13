@@ -19,8 +19,9 @@ subject to the following restrictions:
 
  1. The origin of this software must not be misrepresented; you
     must not claim that you wrote the original software.  If you
-    use this software in a product, an acknowledgment in the product
-    documentation would be appreciated, but is not required.
+    use this software or parts of it in a product, an acknowledgment in the product
+    documentation is appreciated. This only applies to open-source software. You cannot use this product, code, or parts of it, in commercial products, including, but not limited to free products with ads, trial versions. 
+    You must ask PyCrunch team for permissions and clearly describe use-cases, if you plan to embed this engine, or parts of it into commercial product.
 
  2. Altered source versions must be plainly marked as such, and must
     not be misrepresented as being the original software.
