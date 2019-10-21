@@ -6,6 +6,8 @@ _This engine depends on `aiohttp`, you may need to check cross-dependencies if y
 
 PyCrunch is written and supports Python 3.6+.
 
+![What Covers What](https://i.stack.imgur.com/w7wQM.png)
+
 ## How to run:
 ### Using PyCharm Connector extension
 
