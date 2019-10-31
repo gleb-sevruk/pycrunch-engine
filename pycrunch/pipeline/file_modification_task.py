@@ -52,7 +52,7 @@ class FileModifiedNotificationTask(AbstractTask):
                 execution_plan.add(new_test.fqn)
 
 
-
+        # todo add method on combined_coverage, like - get_tests_impacted_by(filename)
         dependencies = combined_coverage.dependencies
         if dependencies:
             impacted_tests = dependencies[self.file]
