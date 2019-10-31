@@ -19,4 +19,4 @@ class FileRemovedTask(AbstractTask):
 
         test_map.file_did_removed(self.file)
         from pycrunch.discovery.simple import TestSet
-        state.engine.test_discovery_will_become_available(TestSet())
+        await state.engine.test_discovery_will_become_available(TestSet())
