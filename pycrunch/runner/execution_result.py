@@ -14,6 +14,7 @@ class ExecutionResult:
         self.captured_output = None
         self.status = 'pending'
         self.intercepted_exception = None
+        self.state_timeline = None
 
     def record_exception(self, etype, value, current_traceback):
         self.intercepted_exception = ErrorRecord(etype=etype, value=value, current_traceback=current_traceback)
@@ -29,3 +30,6 @@ class ExecutionResult:
 
     def output_did_become_available(self, captured_output):
         self.captured_output = captured_output
+
+    def state_timeline_did_become_available(self, state_timeline):
+        self.state_timeline = state_timeline

@@ -137,7 +137,9 @@ class SimpleTestDiscovery:
         for v in all_variables:
             function_or_variable_or_class = getattr(module, v)
             is_class = inspect.isclass(function_or_variable_or_class)
-            if is_class and issubclass(function_or_variable_or_class, sys.modules["unittest"].TestCase):
+            is_unit_test_sub = self.is_subclass_of_unittest(function_or_variable_or_class)
+
+            if is_class and is_unit_test_sub:
                 # print(f'{v} : {function_or_variable_or_class} issubclass of unittest')
                 attr = getattr(function_or_variable_or_class, "__test__", True)
                 # print(attr)
@@ -152,6 +154,10 @@ class SimpleTestDiscovery:
                     found_methods.append(v)
         return found_methods
 
+    def is_subclass_of_unittest(self, function_or_variable_or_class):
+        may_be_not_loaded = sys.modules.get("unittest")
+        is_unit_test_sub = may_be_not_loaded and issubclass(function_or_variable_or_class, may_be_not_loaded.TestCase)
+        return is_unit_test_sub
 
     def is_module_with_tests(self, module_name):
         module_short_name = module_name.split('.')[-1]
