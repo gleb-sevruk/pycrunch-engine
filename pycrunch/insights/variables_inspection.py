@@ -58,5 +58,5 @@ class InsightTimeline:
         # print(vars())
         ts = clock.now()
         for key, value in kwargs.items():
-            print(key + ' - ' + str(value))
+            # print(key + ' - ' + str(value))
             self.variables.append(RecordedVariable(key, value, ts))
