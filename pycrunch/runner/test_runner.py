@@ -5,7 +5,8 @@ import coverage
 
 
 # logger = logging.getLogger(__name__)
-
+from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
+from pycrunch.introspection.clock import clock
 
 DISABLE_COVERAGE = False
 
@@ -26,8 +27,13 @@ class TestRunner():
         results = dict()
         for test_to_run in tests:
             self.timeline.begin_nested_interval(f'Running test {test_to_run.get("fqn", "unknown")}')
+
+            # record traced variables
+            state_timeline = InsightTimeline(clock=clock)
+            state_timeline.start()
+            inject_timeline(state_timeline)
+
             cov = self.start_coverage()
-            self.timeline.mark_event('Run: Coverage started')
 
             try:
                 with capture_stdout() as get_value:
@@ -48,6 +54,8 @@ class TestRunner():
                     self.timeline.mark_event('Received captured output')
 
                     execution_result.output_did_become_available(captured_output)
+                    execution_result.state_timeline_did_become_available(state_timeline)
+
                     self.timeline.mark_event('Before coverage serialization')
                     coverage_for_run = serialize_test_run(cov, fqn, time_elapsed, test_metadata=test_to_run, execution_result=execution_result)
                     self.timeline.mark_event('After coverage serialization')
@@ -74,5 +82,6 @@ class TestRunner():
         # cov.exclude('def')
 
         # logger.debug('-- after coverage.start')
+        self.timeline.mark_event('Run: Coverage started')
         return cov
 

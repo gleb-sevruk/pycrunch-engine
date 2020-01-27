@@ -56,6 +56,7 @@ class CoverageRun:
             files=files_,
             status=self.execution_result.status,
             captured_output=self.execution_result.captured_output,
+            variables_state=self.execution_result.state_timeline.as_json(),
         )
 
 
