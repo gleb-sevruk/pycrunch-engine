@@ -68,7 +68,7 @@ class EchoClientProtocol(asyncio.Protocol):
                 # import pydevd_pycharm
                 # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
                 msg = TestResultsAvailableMessage(results)
-                bytes_to_send = pickle.dumps(msg)
+                bytes_to_send = self.safe_pickle(msg)
                 self.send_with_header(bytes_to_send)
                 timeline.mark_event('TCP: results sent')
                 # conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
@@ -87,6 +87,15 @@ class EchoClientProtocol(asyncio.Protocol):
             msg = CloseConnectionMessage(self.task_id)
             bytes_to_send2 = pickle.dumps(msg)
             self.send_with_header(bytes_to_send2)
+
+    def safe_pickle(self, msg):
+        try:
+           return pickle.dumps(msg)
+        except Exception as e:
+            for k, v in msg.results.items():
+                v.execution_result.state_timeline.make_safe_for_pickle()
+
+        return pickle.dumps(msg)
 
     def send_with_header(self, bytes_to_send):
         # we use format: {length}{payload} to deal with TCP coalescing

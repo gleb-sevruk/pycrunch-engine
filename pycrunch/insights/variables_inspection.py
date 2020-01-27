@@ -15,6 +15,7 @@ def trace(**kwargs):
 def inject_timeline(new_timeline):
     global timeline
     # print(timeline)
+
     timeline = new_timeline
     # print(timeline)
 
@@ -64,3 +65,14 @@ class InsightTimeline:
 
     def adjust_to_timeline_start(self, ts):
         return ts - self.start_timestamp
+
+    def make_safe_for_pickle(self):
+        # this is last resort call,
+        # consider avoiding it in first place to not lose performance
+        import pickle
+        for variable in self.variables:
+            try:
+                pickle.dumps(variable)
+            except Exception as e:
+                variable.value = \
+                    f'This cannot be traced: {str(variable.value)}\n\nConsider removing this trace call for faster test execution.'

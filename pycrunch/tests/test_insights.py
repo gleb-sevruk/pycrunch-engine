@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 from pycrunch.insights.variables_inspection import trace, InsightTimeline, inject_timeline
+from pycrunch.introspection.clock import clock
 
 
 def test_should_trace_something_to_timeline():
@@ -20,12 +21,13 @@ def test_marker_single_variable_trace():
     trace(value_a=1)
     marker('point_of_interest')
     trace(value_a=42)
+    trace(value_b='after sleep')
 
 def test_marker_multiple_variables_trace():
     for i in range(10):
         trace(loop_counter=i)
 
-    trace(value_a=1)
+    trace(value_a=__name__)
     marker('point_of_interest')
     trace(value_a=42)
     some_local = dict(
@@ -49,7 +51,8 @@ def test_inject_timeline_and_call_it_on_trace():
 
 def test_timeline_one_variable():
     variable_name = 42
-    x = InsightTimeline()
+    x = InsightTimeline(clock)
+    x.start()
 
     x.record(variable_name=42)
 
@@ -61,8 +64,8 @@ def test_timeline_one_variable():
 def test_timeline_two_variables():
     variable_a = 42
     variable_b = 'Bret Victor'
-    x = InsightTimeline()
-
+    x = InsightTimeline(clock)
+    x.start()
     x.record(variable_a=variable_a, brightest_mind=variable_b)
 
     first = x.variables[0]
