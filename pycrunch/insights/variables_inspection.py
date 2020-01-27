@@ -1,5 +1,4 @@
 from typing import List, Any
-from pycrunch.introspection.clock import clock
 
 timeline = None
 
@@ -39,13 +38,14 @@ class InsightTimeline:
     # currently - on each call of trace function
     variables: List[RecordedVariable]
 
-    def __init__(self):
+    def __init__(self, clock):
         self.variables = []
         self.start_timestamp = None
+        self.clock = clock
         pass
 
     def start(self):
-        self.start_timestamp = clock.now()
+        self.start_timestamp = self.clock.now()
 
     def as_json(self):
         results = []
@@ -56,7 +56,11 @@ class InsightTimeline:
     def record(self, **kwargs):
         # print(kwargs)
         # print(vars())
-        ts = clock.now()
+        ts = self.clock.now()
+        adjusted_time = self.adjust_to_timeline_start(ts)
         for key, value in kwargs.items():
             # print(key + ' - ' + str(value))
-            self.variables.append(RecordedVariable(key, value, ts))
+            self.variables.append(RecordedVariable(key, value, adjusted_time))
+
+    def adjust_to_timeline_start(self, ts):
+        return ts - self.start_timestamp

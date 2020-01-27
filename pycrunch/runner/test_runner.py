@@ -6,6 +6,7 @@ import coverage
 
 # logger = logging.getLogger(__name__)
 from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
+from pycrunch.introspection.clock import clock
 
 DISABLE_COVERAGE = False
 
@@ -28,7 +29,7 @@ class TestRunner():
             self.timeline.begin_nested_interval(f'Running test {test_to_run.get("fqn", "unknown")}')
 
             # record traced variables
-            state_timeline = InsightTimeline()
+            state_timeline = InsightTimeline(clock=clock)
             state_timeline.start()
             inject_timeline(state_timeline)
 
