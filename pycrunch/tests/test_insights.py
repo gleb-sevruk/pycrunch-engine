@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
-from pycrunch.insights.variables_inspection import trace, InsightTimeline, inject_timeline
+from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
+from pycrunch.insights import trace
 from pycrunch.introspection.clock import clock
 
 
