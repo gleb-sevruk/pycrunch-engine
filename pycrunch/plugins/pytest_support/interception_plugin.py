@@ -53,6 +53,9 @@ class PyTestInterceptionPlugin:
             pass
 
         if report.when == 'call':
+            if report.outcome == 'skipped':
+                self.passed_tests.add(report.nodeid)
+                return
             if report.passed:
                 self.passed_tests.add(report.nodeid)
             if not report.passed:
