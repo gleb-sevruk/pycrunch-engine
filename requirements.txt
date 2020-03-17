@@ -1,5 +1,5 @@
-coverage==4.5.3
-pytest==4.6.3
+coverage
+pytest
 watchgod
 python-socketio
 aiohttp
