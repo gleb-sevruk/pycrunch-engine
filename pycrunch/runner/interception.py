@@ -5,6 +5,7 @@ from contextlib import contextmanager
 #  from https://stackoverflow.com/questions/17067560/intercept-pythons-print-statement-and-display-in-gui
 @contextmanager
 def capture_stdout():
+    yield 'disabled captured'
     """
     context manager encapsulating a pattern for capturing stdout writes
     and restoring sys.stdout even upon exceptions

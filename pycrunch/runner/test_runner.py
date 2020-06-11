@@ -5,6 +5,8 @@ import coverage
 
 
 # logger = logging.getLogger(__name__)
+from pycrunch_tracer.client.api import Yoba
+
 from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
 from pycrunch.introspection.clock import clock
 
@@ -40,10 +42,13 @@ class TestRunner():
                     time_start = timestamp()
                     metadata = TestMetadata(**test_to_run)
                     self.timeline.mark_event('About to start test execution')
+                    # yoba = Yoba()
+                    # yoba.start('test_multiple_files')
                     execution_result = self.runner_engine.run_test(metadata)
                     self.timeline.mark_event('Test execution complete, postprocessing results')
                     time_end = timestamp()
                     time_elapsed = time_end - time_start
+                    # yoba.stop()
 
                     if not DISABLE_COVERAGE:
                         cov.stop()

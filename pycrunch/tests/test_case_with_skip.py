@@ -1,5 +1,7 @@
 from unittest import TestCase, skip
 
+from pycrunch.insights import trace
+
 
 class TestWithSkips(TestCase):
     def setUp(self) -> None:
@@ -18,5 +20,8 @@ class TestWithSkips(TestCase):
         print('this should show as success in pycrunch report')
 
     def test_alongside_with_skipped(self):
+        x =['a', 'b']
+        x = x + ['c']
+        trace(x=x)
         assert True
 
