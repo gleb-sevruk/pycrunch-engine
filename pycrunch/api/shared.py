@@ -1,5 +1,5 @@
 from asyncio import shield
-from pprint import pprint
+# from pprint import pprint
 from time import perf_counter
 
 import socketio

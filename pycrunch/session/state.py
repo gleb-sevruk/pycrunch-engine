@@ -99,6 +99,9 @@ class EngineState:
     def engine_mode_will_change(self, new_mode):
         config.runtime_mode_will_change(new_mode)
 
+    def get_engine_mode(self):
+        return config.engine_mode
+
     def prepare_runtime_configuration_if_necessary(self):
         if not self.runtime_configuration_ready:
             self.runtime_configuration_ready = True

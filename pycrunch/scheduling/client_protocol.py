@@ -10,7 +10,15 @@ counter = 0
 
 
 class EchoClientProtocol(asyncio.Protocol):
-
+    """
+    This class represents multiprocess-child connection client protocol
+    Supported input actions are
+       - test-run-task
+    Output messages:
+       - test_run_results
+       - timings
+       - close [asks server to close connection so child process can terminate]
+    """
     def __init__(self, on_connection_lost, task_id, timeline, engine_to_use):
         self.engine_to_use = engine_to_use
         self.timeline = timeline
@@ -31,7 +39,6 @@ class EchoClientProtocol(asyncio.Protocol):
 
 
     def data_received(self, data):
-        # asyncio.sleep(2)
         msg = pickle.loads(data)
         if msg.kind == 'test-run-task':
             # import pydevd_pycharm

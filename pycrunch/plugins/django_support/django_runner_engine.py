@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 class DjangoRunnerEngine(_abstract_runner.Runner):
     def __init__(self):
         config.prepare_django()
-        pass
 
     def run_test(self, test) -> ExecutionResult:
         # import django

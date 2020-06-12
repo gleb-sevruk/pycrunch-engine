@@ -28,6 +28,9 @@ class RunTestTask(AbstractTask):
         self.results = results
 
     async def run(self):
+        """
+            Here we run multiple tests at once using one or multiple processes
+        """
         self.timeline.mark_event('run')
 
         await engine.tests_will_run(self.tests)

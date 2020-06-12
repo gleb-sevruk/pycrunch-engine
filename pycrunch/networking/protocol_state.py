@@ -19,6 +19,16 @@ class ProtocolState():
         self.current_payload_read_so_far = 0
 
     def feed(self, data):
+        """
+        This method is responsible for processing input datagrams
+        Message may be splitted across multiple datagrams
+
+        Here we read size of next packet from header with fixed byte-length
+          and accumulating multiple packages until entire message is read
+
+          also one datagram may contain multiple messages split by header
+          so this function solves all of these scenarios
+        """
         self.current_payload_size = len(data)
         # print(f'!!! GOT DATAGRAM, size: {self.current_payload_size}')
 

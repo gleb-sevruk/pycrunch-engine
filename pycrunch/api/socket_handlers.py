@@ -86,18 +86,22 @@ async def connect(sid, environ):
     global thread
     logger.debug('Client test_connected')
 
-    await pipe.push(event_type='connected', **{'data': 'Connected test_connected' })
+    await pipe.push(
+        event_type='connected',
+        **dict(
+            data='Connected test_connected',
+            engine_mode=engine.get_engine_mode(),
+            version=dict(
+                major=1,
+                minor=0,
+            )
+        )
+    )
     with thread_lock:
         if thread is None:
-            # thread = shared.socketio.start_background_task(target=dispather_thread, arg=42)
-            # pass
-            # thread = thread.start_new_thread(dispather_thread, args=42)
             thread = 1
             loop = asyncio.get_event_loop()
             loop.create_task(dispather_thread())
-            # thread = threading.Thread(target=dispather_thread)
-            # thread.start()
-            # thread.run()
 
 @shared.sio.event
 def disconnect(sid):
