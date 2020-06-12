@@ -30,6 +30,7 @@ class EchoClientProtocol(asyncio.Protocol):
         counter += 1
 
     def connection_made(self, transport):
+        self.timeline.mark_event(f'TCP: Connection established...')
         self.transport = transport
         msg = HandshakeMessage(self.task_id)
         msg_bites = pickle.dumps(msg)
@@ -48,7 +49,6 @@ class EchoClientProtocol(asyncio.Protocol):
             timeline.mark_event(f'TCP: Received tests to run; id: {msg.task.id}')
 
             runner_engine = None
-            # add root of django project
 
             timeline.mark_event('Deciding on runner engine...')
 
@@ -83,8 +83,7 @@ class EchoClientProtocol(asyncio.Protocol):
                 timeline.mark_event('Run: exception during execution')
 
             timeline.stop()
-            # timeline.to_console()
-            # time.sleep(0.01)
+
             msg = TestRunTimingsMessage(timeline)
             bytes_to_send1 = pickle.dumps(msg)
             # xxx = bytearray(12345678)
@@ -118,7 +117,8 @@ class EchoClientProtocol(asyncio.Protocol):
         self.send_with_header(bytes_to_send)
 
     def connection_lost(self, exc):
-        print(f'[{self.task_id}]The connection to server closed')
+        self.timeline.mark_event(f'TCP: Connection to server lost')
+        # print(f'[{self.task_id}]The connection to server closed')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):
