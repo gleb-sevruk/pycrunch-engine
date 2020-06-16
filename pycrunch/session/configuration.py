@@ -6,6 +6,8 @@ import logging
 
 import yaml
 
+from pycrunch.session.auto_configuration import AutoConfiguration
+
 logger = logging.getLogger(__name__)
 
 
@@ -72,8 +74,13 @@ class Configuration:
         self.engine_directory = engine_directory
 
     def load_runtime_configuration(self):
+        # This will output exact location of config file
         print(str(self.configuration_file_path().absolute()))
         print(self.configuration_file_path())
+
+        auto_config = AutoConfiguration(self.configuration_file_path())
+        auto_config.ensure_configuration_exist()
+
         try:
             with io.open(self.configuration_file_path(), encoding='utf-8') as f:
                 x = yaml.safe_load(f)
@@ -88,16 +95,12 @@ class Configuration:
                     runtime_engine_name = engine_config.get('runtime', None)
                     if runtime_engine_name:
                         self.runtime_engine_will_change(runtime_engine_name)
-                    runtime_mode = engine_config.get('mode', None)
-                    if runtime_mode:
-                        self.runtime_mode_will_change(runtime_mode)
                     cpu_cores = engine_config.get('cpu-cores', None)
                     if cpu_cores:
                         self.cpu_cores_will_change(cpu_cores)
                     multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
                     if multiprocess_threshold:
                         self.multiprocess_threshold_will_change(multiprocess_threshold)
-
 
                 pinned_tests = x.get('pinned-tests', None)
                 if pinned_tests:
@@ -132,11 +135,9 @@ class Configuration:
         with io.open(self.configuration_file_path(), encoding='utf-8', mode='r') as f:
             existing_config = yaml.safe_load(f)
 
-
         existing_config['pinned-tests'] = list(fqns)
         with io.open(self.configuration_file_path(), encoding='utf-8', mode='w') as f:
             yaml.dump(existing_config, f, default_flow_style=False)
-        pass
 
     def is_test_pinned(self, fqn):
         return fqn in self.pinned_tests

@@ -16,7 +16,7 @@ setup(name='pycrunch-engine',
           'console_scripts': ['pycrunch-engine=pycrunch.main:run'],
       },
       install_requires=[
-          'pytest==4.6.3',
+          'pytest',
           'coverage==4.5.3',
           'PyYAML',
           'watchgod',

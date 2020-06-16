@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class SimpleTestRunnerEngine(_abstract_runner.Runner):
+    """
+      This class probably is not used anymore. It was for early prototype.
+    """
     def run_test(self, test) -> ExecutionResult:
         execution_result = ExecutionResult()
         try:

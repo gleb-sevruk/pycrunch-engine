@@ -71,6 +71,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
             self.timeline.mark_event('TCP: Got timings from subprocess')
             execution_history.save(msg.timeline)
         if msg.kind == 'close':
+            self.timeline.mark_event('TCP: Received close message')
             logger.debug('Close the client socket')
             self.transport.close()
             self.completion_future.set_result(self.results)

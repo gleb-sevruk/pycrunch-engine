@@ -49,6 +49,6 @@ class TestRunScheduler():
             spliced = tests[from_index:to_index]
             logger.debug(f'core {x}; spliced amount: {len(spliced)}')
             plan = TestRunPlan(spliced)
-            list_of_tasks.append(TestRunPlan(spliced))
+            list_of_tasks.append(plan)
             tests_so_far += tests_to_run_on_single_core
         return list_of_tasks

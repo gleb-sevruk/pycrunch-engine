@@ -28,6 +28,13 @@ class CoverageRun:
 
 
     def parse_lines(self, cov):
+        """
+          Converts data from coverage.py format to internal format
+
+          This is candidate #1 for optimization as we do not use branch coverage
+          And plans are to integrate it with PyTrace Coverage
+          But then pytrace should be optimized/compiled for multi-platform
+        """
         output_file = io.StringIO()
         # todo: this should not exist, 0.3 seconds to run
         # self.percentage_covered = round(cov.report(file=output_file), 2)
