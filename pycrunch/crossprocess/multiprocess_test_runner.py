@@ -11,12 +11,13 @@ logger = logging.getLogger(__name__)
 
 class MultiprocessTestRunner:
 
-    def __init__(self, timeout, timeline):
+    def __init__(self, timeout, timeline, test_run_scheduler):
         self.client_connections = []
         self.completion_futures = []
         self.timeline = timeline
         self.timeout = timeout
         self.results = None
+        self.test_run_scheduler = test_run_scheduler
 
     def results_did_become_available(self, results):
         logger.debug('results avail:')
@@ -26,7 +27,8 @@ class MultiprocessTestRunner:
     async def run(self, tests):
         self.timeline.mark_event(f'Splitting into CPU tasks. Total tests to run: {len(tests)}')
         #
-        self.tasks = TestRunScheduler(cpu_cores=config.cpu_cores, threshold=config.multiprocessing_threshold).schedule_into_tasks(tests)
+
+        self.tasks = self.test_run_scheduler.schedule_into_tasks(tests)
         self.timeline.mark_event('Creating tcp thread')
 
         loop = asyncio.get_event_loop()
@@ -59,10 +61,11 @@ class MultiprocessTestRunner:
         logger.debug(f'Waiting for completion from TCP server')
         demo_results = await asyncio.gather(*self.completion_futures)
         logger.debug(f'TCP ran to the end')
-        self.results = self.merge_task_results(demo_results)
+        _results = self.merge_task_results(demo_results)
         server.close()
 
         logger.debug(f'TCP server and child processes ran to the end')
+        return _results
 
     def get_command_line_for_child(self, port, task_id):
         engine_root = f' {config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py '
