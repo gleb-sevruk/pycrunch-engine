@@ -42,6 +42,7 @@ def test_non_supported_engine_throws():
 read_data = '''
 engine:
   runtime: simple
+  timeout: 42
 discovery:
   exclusions:
    - directory_1
@@ -71,6 +72,17 @@ def test_runtime_engine_from_config():
         sut = create_sut()
         sut.load_runtime_configuration()
         assert sut.runtime_engine == 'simple'
+
+def test_timeout_is_1min_by_default():
+    sut = create_sut()
+    assert sut.execution_timeout_in_seconds == 60
+
+def test_timeout_is_taken_from_config():
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+
+        assert sut.execution_timeout_in_seconds == 42
 
 def test_environment_vars():
     read_data = '''
@@ -145,6 +157,9 @@ def test_cpu_cores_by_default_no_more_than_4():
 
 def test_two_cores_use_1_by_default():
     with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+        from time import sleep
+        print('sleep')
+        sleep(100)
         multiprocessing_mock.cpu_count.return_value = 2
         sut = create_sut()
         assert sut.cpu_cores == 1

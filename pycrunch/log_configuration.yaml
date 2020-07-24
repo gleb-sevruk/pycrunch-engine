@@ -1,7 +1,7 @@
 version: 1
 formatters:
   simple:
-    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format: '[%(process)d] %(asctime)s - %(name)s - %(levelname)s - %(message)s'
   basic:
     format: '%(name)s - %(message)s'
 handlers:
@@ -11,8 +11,10 @@ handlers:
     formatter: simple
     stream: ext://sys.stdout
 loggers:
-  pycrunch.pipeline:
-    level: INFO
+  pycrunch.pipeline.run_test_task:
+    level: DEBUG
+#  pycrunch.pipeline:
+#    level: INFO
 
   pycrunch.runner.pipeline_dispatcher:
     level: INFO
@@ -21,7 +23,7 @@ loggers:
   pycrunch.api.socket_handlers:
     level: INFO
   pycrunch.crossprocess.multiprocess_test_runner:
-    level: INFO
+    level: DEBUG
   pycrunch.watcher:
     level: INFO
   watchgod:

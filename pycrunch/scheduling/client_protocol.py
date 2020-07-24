@@ -118,7 +118,7 @@ class EchoClientProtocol(asyncio.Protocol):
 
     def connection_lost(self, exc):
         self.timeline.mark_event(f'TCP: Connection to server lost')
-        # print(f'[{self.task_id}]The connection to server closed')
+        print(f'[{self.task_id}]The connection to server lost')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):

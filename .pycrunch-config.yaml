@@ -11,6 +11,7 @@ engine:
   cpu-cores: 4
   # minimum number of tests to schedule per core (5 by default)
   multiprocessing-threshold: 4
+  timeout: 3
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:

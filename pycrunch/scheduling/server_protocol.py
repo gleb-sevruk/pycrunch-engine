@@ -99,3 +99,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
     def results_did_become_available(self, results):
         self.results = results
 
+    def force_close(self):
+        self.transport.close()
+        self.completion_future.cancel()
+

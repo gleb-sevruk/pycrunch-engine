@@ -45,6 +45,7 @@ class Configuration:
         self.pinned_tests = set()
         self.cpu_cores = self.get_default_cpu_cores()
         self.multiprocessing_threshold = 5
+        self.execution_timeout_in_seconds = 60
         # self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
         self.environment_vars = dict()
@@ -102,6 +103,11 @@ class Configuration:
                     if multiprocess_threshold:
                         self.multiprocess_threshold_will_change(multiprocess_threshold)
 
+                    # this is in seconds
+                    execution_timeout = engine_config.get('timeout', None)
+                    if execution_timeout:
+                        self.execution_timeout_will_change(execution_timeout)
+
                 pinned_tests = x.get('pinned-tests', None)
                 if pinned_tests:
                     self.apply_pinned_tests(pinned_tests)
@@ -128,6 +134,14 @@ class Configuration:
     def throw_if_mode_not_supported(self, runtime_mode):
         if runtime_mode not in self.allowed_modes:
             raise Exception(f"runtime mode {runtime_mode} not supported. Available options are: {self.allowed_modes}")
+
+    def execution_timeout_will_change(self, new_timeout: int):
+        if new_timeout <= 0:
+            logger.warning(f'Execution timeout of {new_timeout} not valid. Fallback to default 60 sec. Please use positive numbers')
+            return
+
+        print(f'Using custom execution timeout of {new_timeout} seconds (default - 60 seconds)')
+        self.execution_timeout_in_seconds = new_timeout
 
     def save_pinned_tests_config(self, fqns):
         self.apply_pinned_tests(fqns)

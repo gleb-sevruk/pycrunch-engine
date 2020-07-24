@@ -1,6 +1,8 @@
 import asyncio
 import sys
 import os
+from typing import List
+
 from pycrunch.scheduling.scheduler import TestRunScheduler
 from pycrunch.scheduling.server_protocol import TestRunnerServerProtocol
 from pycrunch.session import config
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 class MultiprocessTestRunner:
 
     def __init__(self, timeout, timeline, test_run_scheduler):
-        self.client_connections = []
+        self.client_connections : List[TestRunnerServerProtocol]= []
         self.completion_futures = []
         self.timeline = timeline
         self.timeout = timeout
@@ -45,26 +47,53 @@ class MultiprocessTestRunner:
             child_processes.append(asyncio.create_subprocess_shell(self.get_command_line_for_child(port,task.id), cwd=config.working_directory, shell=True))
 
         logger.debug(f'Waiting for startup of {len(self.tasks)} subprocess task(s)')
-        # wait to start all
         subprocesses_results = await asyncio.gather(*child_processes)
         logger.debug('Startup complete')
 
         child_waiters = []
-        for coro in subprocesses_results:
-            child_waiters.append(coro.wait())
+        for _ in subprocesses_results:
+            child_waiters.append(_.wait())
 
         logger.debug('Begin waiting for subprocess completion...')
-        # await asyncio.wait_for(asyncio.gather(*child_waiters), 5)
-        await asyncio.gather(*child_waiters)
-        logger.debug('All subprocesses are completed')
+        timeout_reached = False
+        try:
+            await asyncio.wait_for(
+                asyncio.gather(*child_waiters),
+                timeout=config.execution_timeout_in_seconds
+            )
+        except asyncio.TimeoutError:
+            timeout_reached = True
+            logger.warning(f'Reached execution timeout of {config.execution_timeout_in_seconds} seconds. ')
+            for _ in subprocesses_results:
+                print('Killing process with pid:')
+                print(_)
+                _.kill()
 
+        logger.debug('All subprocesses are completed')
         logger.debug(f'Waiting for completion from TCP server')
-        demo_results = await asyncio.gather(*self.completion_futures)
+        demo_results = []
+        try:
+            demo_results = await asyncio.wait_for(
+                asyncio.gather(*self.completion_futures, return_exceptions=True),
+                timeout=config.execution_timeout_in_seconds
+            )
+        except asyncio.TimeoutError as ex:
+            print(ex)
+            for _ in self.client_connections:
+                _.force_close()
+            for _ in child_processes:
+                _.close()
+                print(_)
+            pass
+
         logger.debug(f'TCP ran to the end')
+        logger.debug(f'1 - merge_task_results')
         _results = self.merge_task_results(demo_results)
+        logger.debug(f'1 - done')
+
         server.close()
 
-        logger.debug(f'TCP server and child processes ran to the end')
+        logger.debug(f' ---- TCP server and child processes ran to the end')
         return _results
 
     def get_command_line_for_child(self, port, task_id):

@@ -93,7 +93,7 @@ async def connect(sid, environ):
             engine_mode=engine.get_engine_mode(),
             version=dict(
                 major=1,
-                minor=0,
+                minor=1,
             )
         )
     )
