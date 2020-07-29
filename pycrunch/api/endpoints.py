@@ -13,7 +13,6 @@ from pycrunch.pipeline.run_test_task import RunTestTask
 from pycrunch.session import config
 from pycrunch.session.state import engine
 from pycrunch.shared.models import all_tests
-from .serializers import serialize_test_run
 
 import logging
 

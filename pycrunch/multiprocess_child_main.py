@@ -3,7 +3,7 @@ import asyncio
 from pycrunch.introspection.timings import Timeline
 import argparse
 
-from pycrunch.networking.client_protocol import EchoClientProtocol
+from pycrunch.child_runtime.client_protocol import EchoClientProtocol
 
 
 async def run(engine_to_use, timeline, port, task_id):

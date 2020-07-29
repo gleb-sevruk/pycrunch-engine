@@ -77,6 +77,12 @@ def test_timeout_is_1min_by_default():
     sut = create_sut()
     assert sut.execution_timeout_in_seconds == 60
 
+def test_timeout_is_none_when_zero():
+    # this will force task to wait forever
+    sut = create_sut()
+    sut.execution_timeout_in_seconds = 0
+    assert sut.get_execution_timeout() is None
+
 def test_timeout_is_taken_from_config():
     with mock.patch('io.open', mock_open(read_data=read_data)) as x:
         sut = create_sut()

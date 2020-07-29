@@ -114,7 +114,6 @@ class RunTestTask(AbstractTask):
                 combined_coverage=serialized,
                 # Todo: why do I need dependencies to be exposed? It is internal state.
                 # dependencies=self.build_dependencies(),
-                # todo what is that?
                 aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
                 timings=dict(start=self.timestamp, end=shared.timestamp()),
             ))
@@ -136,8 +135,9 @@ class RunTestTask(AbstractTask):
             line1 = f'Timeout of {config.execution_timeout_in_seconds} seconds reached while waiting for test execution to complete.'
             line2 = f'Consider increasing it in .pycrunch-config.yaml, e.g.:'
             line3 = f'{os.linesep}engine:{os.linesep}    timeout: 999{os.linesep}'
-            line4 = 'https://pycrunch.com/docs/configuration-file'
-            failure_reason = os.linesep.join([line1, line2, line3, line4])
+            line4 = f'Setting it to zero will wait forever.{os.linesep}'
+            line5 = 'https://pycrunch.com/docs/configuration-file'
+            failure_reason = os.linesep.join([line1, line2, line3, line4, line5])
         return failure_reason
 
     def convert_result_to_json(self, run_results):
@@ -153,7 +153,7 @@ class RunTestTask(AbstractTask):
 
     def create_test_runner(self):
         runner = MultiprocessTestRunner(
-            timeout=30,
+            timeout=config.get_execution_timeout(),
             timeline=self.timeline,
             test_run_scheduler=TestRunScheduler(
                 cpu_cores=config.cpu_cores,

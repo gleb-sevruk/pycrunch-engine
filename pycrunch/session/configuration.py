@@ -3,6 +3,7 @@ import multiprocessing
 from pathlib import Path
 
 import logging
+from typing import Optional
 
 import yaml
 
@@ -185,6 +186,11 @@ class Configuration:
             return 1
 
         return round(cores / 2)
+
+    def get_execution_timeout(self) -> Optional[float]:
+        if self.execution_timeout_in_seconds == 0:
+            return None
+        return self.execution_timeout_in_seconds
 
     def multiprocess_threshold_will_change(self, multiprocessing_threshold):
         self.multiprocessing_threshold = multiprocessing_threshold

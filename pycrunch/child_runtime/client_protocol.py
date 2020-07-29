@@ -1,9 +1,8 @@
 import asyncio
 import pickle
 import struct
-import time
 
-from pycrunch.runner.test_runner import TestRunner
+from pycrunch.child_runtime.test_runner import TestRunner
 from pycrunch.scheduling.messages import CloseConnectionMessage, HandshakeMessage, TestResultsAvailableMessage, TestRunTimingsMessage
 
 counter = 0
@@ -80,6 +79,7 @@ class EchoClientProtocol(asyncio.Protocol):
                 timeline.mark_event('TCP: results sent')
                 # conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
             except Exception as e:
+                # TODO Add exception details. Make fail-safe
                 timeline.mark_event('Run: exception during execution')
 
             timeline.stop()

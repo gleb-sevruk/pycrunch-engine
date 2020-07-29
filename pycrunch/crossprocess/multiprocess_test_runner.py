@@ -58,7 +58,7 @@ class MultiprocessTestRunner:
         try:
             await asyncio.wait_for(
                 asyncio.gather(*child_waiters),
-                timeout=config.execution_timeout_in_seconds
+                timeout=config.get_execution_timeout()
             )
         except (asyncio.TimeoutError, asyncio.CancelledError) as e:
             timeout_reached = True
@@ -74,7 +74,7 @@ class MultiprocessTestRunner:
         try:
             demo_results = await asyncio.wait_for(
                 asyncio.gather(*self.completion_futures, return_exceptions=True),
-                timeout=config.execution_timeout_in_seconds
+                timeout=config.get_execution_timeout()
             )
         except asyncio.TimeoutError as ex:
             print(ex)

@@ -20,32 +20,13 @@ class CoverageRun:
         self.percentage_covered = -1
         self.files = []
 
-
-    def parse_lines(self, cov):
+    def store_files_coverage(self, files):
         """
-          Converts data from coverage.py format to internal format
-
-          This is candidate #1 for optimization as we do not use branch coverage
-          And plans are to integrate it with PyTrace Coverage
-          But then pytrace should be optimized/compiled for multi-platform
+        :type files: typing.List[CoverageRunForSingleFile]
         """
-        # todo: this should not exist, 0.3 seconds to run
-        # self.percentage_covered = round(cov.report(file=output_file), 2)
-        coverage_data = cov.get_data()
-        # todo following lines are CPU-heavy, change it, or minimize:
-        for f in coverage_data.measured_files():
-            # maybe leave only what we need?
-            lines = coverage_data.lines(f)
-            # arcs = coverage_data.arcs(f)
-            #         * The file name for the module.
-            #         * A list of line numbers of executable statements.
-            #         * A list of line numbers of excluded statements.
-            #         * A list of line numbers of statements not run (missing from
-            #           execution).
-            #         * A readable formatted string of the missing line numbers.
-            # // todo exclude lines hits
-            # analysis = cov.analysis2(f)
-            self.files.append(CoverageRunForSingleFile(f, lines))
+        self.files = files
+
+
 
     def as_json(self):
         files_ = [x.as_json() for x in self.files]
@@ -59,15 +40,6 @@ class CoverageRun:
             variables_state=self.execution_result.state_timeline.as_json(),
         )
 
-
-def serialize_test_run(cov, fqn, time_elapsed, test_metadata, execution_result):
-    """
-
-    :type cov: coverage.Coverage
-    """
-    run_results = CoverageRun(fqn, time_elapsed, test_metadata, execution_result)
-    run_results.parse_lines(cov)
-    return run_results
 
 
 

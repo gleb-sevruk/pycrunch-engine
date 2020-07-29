@@ -33,11 +33,16 @@ class RecordedVariable:
             value=self.value,
         )
 
+
+class EmptyInsightTimeline:
+    def as_json(self):
+        return []
+
 class InsightTimeline:
     # Timeline must be viewed as chrome performance timeline or jetbrains timeline profiler UI
     # Timeline represents state of application on each line (ideally)
     # currently - on each call of trace function
-    variables: List[RecordedVariable]
+    # :type variables: List[RecordedVariable]
 
     def __init__(self, clock):
         self.variables = []
