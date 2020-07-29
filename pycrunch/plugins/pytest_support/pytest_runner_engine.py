@@ -21,7 +21,12 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
 
         pass
 
-    def run_test(self, test) -> ExecutionResult:
+    def run_test(self, test):
+        """
+
+        :type test: object
+        :return val pycrunch.runner.execution_result.ExecutionResult
+        """
         execution_result = ExecutionResult()
         try:
             # fqn_test_to_run = test.filename + '::' + test.name + ' - PID ' + str(os.getpid())
