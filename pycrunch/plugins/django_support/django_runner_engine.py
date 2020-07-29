@@ -19,7 +19,7 @@ class DjangoRunnerEngine(_abstract_runner.Runner):
     def __init__(self):
         config.prepare_django()
 
-    def run_test(self, test) -> ExecutionResult:
+    def run_test(self, test):
         # import django
         # django.setup()
         # from django.apps import apps
