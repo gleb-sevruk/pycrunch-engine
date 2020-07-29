@@ -1,19 +1,20 @@
 import asyncio
 import sys
 import os
-from typing import List
+from typing import List, Optional
 
 from pycrunch.networking.server_protocol import TestRunnerServerProtocol
-from pycrunch.session import config
 
 import logging
+
+from pycrunch.session import config
 
 logger = logging.getLogger(__name__)
 
 class MultiprocessTestRunner:
 
-    def __init__(self, timeout, timeline, test_run_scheduler):
-        self.client_connections : List[TestRunnerServerProtocol]= []
+    def __init__(self, timeout: Optional[float], timeline, test_run_scheduler):
+        self.client_connections: List[TestRunnerServerProtocol] = []
         self.completion_futures = []
         self.timeline = timeline
         self.timeout = timeout
@@ -58,15 +59,16 @@ class MultiprocessTestRunner:
         try:
             await asyncio.wait_for(
                 asyncio.gather(*child_waiters),
-                timeout=config.get_execution_timeout()
+                timeout=self.timeout
             )
         except (asyncio.TimeoutError, asyncio.CancelledError) as e:
             timeout_reached = True
-            logger.warning(f'Reached execution timeout of {config.execution_timeout_in_seconds} seconds. ')
+            logger.warning(f'Reached execution timeout of {self.timeout} seconds. ')
             for _ in subprocesses_results:
-                print('Killing process with pid:')
-                print(_)
-                _.kill()
+                try:
+                    _.kill()
+                except:
+                    logger.warning('Cannot kill child runner process with, ignoring.')
 
         logger.debug('All subprocesses are completed')
         logger.debug(f'Waiting for completion from TCP server')
@@ -74,7 +76,7 @@ class MultiprocessTestRunner:
         try:
             demo_results = await asyncio.wait_for(
                 asyncio.gather(*self.completion_futures, return_exceptions=True),
-                timeout=config.get_execution_timeout()
+                timeout=self.timeout
             )
         except asyncio.TimeoutError as ex:
             print(ex)

@@ -24,7 +24,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
         # Will be determined after handshake
         self.task_id = None
         self.message_queue = Queue()
-
+        self.results = []
         self.need_more_data = False
         self.message_length = 0
         self.read_so_far = 0

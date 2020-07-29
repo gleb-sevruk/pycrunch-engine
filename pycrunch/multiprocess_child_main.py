@@ -58,13 +58,8 @@ async def main():
     engine_to_use = args.engine
     if engine_to_use:
         from pycrunch.session import config
-
         config.runtime_engine_will_change(engine_to_use)
-    # with open(f'.{os.sep}child_process.log', 'a') as file:
-    #     file.writelines(['huita',''])
-    #     file.write(os.linesep)
-    #
-    # print(Path('.').absolute())
+
     timeline.mark_event('Before run')
 
     await run(engine_to_use=engine_to_use, timeline=timeline, port=args.port, task_id=args.task_id)

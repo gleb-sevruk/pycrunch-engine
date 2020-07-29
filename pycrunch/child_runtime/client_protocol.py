@@ -50,20 +50,15 @@ class EchoClientProtocol(asyncio.Protocol):
             runner_engine = None
 
             timeline.mark_event('Deciding on runner engine...')
-
             from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
-            if self.engine_to_use == 'pytest':
-                runner_engine = PyTestRunnerEngine()
-            elif self.engine_to_use == 'django':
-                from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
-                runner_engine = DjangoRunnerEngine()
-            else:
-                print('using default engine => pytest')
-                runner_engine = PyTestRunnerEngine()
 
-            # should have env from pycrunch config
-            # print(environ)
+            if self.engine_to_use == 'django':
+                from pycrunch.session import config
+                config.prepare_django()
 
+            runner_engine = PyTestRunnerEngine()
+
+            # should have env from pycrunch config heve
             r = TestRunner(runner_engine, timeline)
             timeline.mark_event(f'Run: about to run tests')
             try:
@@ -73,12 +68,18 @@ class EchoClientProtocol(asyncio.Protocol):
 
                 # import pydevd_pycharm
                 # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
+
                 msg = TestResultsAvailableMessage(results)
                 bytes_to_send = self.safe_pickle(msg)
                 self.send_with_header(bytes_to_send)
                 timeline.mark_event('TCP: results sent')
-                # conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
             except Exception as e:
+                import sys
+                import traceback
+                print('----! Unexpected exception during PyCrunch test execution:', file=sys.__stdout__)
+                traceback.print_exc(file=sys.__stdout__)
+
+                print()
                 # TODO Add exception details. Make fail-safe
                 timeline.mark_event('Run: exception during execution')
 

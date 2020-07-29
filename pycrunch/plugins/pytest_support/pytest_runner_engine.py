@@ -13,11 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class PyTestRunnerEngine(_abstract_runner.Runner):
-    def __init__(self):
-        # import django
-        # django.setup()
-        pass
-
     def run_test(self, test):
         """
 

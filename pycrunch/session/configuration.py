@@ -106,7 +106,7 @@ class Configuration:
 
                     # this is in seconds
                     execution_timeout = engine_config.get('timeout', None)
-                    if execution_timeout:
+                    if execution_timeout is not None:
                         self.execution_timeout_will_change(execution_timeout)
 
                 pinned_tests = x.get('pinned-tests', None)
@@ -136,9 +136,9 @@ class Configuration:
         if runtime_mode not in self.allowed_modes:
             raise Exception(f"runtime mode {runtime_mode} not supported. Available options are: {self.allowed_modes}")
 
-    def execution_timeout_will_change(self, new_timeout: int):
-        if new_timeout <= 0:
-            logger.warning(f'Execution timeout of {new_timeout} not valid. Fallback to default 60 sec. Please use positive numbers')
+    def execution_timeout_will_change(self, new_timeout: float):
+        if new_timeout < 0:
+            logger.error(f'Execution timeout of {new_timeout} not valid. Fallback to default 60 sec. Please use positive numbers')
             return
 
         print(f'Using custom execution timeout of {new_timeout} seconds (default - 60 seconds)')

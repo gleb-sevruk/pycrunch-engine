@@ -6,8 +6,6 @@ from typing import Dict, Any
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
 from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
-from pycrunch.insights.variables_inspection import InsightTimeline
-from pycrunch.introspection.clock import clock
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
@@ -63,26 +61,19 @@ class RunTestTask(AbstractTask):
         converted_tests = self.get_converted_test_list()
         runner = self.create_test_runner()
 
-        self.timeline.mark_event('before running tests')
         # while not cancelled
         runner_task = asyncio.ensure_future(runner.run(tests=converted_tests))
         run_results_compound = await self.wait_with_cancellation(runner_task)
         if run_results_compound.is_failed():
             failure_reason = self.user_friendly_error_message(run_results_compound.status)
 
-            single_failed_result = ExecutionResult()
-            single_failed_result.run_did_fail()
-            single_failed_result.output_did_become_available(failure_reason)
-            single_failed_result.state_timeline_did_become_available(InsightTimeline(clock=clock))
             for _ in converted_tests:
                 candidate_fqn = _['fqn']
-
-                cov_run = CoverageRun(candidate_fqn, -1, None, execution_result=single_failed_result)
+                cov_run = CoverageRun(candidate_fqn, -1, None, execution_result=ExecutionResult.create_failed_with_reason(failure_reason))
                 run_results_compound.results[candidate_fqn] = cov_run
 
 
         run_results = run_results_compound.results
-
 
         self.timeline.mark_event('before tests_did_run')
 
@@ -152,6 +143,8 @@ class RunTestTask(AbstractTask):
         self.timeline.mark_event('Postprocessing: completed')
 
     def create_test_runner(self):
+        self.timeline.mark_event('before running tests')
+
         runner = MultiprocessTestRunner(
             timeout=config.get_execution_timeout(),
             timeline=self.timeline,

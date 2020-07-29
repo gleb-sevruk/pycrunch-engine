@@ -13,7 +13,6 @@ class TestRunner:
 
     def run(self, tests):
         self.timeline.mark_event('Run: inside run method')
-
         from pycrunch.api.shared import timestamp
         from pycrunch.runner.interception import capture_stdout
         from pycrunch.shared.models import TestMetadata
