@@ -3,8 +3,7 @@ import sys
 import os
 from typing import List
 
-from pycrunch.scheduling.scheduler import TestRunScheduler
-from pycrunch.scheduling.server_protocol import TestRunnerServerProtocol
+from pycrunch.networking.server_protocol import TestRunnerServerProtocol
 from pycrunch.session import config
 
 import logging
@@ -61,7 +60,7 @@ class MultiprocessTestRunner:
                 asyncio.gather(*child_waiters),
                 timeout=config.execution_timeout_in_seconds
             )
-        except asyncio.TimeoutError:
+        except (asyncio.TimeoutError, asyncio.CancelledError) as e:
             timeout_reached = True
             logger.warning(f'Reached execution timeout of {config.execution_timeout_in_seconds} seconds. ')
             for _ in subprocesses_results:
@@ -94,6 +93,8 @@ class MultiprocessTestRunner:
         server.close()
 
         logger.debug(f' ---- TCP server and child processes ran to the end')
+        if timeout_reached:
+            raise asyncio.TimeoutError('Test execution timeout.')
         return _results
 
     def get_command_line_for_child(self, port, task_id):

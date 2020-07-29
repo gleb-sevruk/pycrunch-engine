@@ -16,6 +16,9 @@ from pycrunch.session import config
 from pycrunch.session.state import engine
 from pycrunch.shared.models import all_tests
 from . import shared
+from ..watchdog.tasks import TerminateTestExecutionTask
+from ..watchdog.watchdog import watchdog_dispather_thread
+from ..watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +37,10 @@ def handle_json(json):
     # logger.debug('url + ' + url_for1)
     pipe.push(event_type='connected', **{'data': 'Connected'})
     logger.debug('received json 2: ' + str(json))
+
+
+
+
 
 @shared.sio.on('my event')
 async def handle_my_custom_event(sid, json):
@@ -76,14 +83,20 @@ async def handle_my_custom_event(sid, json):
     if action == 'engine-mode':
         new_mode = json.get('mode')
         engine.engine_mode_will_change(new_mode)
+    if action == 'watchdog-terminate':
+        print('action == watchdog-terminate -> TerminateTestExecutionTask')
+        watchdog_pipeline.add_task(TerminateTestExecutionTask())
+
 
 from threading import Lock
 thread_lock = Lock()
 thread = None
+watchdog_thread = None
 
 @shared.sio.event
 async def connect(sid, environ):
     global thread
+    global watchdog_thread
     logger.debug('Client test_connected')
 
     await pipe.push(
@@ -102,6 +115,11 @@ async def connect(sid, environ):
             thread = 1
             loop = asyncio.get_event_loop()
             loop.create_task(dispather_thread())
+
+        if watchdog_thread is None:
+            watchdog_thread = 1
+            loop = asyncio.get_event_loop()
+            loop.create_task(watchdog_dispather_thread())
 
 @shared.sio.event
 def disconnect(sid):

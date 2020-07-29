@@ -1,21 +1,18 @@
 import asyncio
-from os import environ
 
 from pycrunch.introspection.timings import Timeline
 import argparse
 
-from pycrunch.scheduling.client_protocol import EchoClientProtocol
+from pycrunch.networking.client_protocol import EchoClientProtocol
 
 
 async def run(engine_to_use, timeline, port, task_id):
     timeline.mark_event('Run: inside method, imports')
-    import json
     import sys
     from pathlib import Path
     # from pprint import pprint
     # from multiprocessing.connection import Client
     # timeline.mark_event('Run: imported multiprocessing.connection')
-    from pycrunch.runner.test_runner import TestRunner
     timeline.mark_event('Run: imported TestRunner')
 
     timeline.mark_event('Run: imports done')

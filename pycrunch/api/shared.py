@@ -1,4 +1,5 @@
 from asyncio import shield
+from pprint import pprint
 from time import perf_counter
 
 import socketio
@@ -18,7 +19,9 @@ timestamp = perf_counter
 
 class ExternalPipe:
     async def push(self, event_type, **kwargs):
+        print(f'ws event: {event_type}')
         # pprint(kwargs)
+
         await shield(sio.emit('event',
                        dict(
                            event_type=event_type,

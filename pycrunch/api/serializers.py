@@ -1,21 +1,15 @@
-import io
 from collections import OrderedDict
 
-from coverage import Coverage
-
 from pycrunch.session import config
-from pycrunch.shared.models import TestState
 
 
 class CoverageRunForSingleFile:
-    def __init__(self, filename, lines, arcs, analysis):
-        self.analysis = analysis
-        self.arcs = arcs
+    def __init__(self, filename, lines):
         self.lines = lines
         self.filename = filename
 
     def as_json(self):
-        return OrderedDict(filename=config.path_mapping.map_to_local_fs(self.filename), lines_covered=self.lines, analysis=self.analysis, arcs=self.arcs,)
+        return OrderedDict(filename=config.path_mapping.map_to_local_fs(self.filename), lines_covered=self.lines,)
 
 class CoverageRun:
     def __init__(self, fqn, time_elapsed, test_metadata, execution_result):
@@ -42,7 +36,7 @@ class CoverageRun:
         for f in coverage_data.measured_files():
             # maybe leave only what we need?
             lines = coverage_data.lines(f)
-            arcs = coverage_data.arcs(f)
+            # arcs = coverage_data.arcs(f)
             #         * The file name for the module.
             #         * A list of line numbers of executable statements.
             #         * A list of line numbers of excluded statements.
@@ -50,8 +44,8 @@ class CoverageRun:
             #           execution).
             #         * A readable formatted string of the missing line numbers.
             # // todo exclude lines hits
-            analysis = cov.analysis2(f)
-            self.files.append(CoverageRunForSingleFile(f, lines, arcs, analysis))
+            # analysis = cov.analysis2(f)
+            self.files.append(CoverageRunForSingleFile(f, lines))
 
     def as_json(self):
         files_ = [x.as_json() for x in self.files]
@@ -66,7 +60,11 @@ class CoverageRun:
         )
 
 
-def serialize_test_run(cov : Coverage, fqn, time_elapsed, test_metadata, execution_result):
+def serialize_test_run(cov, fqn, time_elapsed, test_metadata, execution_result):
+    """
+
+    :type cov: coverage.Coverage
+    """
     run_results = CoverageRun(fqn, time_elapsed, test_metadata, execution_result)
     run_results.parse_lines(cov)
     return run_results
@@ -75,7 +73,11 @@ def serialize_test_run(cov : Coverage, fqn, time_elapsed, test_metadata, executi
 
 
 def serialize_test_set_state(test_set):
-    def serialize_test(test_state: TestState):
+    def serialize_test(test_state):
+        """
+
+        :type test_state: pycrunch.shared.models.TestState
+        """
         discovered_test = test_state.discovered_test
         execution_result = test_state.execution_result
         return dict(

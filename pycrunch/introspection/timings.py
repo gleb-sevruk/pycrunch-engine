@@ -89,7 +89,7 @@ class Timeline:
         self.root.to_console()
 
     def mark_event(self, event_name):
-        print(f'[{os.getpid()}] {datetime.now().isoformat()} {event_name}')
+        # print(f'[{os.getpid()}] {datetime.now().isoformat()} {event_name}')
         self.current_interval().mark_event(event_name, self.relative_to)
         pass
 

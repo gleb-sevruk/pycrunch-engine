@@ -73,7 +73,7 @@ class TestRunner():
         use_slow_tracer = False
         # user_slow_tracer = True
         # todo exclusion list should be configurable
-        cov = coverage.Coverage(config_file=False, timid=use_slow_tracer, branch=True, omit=exclusions.exclude_list)
+        cov = coverage.Coverage(config_file=False, timid=use_slow_tracer, branch=False, omit=exclusions.exclude_list)
         # logger.debug('-- before coverage.start')
 
         # disable CTracer on this line to be able to debug test execution

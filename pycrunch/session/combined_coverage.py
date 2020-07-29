@@ -5,9 +5,7 @@ from pycrunch.session import config
 
 
 class FileWithCoverage:
-    def __init__(self, filename, lines_covered, analysis, arcs):
-        self.arcs = arcs
-        self.analysis = analysis
+    def __init__(self, filename, lines_covered):
         self.lines_covered = lines_covered
         self.filename = filename
 
@@ -97,7 +95,7 @@ class CombinedCoverage:
             self.clean_coverage_in_stale_files(fqn, test_run)
             for file in test_run.files:
 
-                file_with_coverage = FileWithCoverage(filename=file.filename, lines_covered=file.lines, analysis=file.analysis, arcs=file.arcs)
+                file_with_coverage = FileWithCoverage(filename=file.filename, lines_covered=file.lines)
                 self.mark_dependency(file_with_coverage.filename, test_run.test_metadata['fqn'])
 
                 self.mark_coverage(fqn=fqn, filename=file_with_coverage.filename, lines_covered=file_with_coverage.lines_covered, test_run=test_run)
