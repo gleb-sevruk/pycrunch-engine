@@ -49,6 +49,8 @@ loggers:
     level: WARN
   socketio:
     level: WARN
+  asyncio:
+    level: WARN
 
 root:
   level: DEBUG
