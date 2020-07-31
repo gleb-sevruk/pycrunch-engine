@@ -2,7 +2,7 @@ from typing import List, Any
 
 timeline = None
 
-def trace(**kwargs):
+def trace(*args, **kwargs):
     global timeline
     # todo: do not override, existing, create a list of subscribers
     if not timeline:
@@ -10,7 +10,7 @@ def trace(**kwargs):
         return
 
     # todo: check for accepted types: str, int, dict() ?
-    timeline.record(**kwargs)
+    timeline.record(*args, **kwargs)
 
 def inject_timeline(new_timeline):
     global timeline
@@ -48,7 +48,7 @@ class InsightTimeline:
         self.variables = []
         self.start_timestamp = None
         self.clock = clock
-        pass
+        self.counter = 1
 
     def start(self):
         self.start_timestamp = self.clock.now()
@@ -59,7 +59,7 @@ class InsightTimeline:
             results.append(v.as_json())
         return results
 
-    def record(self, **kwargs):
+    def record(self, *args, **kwargs):
         # print(kwargs)
         # print(vars())
         ts = self.clock.now()
@@ -67,6 +67,9 @@ class InsightTimeline:
         for key, value in kwargs.items():
             # print(key + ' - ' + str(value))
             self.variables.append(RecordedVariable(key, value, adjusted_time))
+        for value in args:
+            self.variables.append(RecordedVariable(str(self.counter), value, adjusted_time))
+            self.counter += 1
 
     def adjust_to_timeline_start(self, ts):
         return ts - self.start_timestamp
