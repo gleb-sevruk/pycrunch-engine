@@ -86,7 +86,8 @@ class TestRunnerServerProtocol(asyncio.Protocol):
         return msg
 
     def connection_lost(self, ex = None):
-        self.completion_future.set_result(self.results)
+        if not self.completion_future.done():
+            self.completion_future.set_result(self.results)
 
     def find_task_with_id(self, msg):
         found_task = None
