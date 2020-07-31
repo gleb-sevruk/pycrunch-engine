@@ -8,7 +8,7 @@ engine:
   cpu-cores: 4
   multiprocessing-threshold: 4
   runtime: pytest
-  timeout: 0
+  timeout: 5
   load-pytest-plugins: false
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local

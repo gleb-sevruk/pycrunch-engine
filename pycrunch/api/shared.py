@@ -19,7 +19,7 @@ timestamp = perf_counter
 
 class ExternalPipe:
     async def push(self, event_type, **kwargs):
-        print(f'ws event: {event_type}')
+        # print(f'ws event: {event_type}')
         # pprint(kwargs)
 
         await shield(sio.emit('event',

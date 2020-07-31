@@ -1,6 +1,7 @@
 import asyncio
 import pickle
 import struct
+import os
 
 from pycrunch.child_runtime.test_runner import TestRunner
 from pycrunch.scheduling.messages import CloseConnectionMessage, HandshakeMessage, TestResultsAvailableMessage, TestRunTimingsMessage
@@ -43,7 +44,7 @@ class EchoClientProtocol(asyncio.Protocol):
         if msg.kind == 'test-run-task':
             # import pydevd_pycharm
             # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
-            print(f'[{msg.task.id}]Data received: test-run-task;')
+            print(f'[{os.getpid()}] [task_id: {msg.task.id}] Data received: test-run-task;')
             timeline = self.timeline
             timeline.mark_event(f'TCP: Received tests to run; id: {msg.task.id}')
 
@@ -79,8 +80,6 @@ class EchoClientProtocol(asyncio.Protocol):
                 print('----! Unexpected exception during PyCrunch test execution:', file=sys.__stdout__)
                 traceback.print_exc(file=sys.__stdout__)
 
-                print()
-                # TODO Add exception details. Make fail-safe
                 timeline.mark_event('Run: exception during execution')
 
             timeline.stop()
@@ -119,7 +118,7 @@ class EchoClientProtocol(asyncio.Protocol):
 
     def connection_lost(self, exc):
         self.timeline.mark_event(f'TCP: Connection to server lost')
-        print(f'[{self.task_id}]The connection to server lost')
+        print(f'[{os.getpid()}] [task_id: {self.task_id}] - The connection to server lost')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):

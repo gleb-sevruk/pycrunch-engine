@@ -54,8 +54,8 @@ class AllTests:
 
     def collect_by_fqn(self, fqns):
         result = list()
+        logger.info(f'collecting {len(fqns)} tests for run')
         for fqn in fqns:
-            logger.info(f'collecting {fqn} for run')
 
             current_test = self.tests[fqn]
             self.log_test_details(current_test)

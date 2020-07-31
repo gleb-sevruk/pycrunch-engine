@@ -42,13 +42,13 @@ async def watchdog_dispather_thread():
 
     while True:
         logger.debug('WatchDog Dispatcher thread -- inside event loop, waiting for task...')
-        logger.debug('WatchDog Dispatcher thread -- received task...')
         try:
             await dp.run_once()
         except asyncio.CancelledError:
-            # process termination
+            logger.warning('CancelledError while processing WatchDog Dispatcher queue')
             break
         except Exception as e:
             logger.exception('Exception in WatchDog Dispatcher Thread, ', exc_info=e)
+            break
 
     logger.debug('WatchDog Dispatcher thread -- End')

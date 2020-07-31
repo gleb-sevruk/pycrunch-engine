@@ -12,11 +12,10 @@ handlers:
     stream: ext://sys.stdout
 loggers:
   pycrunch.pipeline.run_test_task:
-    level: DEBUG
-#  pycrunch.pipeline:
-#    level: INFO
-
+    level: INFO
   pycrunch.runner.pipeline_dispatcher:
+    level: INFO
+  pycrunch.watchdog:
     level: INFO
   pycrunch.runner:
     level: DEBUG
