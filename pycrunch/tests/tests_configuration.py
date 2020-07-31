@@ -163,9 +163,6 @@ def test_cpu_cores_by_default_no_more_than_4():
 
 def test_two_cores_use_1_by_default():
     with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
-        from time import sleep
-        print('sleep')
-        sleep(100)
         multiprocessing_mock.cpu_count.return_value = 2
         sut = create_sut()
         assert sut.cpu_cores == 1
@@ -201,3 +198,26 @@ def test_multiprocessing_threshold_by_default_5():
     sut = create_sut()
     # minimum number of tests to schedule per core
     assert sut.multiprocessing_threshold == 5
+
+
+def test_load_pytest_plugins_false_by_default():
+    sut = create_sut()
+    assert sut.load_pytest_plugins == False
+
+def test_load_pytest_plugins():
+    read_data = '''
+engine:
+  runtime: simple
+  load-pytest-plugins: true
+discovery:
+  exclusions:
+   - directory_1
+   - directory_2
+mode: manual
+
+'''
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert sut.load_pytest_plugins == True
+

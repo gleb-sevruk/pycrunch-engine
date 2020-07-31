@@ -101,7 +101,7 @@ class MultiprocessTestRunner:
 
     def get_command_line_for_child(self, port, task_id):
         engine_root = f' {config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py '
-        hardcoded_path = engine_root + f'--engine={config.runtime_engine} --port={port} --task-id={task_id}'
+        hardcoded_path = engine_root + f'--engine={config.runtime_engine} --port={port} --task-id={task_id} --load-pytest-plugins={str(config.load_pytest_plugins).lower()}'
         return sys.executable + hardcoded_path
 
     def create_server_protocol(self):

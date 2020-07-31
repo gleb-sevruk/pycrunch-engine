@@ -52,11 +52,11 @@ class EchoClientProtocol(asyncio.Protocol):
             timeline.mark_event('Deciding on runner engine...')
             from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
 
+            from pycrunch.session import config
             if self.engine_to_use == 'django':
-                from pycrunch.session import config
                 config.prepare_django()
 
-            runner_engine = PyTestRunnerEngine()
+            runner_engine = PyTestRunnerEngine(config.load_pytest_plugins)
 
             # should have env from pycrunch config heve
             r = TestRunner(runner_engine, timeline)

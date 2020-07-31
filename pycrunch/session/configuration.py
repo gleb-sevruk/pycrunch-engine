@@ -50,6 +50,7 @@ class Configuration:
         # self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
         self.environment_vars = dict()
+        self.load_pytest_plugins = False
         self.path_mapping = NoPathMapping()
 
     def runtime_engine_will_change(self, new_engine):
@@ -103,6 +104,8 @@ class Configuration:
                     multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
                     if multiprocess_threshold:
                         self.multiprocess_threshold_will_change(multiprocess_threshold)
+                    self.load_pytest_plugin_config(engine_config)
+
 
                     # this is in seconds
                     execution_timeout = engine_config.get('timeout', None)
@@ -135,6 +138,12 @@ class Configuration:
     def throw_if_mode_not_supported(self, runtime_mode):
         if runtime_mode not in self.allowed_modes:
             raise Exception(f"runtime mode {runtime_mode} not supported. Available options are: {self.allowed_modes}")
+
+    def load_pytest_plugin_config(self, engine_config):
+        node :str= engine_config.get('load-pytest-plugins', None)
+        if node is not None:
+            if type(node) == bool:
+                self.load_pytest_plugins = node
 
     def execution_timeout_will_change(self, new_timeout: float):
         if new_timeout < 0:

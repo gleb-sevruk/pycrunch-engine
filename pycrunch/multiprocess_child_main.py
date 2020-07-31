@@ -52,6 +52,7 @@ async def main():
     parser.add_argument('--engine', help='Engine used, one of [pytest, django, simple]')
     parser.add_argument('--port', help='PyCrunch-Engine server port to connect')
     parser.add_argument('--task-id', help='Id of task when multiple test runners ran at same time')
+    parser.add_argument('--load-pytest-plugins', help='If this is true, execution will be slower.')
 
     args = parser.parse_args()
     timeline.mark_event('ArgumentParser: parse_args completed')
@@ -59,6 +60,8 @@ async def main():
     if engine_to_use:
         from pycrunch.session import config
         config.runtime_engine_will_change(engine_to_use)
+        if args.load_pytest_plugins.lower() == 'true':
+            config.load_pytest_plugins = True
 
     timeline.mark_event('Before run')
 
