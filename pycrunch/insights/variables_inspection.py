@@ -1,5 +1,3 @@
-from typing import List, Any
-
 timeline = None
 
 def trace(*args, **kwargs):
@@ -20,11 +18,19 @@ def inject_timeline(new_timeline):
     # print(timeline)
 
 
+allowed_types = [int, str, float, dict, type(None), bool]
+
 class RecordedVariable:
     def __init__(self, name, value, timestamp):
         self.name = name
-        self.value = value
+        self.value = self.safe_for_serialization_value(value)
         self.timestamp = timestamp
+
+    def safe_for_serialization_value(self, value):
+        if type(value) not in allowed_types:
+            return str(value)
+
+        return value
 
     def as_json(self):
         return dict(
