@@ -6,12 +6,12 @@ discovery:
   - test_discovery_specs_demo.py
 engine:
   cpu-cores: 4
+  load-pytest-plugins: false
   multiprocessing-threshold: 4
   runtime: pytest
-  timeout: 5
-  load-pytest-plugins: false
+  timeout: 0
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:
-- pycrunch.tests.tests_configuration:test_environment_vars
 - tests_two:test_pin_sleep120
+- pycrunch.tests.tests_configuration:test_environment_vars

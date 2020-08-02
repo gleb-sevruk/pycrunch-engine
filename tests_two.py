@@ -1,10 +1,13 @@
 import os
 from time import sleep
 
+def test_pin_sleep120():
+    sleep(0.2)
+    pass
 
 def test_dummy():
     # print('test_method')
-    print('222 ')
+    print('222 3')
     print('222 ')
     print('222 ')
     print('222 ')
