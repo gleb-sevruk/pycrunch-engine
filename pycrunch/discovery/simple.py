@@ -55,6 +55,8 @@ class SimpleTestDiscovery:
 
         logger.debug(sys.path)
         logger.debug(f'MODULE_DIR {MODULE_DIR}')
+        logger.debug(f'Discovering tests in folder {folder}')
+
         if not MODULE_DIR in sys.path:
             sys.path.insert(0, MODULE_DIR)
             logger.debug(f'after append')
@@ -102,6 +104,7 @@ class SimpleTestDiscovery:
                     module = importlib.import_module(module_name)
                     tests_found = self.find_tests_in_module(module)
                 except Exception as ex:
+                    logger.error(f'Failed to load `{current_file_path}`')
                     logger.exception(f'importing {module_name} failed with exception: ' + str(ex))
                     continue
                 # execute as following

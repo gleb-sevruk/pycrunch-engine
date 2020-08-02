@@ -1,3 +1,6 @@
+from pycrunch.insights.variables_inspection import EmptyInsightTimeline
+
+
 class ErrorRecord: 
     def __init__(self, etype, value, current_traceback):
         self.current_traceback = current_traceback
@@ -14,7 +17,7 @@ class ExecutionResult:
         self.captured_output = None
         self.status = 'pending'
         self.intercepted_exception = None
-        self.state_timeline = None
+        self.state_timeline = EmptyInsightTimeline()
 
     def record_exception(self, etype, value, current_traceback):
         self.intercepted_exception = ErrorRecord(etype=etype, value=value, current_traceback=current_traceback)
@@ -33,3 +36,14 @@ class ExecutionResult:
 
     def state_timeline_did_become_available(self, state_timeline):
         self.state_timeline = state_timeline
+    
+    @classmethod
+    def create_failed_with_reason(cls, reason):
+        """
+
+        :type reason: str
+        """
+        x = cls()
+        x.run_did_fail()
+        x.output_did_become_available(reason)
+        return x

@@ -3,6 +3,7 @@ import multiprocessing
 from pathlib import Path
 
 import logging
+from typing import Optional
 
 import yaml
 
@@ -45,9 +46,11 @@ class Configuration:
         self.pinned_tests = set()
         self.cpu_cores = self.get_default_cpu_cores()
         self.multiprocessing_threshold = 5
+        self.execution_timeout_in_seconds = 60
         # self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
         self.environment_vars = dict()
+        self.load_pytest_plugins = False
         self.path_mapping = NoPathMapping()
 
     def runtime_engine_will_change(self, new_engine):
@@ -101,6 +104,13 @@ class Configuration:
                     multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
                     if multiprocess_threshold:
                         self.multiprocess_threshold_will_change(multiprocess_threshold)
+                    self.load_pytest_plugin_config(engine_config)
+
+
+                    # this is in seconds
+                    execution_timeout = engine_config.get('timeout', None)
+                    if execution_timeout is not None:
+                        self.execution_timeout_will_change(execution_timeout)
 
                 pinned_tests = x.get('pinned-tests', None)
                 if pinned_tests:
@@ -128,6 +138,20 @@ class Configuration:
     def throw_if_mode_not_supported(self, runtime_mode):
         if runtime_mode not in self.allowed_modes:
             raise Exception(f"runtime mode {runtime_mode} not supported. Available options are: {self.allowed_modes}")
+
+    def load_pytest_plugin_config(self, engine_config):
+        node :str= engine_config.get('load-pytest-plugins', None)
+        if node is not None:
+            if type(node) == bool:
+                self.load_pytest_plugins = node
+
+    def execution_timeout_will_change(self, new_timeout: float):
+        if new_timeout < 0:
+            logger.error(f'Execution timeout of {new_timeout} not valid. Fallback to default 60 sec. Please use positive numbers')
+            return
+
+        print(f'Using custom execution timeout of {new_timeout} seconds (default - 60 seconds)')
+        self.execution_timeout_in_seconds = new_timeout
 
     def save_pinned_tests_config(self, fqns):
         self.apply_pinned_tests(fqns)
@@ -171,6 +195,11 @@ class Configuration:
             return 1
 
         return round(cores / 2)
+
+    def get_execution_timeout(self) -> Optional[float]:
+        if self.execution_timeout_in_seconds == 0:
+            return None
+        return self.execution_timeout_in_seconds
 
     def multiprocess_threshold_will_change(self, multiprocessing_threshold):
         self.multiprocessing_threshold = multiprocessing_threshold

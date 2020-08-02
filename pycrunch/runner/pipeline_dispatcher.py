@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 async def dispather_thread():
     logger.info('Dispatcher thread -- Start')
-    count = 1
     while True:
         logger.debug('Dispatcher thread -- inside event loop, waiting for task...')
         task = await execution_pipeline.get_task()
@@ -26,7 +25,6 @@ async def dispather_thread():
 
 
 
-        count += 1
 
 
     logger.debug('Dispatcher thread -- End')

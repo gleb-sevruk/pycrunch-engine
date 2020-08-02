@@ -1,21 +1,18 @@
 import asyncio
-from os import environ
 
 from pycrunch.introspection.timings import Timeline
 import argparse
 
-from pycrunch.scheduling.client_protocol import EchoClientProtocol
+from pycrunch.child_runtime.client_protocol import EchoClientProtocol
 
 
 async def run(engine_to_use, timeline, port, task_id):
     timeline.mark_event('Run: inside method, imports')
-    import json
     import sys
     from pathlib import Path
     # from pprint import pprint
     # from multiprocessing.connection import Client
     # timeline.mark_event('Run: imported multiprocessing.connection')
-    from pycrunch.runner.test_runner import TestRunner
     timeline.mark_event('Run: imported TestRunner')
 
     timeline.mark_event('Run: imports done')
@@ -55,19 +52,17 @@ async def main():
     parser.add_argument('--engine', help='Engine used, one of [pytest, django, simple]')
     parser.add_argument('--port', help='PyCrunch-Engine server port to connect')
     parser.add_argument('--task-id', help='Id of task when multiple test runners ran at same time')
+    parser.add_argument('--load-pytest-plugins', help='If this is true, execution will be slower.')
 
     args = parser.parse_args()
     timeline.mark_event('ArgumentParser: parse_args completed')
     engine_to_use = args.engine
     if engine_to_use:
         from pycrunch.session import config
-
         config.runtime_engine_will_change(engine_to_use)
-    # with open(f'.{os.sep}child_process.log', 'a') as file:
-    #     file.writelines(['huita',''])
-    #     file.write(os.linesep)
-    #
-    # print(Path('.').absolute())
+        if args.load_pytest_plugins.lower() == 'true':
+            config.load_pytest_plugins = True
+
     timeline.mark_event('Before run')
 
     await run(engine_to_use=engine_to_use, timeline=timeline, port=args.port, task_id=args.task_id)

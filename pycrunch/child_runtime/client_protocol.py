@@ -1,9 +1,9 @@
 import asyncio
 import pickle
 import struct
-import time
+import os
 
-from pycrunch.runner.test_runner import TestRunner
+from pycrunch.child_runtime.test_runner import TestRunner
 from pycrunch.scheduling.messages import CloseConnectionMessage, HandshakeMessage, TestResultsAvailableMessage, TestRunTimingsMessage
 
 counter = 0
@@ -44,27 +44,22 @@ class EchoClientProtocol(asyncio.Protocol):
         if msg.kind == 'test-run-task':
             # import pydevd_pycharm
             # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
-            print(f'[{msg.task.id}]Data received: test-run-task;')
+            print(f'[{os.getpid()}] [task_id: {msg.task.id}] Data received: test-run-task;')
             timeline = self.timeline
             timeline.mark_event(f'TCP: Received tests to run; id: {msg.task.id}')
 
             runner_engine = None
 
             timeline.mark_event('Deciding on runner engine...')
-
             from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
-            if self.engine_to_use == 'pytest':
-                runner_engine = PyTestRunnerEngine()
-            elif self.engine_to_use == 'django':
-                from pycrunch.plugins.django_support.django_runner_engine import DjangoRunnerEngine
-                runner_engine = DjangoRunnerEngine()
-            else:
-                print('using default engine => pytest')
-                runner_engine = PyTestRunnerEngine()
 
-            # should have env from pycrunch config
-            # print(environ)
+            from pycrunch.session import config
+            if self.engine_to_use == 'django':
+                config.prepare_django()
 
+            runner_engine = PyTestRunnerEngine(config.load_pytest_plugins)
+
+            # should have env from pycrunch config heve
             r = TestRunner(runner_engine, timeline)
             timeline.mark_event(f'Run: about to run tests')
             try:
@@ -74,12 +69,17 @@ class EchoClientProtocol(asyncio.Protocol):
 
                 # import pydevd_pycharm
                 # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
+
                 msg = TestResultsAvailableMessage(results)
                 bytes_to_send = self.safe_pickle(msg)
                 self.send_with_header(bytes_to_send)
                 timeline.mark_event('TCP: results sent')
-                # conn.send(TcpMessage(kind='test_run_results', data_to_send=results))
             except Exception as e:
+                import sys
+                import traceback
+                print('----! Unexpected exception during PyCrunch test execution:', file=sys.__stdout__)
+                traceback.print_exc(file=sys.__stdout__)
+
                 timeline.mark_event('Run: exception during execution')
 
             timeline.stop()
@@ -118,7 +118,7 @@ class EchoClientProtocol(asyncio.Protocol):
 
     def connection_lost(self, exc):
         self.timeline.mark_event(f'TCP: Connection to server lost')
-        # print(f'[{self.task_id}]The connection to server closed')
+        print(f'[{os.getpid()}] [task_id: {self.task_id}] - The connection to server lost')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):

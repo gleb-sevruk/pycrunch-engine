@@ -4,17 +4,14 @@ discovery:
   - front\
   - build/
   - test_discovery_specs_demo.py
-#   - test_runner.py
 engine:
-  runtime: pytest
-  # maximum number of concurrent test runners
   cpu-cores: 4
-  # minimum number of tests to schedule per core (5 by default)
+  load-pytest-plugins: false
   multiprocessing-threshold: 4
+  runtime: pytest
+  timeout: 0
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:
-- tests_two:test_z
+- tests_two:test_pin_sleep120
 - pycrunch.tests.tests_configuration:test_environment_vars
-- pycrunch.tests.test_concurrent_multiprocess:test_connection_is_made
-- tests_two:test_dummy

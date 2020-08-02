@@ -24,7 +24,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
         # Will be determined after handshake
         self.task_id = None
         self.message_queue = Queue()
-
+        self.results = []
         self.need_more_data = False
         self.message_length = 0
         self.read_so_far = 0
@@ -86,7 +86,8 @@ class TestRunnerServerProtocol(asyncio.Protocol):
         return msg
 
     def connection_lost(self, ex = None):
-        self.completion_future.set_result(self.results)
+        if not self.completion_future.done():
+            self.completion_future.set_result(self.results)
 
     def find_task_with_id(self, msg):
         found_task = None
@@ -98,4 +99,8 @@ class TestRunnerServerProtocol(asyncio.Protocol):
 
     def results_did_become_available(self, results):
         self.results = results
+
+    def force_close(self):
+        self.transport.close()
+        self.completion_future.cancel()
 

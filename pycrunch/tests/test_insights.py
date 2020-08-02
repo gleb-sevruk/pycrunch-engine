@@ -75,3 +75,17 @@ def test_timeline_two_variables():
     assert 'brightest_mind' == second.name
     assert 42 == first.value
     assert variable_b == second.value
+
+def test_timeline_positional_arguments_only():
+    variable_a = 42
+    x = InsightTimeline(clock)
+    x.start()
+    x.record(variable_a, 777)
+
+    first = x.variables[0]
+    assert '1' == first.name
+    assert 42 == first.value
+
+    second = x.variables[1]
+    assert '2' == second.name
+    assert 777 == second.value

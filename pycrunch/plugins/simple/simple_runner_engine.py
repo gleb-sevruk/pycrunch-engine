@@ -13,7 +13,7 @@ class SimpleTestRunnerEngine(_abstract_runner.Runner):
     """
       This class probably is not used anymore. It was for early prototype.
     """
-    def run_test(self, test) -> ExecutionResult:
+    def run_test(self, test):
         execution_result = ExecutionResult()
         try:
             logger.debug('before _run_module...')

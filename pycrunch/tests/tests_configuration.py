@@ -42,6 +42,7 @@ def test_non_supported_engine_throws():
 read_data = '''
 engine:
   runtime: simple
+  timeout: 42
 discovery:
   exclusions:
    - directory_1
@@ -71,6 +72,23 @@ def test_runtime_engine_from_config():
         sut = create_sut()
         sut.load_runtime_configuration()
         assert sut.runtime_engine == 'simple'
+
+def test_timeout_is_1min_by_default():
+    sut = create_sut()
+    assert sut.execution_timeout_in_seconds == 60
+
+def test_timeout_is_none_when_zero():
+    # this will force task to wait forever
+    sut = create_sut()
+    sut.execution_timeout_in_seconds = 0
+    assert sut.get_execution_timeout() is None
+
+def test_timeout_is_taken_from_config():
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+
+        assert sut.execution_timeout_in_seconds == 42
 
 def test_environment_vars():
     read_data = '''
@@ -180,3 +198,26 @@ def test_multiprocessing_threshold_by_default_5():
     sut = create_sut()
     # minimum number of tests to schedule per core
     assert sut.multiprocessing_threshold == 5
+
+
+def test_load_pytest_plugins_false_by_default():
+    sut = create_sut()
+    assert sut.load_pytest_plugins == False
+
+def test_load_pytest_plugins():
+    read_data = '''
+engine:
+  runtime: simple
+  load-pytest-plugins: true
+discovery:
+  exclusions:
+   - directory_1
+   - directory_2
+mode: manual
+
+'''
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert sut.load_pytest_plugins == True
+
