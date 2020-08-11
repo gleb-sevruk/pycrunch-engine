@@ -60,11 +60,11 @@ class MultiprocessTestRunner:
         try:
             await asyncio.wait_for(
                 asyncio.gather(*child_waiters),
-                timeout=self.timeout
+                timeout=self.timeout_if_non_debug()
             )
         except (asyncio.TimeoutError, asyncio.CancelledError) as e:
             timeout_reached = True
-            logger.warning(f'Reached execution timeout of {self.timeout} seconds. ')
+            logger.warning(f'Reached execution timeout of {self.timeout_if_non_debug()} seconds. ')
             for _ in subprocesses_results:
                 try:
                     _.kill()
@@ -77,7 +77,7 @@ class MultiprocessTestRunner:
         try:
             demo_results = await asyncio.wait_for(
                 asyncio.gather(*self.completion_futures, return_exceptions=True),
-                timeout=self.timeout
+                timeout=self.timeout_if_non_debug()
             )
         except asyncio.TimeoutError as ex:
             print(ex)
@@ -99,6 +99,11 @@ class MultiprocessTestRunner:
         if timeout_reached:
             raise asyncio.TimeoutError('Test execution timeout.')
         return _results
+
+    def timeout_if_non_debug(self) -> Optional[float]:
+        if self.remote_debug_params.enabled:
+            return None
+        return self.timeout
 
     def get_command_line_for_child(self, port, task_id):
         engine_root = f' {config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py '

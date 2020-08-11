@@ -62,10 +62,11 @@ async def handle_my_custom_event(sid, json):
             fqns.add(test['fqn'])
 
         tests_to_run = all_tests.collect_by_fqn(fqns)
-        debug_params = RemoteDebugParams.disabled()
         if action == 'debug-tests':
             debugger_port = json.get('debugger_port')
             debug_params = RemoteDebugParams(True, debugger_port)
+        else:
+            debug_params = RemoteDebugParams.disabled()
 
         execution_pipeline.add_task(RunTestTask(tests_to_run, debug_params))
     if action == 'load-file':
