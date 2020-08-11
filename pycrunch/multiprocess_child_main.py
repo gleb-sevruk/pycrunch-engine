@@ -53,15 +53,18 @@ async def main():
     parser.add_argument('--port', help='PyCrunch-Engine server port to connect')
     parser.add_argument('--task-id', help='Id of task when multiple test runners ran at same time')
     parser.add_argument('--load-pytest-plugins', help='If this is true, execution will be slower.')
-
+    parser.add_argument('--enable-remote-debug', action='store_true', help='If this is true, remote debug will be enabled on a --remote-debugger-port')
+    parser.add_argument('--remote-debugger-port', help='If remote debug is enabled, this will specify a port used to connect to PyCharm pudb')
     args = parser.parse_args()
     timeline.mark_event('ArgumentParser: parse_args completed')
     engine_to_use = args.engine
     if engine_to_use:
-        from pycrunch.session import config
-        config.runtime_engine_will_change(engine_to_use)
+        from pycrunch.child_runtime.child_config import child_config
+        child_config.use_engine(engine_to_use)
         if args.load_pytest_plugins.lower() == 'true':
-            config.load_pytest_plugins = True
+            child_config.load_pytest_plugins = True
+        if args.enable_remote_debug:
+            child_config.enable_remote_debugging(args.remote_debugger_port)
 
     timeline.mark_event('Before run')
 

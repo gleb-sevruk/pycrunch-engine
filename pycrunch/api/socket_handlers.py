@@ -10,7 +10,7 @@ import uuid
 from pycrunch.api.shared import pipe
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.download_file_task import DownloadFileTask
-from pycrunch.pipeline.run_test_task import RunTestTask
+from pycrunch.pipeline.run_test_task import RunTestTask, RemoteDebugParams
 from pycrunch.runner.pipeline_dispatcher import dispather_thread
 from pycrunch.session import config
 from pycrunch.session.state import engine
@@ -51,7 +51,7 @@ async def handle_my_custom_event(sid, json):
     action = json.get('action')
     if action == 'discovery':
         await engine.will_start_test_discovery()
-    if action == 'run-tests':
+    if action == 'run-tests' or action == 'debug-tests':
         if 'tests' not in json:
             logger.error('run-tests command received, but no tests specified')
             return
@@ -62,8 +62,12 @@ async def handle_my_custom_event(sid, json):
             fqns.add(test['fqn'])
 
         tests_to_run = all_tests.collect_by_fqn(fqns)
+        debug_params = RemoteDebugParams.disabled()
+        if action == 'debug-tests':
+            debugger_port = json.get('debugger_port')
+            debug_params = RemoteDebugParams(True, debugger_port)
 
-        execution_pipeline.add_task(RunTestTask(tests_to_run))
+        execution_pipeline.add_task(RunTestTask(tests_to_run, debug_params))
     if action == 'load-file':
         filename = json.get('filename')
         logger.debug('download_file ' + filename)
@@ -106,7 +110,7 @@ async def connect(sid, environ):
             engine_mode=engine.get_engine_mode(),
             version=dict(
                 major=1,
-                minor=1,
+                minor=2,
             )
         )
     )

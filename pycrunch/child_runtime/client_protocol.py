@@ -57,10 +57,11 @@ class EchoClientProtocol(asyncio.Protocol):
             if self.engine_to_use == 'django':
                 config.prepare_django()
 
-            runner_engine = PyTestRunnerEngine(config.load_pytest_plugins)
+            from pycrunch.child_runtime.child_config import child_config
+            runner_engine = PyTestRunnerEngine(child_config)
 
             # should have env from pycrunch config heve
-            r = TestRunner(runner_engine, timeline)
+            r = TestRunner(runner_engine, timeline, child_config)
             timeline.mark_event(f'Run: about to run tests')
             try:
                 timeline.mark_event(f'Run: total tests planned: {len(msg.task.tests)}')

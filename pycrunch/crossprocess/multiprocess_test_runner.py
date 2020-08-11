@@ -13,13 +13,14 @@ logger = logging.getLogger(__name__)
 
 class MultiprocessTestRunner:
 
-    def __init__(self, timeout: Optional[float], timeline, test_run_scheduler):
+    def __init__(self, timeout: Optional[float], timeline, test_run_scheduler, remote_debug_params: "RemoteDebugParams"):
         self.client_connections: List[TestRunnerServerProtocol] = []
         self.completion_futures = []
         self.timeline = timeline
         self.timeout = timeout
         self.results = None
         self.test_run_scheduler = test_run_scheduler
+        self.remote_debug_params = remote_debug_params
 
     def results_did_become_available(self, results):
         logger.debug('results avail:')
@@ -102,7 +103,10 @@ class MultiprocessTestRunner:
     def get_command_line_for_child(self, port, task_id):
         engine_root = f' {config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py '
         hardcoded_path = engine_root + f'--engine={config.runtime_engine} --port={port} --task-id={task_id} --load-pytest-plugins={str(config.load_pytest_plugins).lower()}'
-        return sys.executable + hardcoded_path
+        remote_debug_str = ''
+        if self.remote_debug_params.enabled:
+            remote_debug_str = f' --enable-remote-debug --remote-debugger-port={self.remote_debug_params.port}'
+        return sys.executable + hardcoded_path + f'{remote_debug_str}'
 
     def create_server_protocol(self):
         loop = asyncio.get_event_loop()

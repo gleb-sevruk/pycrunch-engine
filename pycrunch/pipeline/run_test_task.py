@@ -1,7 +1,6 @@
 import asyncio
 import os
-from pprint import pprint
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
@@ -42,8 +41,18 @@ class TestRunStatus:
         return self.status != 'success'
 
 
+class RemoteDebugParams:
+    def __init__(self, enabled: bool, port: Optional[int] = None):
+        self.port = port
+        self.enabled = enabled
+
+    @classmethod
+    def disabled(cls):
+        return RemoteDebugParams(False)
+
 class RunTestTask(AbstractTask):
-    def __init__(self, tests):
+    def __init__(self, tests, remote_debug_params: RemoteDebugParams):
+        self.remote_debug_params = remote_debug_params
         self.timestamp = shared.timestamp()
         self.tests = tests
         self.results = None
@@ -138,6 +147,10 @@ class RunTestTask(AbstractTask):
         return results_as_json
 
     def post_process_combined_coverage(self, run_results):
+        if self.remote_debug_params.enabled:
+            self.timeline.mark_event('Postprocessing: combined coverage will not be recomputed.')
+            return
+
         self.timeline.mark_event('Postprocessing: combined coverage, line hits, dependency tree')
         combined_coverage.add_multiple_results(run_results)
         self.timeline.mark_event('Postprocessing: completed')
@@ -151,7 +164,8 @@ class RunTestTask(AbstractTask):
             test_run_scheduler=TestRunScheduler(
                 cpu_cores=config.cpu_cores,
                 threshold=config.multiprocessing_threshold
-            )
+            ),
+            remote_debug_params=self.remote_debug_params,
         )
         return runner
 

@@ -1,4 +1,5 @@
 from pycrunch.api.serializers import CoverageRun
+from pycrunch.child_runtime.child_config import ChildRuntimeConfig
 from pycrunch.child_runtime.coverage_hal import CoverageAbstraction
 from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
 from pycrunch.introspection.clock import clock
@@ -7,9 +8,10 @@ from pycrunch.runner.execution_result import ExecutionResult
 DISABLE_COVERAGE = False
 
 class TestRunner:
-    def __init__(self, runner_engine, timeline):
-        self.timeline = timeline
+    def __init__(self, runner_engine, timeline, child_config):
         self.runner_engine = runner_engine
+        self.timeline = timeline
+        self.child_config = child_config
 
     def run(self, tests):
         self.timeline.mark_event('Run: inside run method')
@@ -34,7 +36,10 @@ class TestRunner:
                 #  ---
                 #    checked, there are 2x improvement for small files (0.06 vs 0.10, but still
                 #      slow as before on 500+ tests in one file
-                cov = CoverageAbstraction(DISABLE_COVERAGE, self.timeline)
+                should_disable_coverage = DISABLE_COVERAGE
+                if self.child_config.enable_remote_debug:
+                    should_disable_coverage = True
+                cov = CoverageAbstraction(should_disable_coverage, self.timeline)
                 cov.start()
 
                 with capture_stdout() as get_value:

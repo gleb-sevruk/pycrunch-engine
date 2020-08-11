@@ -4,7 +4,7 @@ from pycrunch.api import shared
 from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.abstract_task import AbstractTask
-from pycrunch.pipeline.run_test_task import RunTestTask
+from pycrunch.pipeline.run_test_task import RunTestTask, RemoteDebugParams
 from pycrunch.session import state
 from pycrunch.session.combined_coverage import combined_coverage
 from pycrunch.session.file_map import test_map
@@ -65,7 +65,7 @@ class FileModifiedNotificationTask(AbstractTask):
 
             tests_to_run = state.engine.all_tests.collect_by_fqn(execution_plan)
             dirty_tests = self.consider_engine_mode(tests_to_run)
-            execution_pipeline.add_task(RunTestTask(dirty_tests))
+            execution_pipeline.add_task(RunTestTask(dirty_tests, RemoteDebugParams.disabled()))
 
         pass;
 
