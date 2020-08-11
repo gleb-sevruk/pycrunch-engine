@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Dict, Any, Union, Set
 
 from pycrunch.api.shared import file_watcher
 from pycrunch.session import config
@@ -11,6 +12,9 @@ class FileWithCoverage:
 
 
 class FileStatistics:
+    filename: str
+    lines_with_entrypoints: Dict[str, Set[str]]
+
     def __init__(self, filename):
         self.filename = filename
         # line by line, each line contains one or multiple tests
@@ -35,17 +39,22 @@ class FileStatistics:
 
 
 class CombinedCoverage:
+    # FQN -> Files touched during run - i.e.: [file1.py, file2.py]
+    file_dependencies_by_tests: Dict[str, Set[str]]
+    # filename.py -> set(fqn, fqn)
+    dependencies: Dict[str, Set[str]]
+
+    # filename -> FileStatistics
+    files: Dict[str, FileStatistics]
     """
         files[] -> line 1 -> [test1, test2]
                    line 2 -> [test2]
     """
     def __init__(self):
-        # filename -> FileStatistics
         self.files = dict()
 
         # all files involved in execution of test.
         # FQN will end up showing in multiple files if dependent file was used during run
-        # filename.py -> set(fqn, fqn)
         self.dependencies = defaultdict(set)
         self.file_dependencies_by_tests = defaultdict(set)
         #  in format
@@ -56,11 +65,11 @@ class CombinedCoverage:
         # self.aggregated_results = defaultdict(dict)
         pass
 
-    def mark_dependency(self, filename, fqn):
+    def mark_dependency(self, filename: str, fqn: str):
         if fqn not in self.dependencies[filename]:
             self.dependencies[filename].add(fqn)
 
-    def test_did_removed(self, fqn):
+    def test_did_removed(self, fqn: str):
         # clear dependencies
         for filename in self.dependencies:
             self.dependencies[filename].discard(fqn)
