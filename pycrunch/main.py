@@ -9,7 +9,7 @@ from aiohttp import web
 
 from pycrunch import web_ui
 from pycrunch.session import config
-
+from pycrunch.watchdog.connection_watchdog import connection_watchdog
 
 package_directory = Path(__file__).parent
 print(package_directory)
@@ -49,31 +49,6 @@ def run():
     from pycrunch.api import shared
     import pycrunch.api.socket_handlers
 
-    # sio = socketio.Server()
-
-
-    # settings = {
-    #     "static_path": os.path.join(os.path.dirname(__file__), "front/dist"),
-    #
-    # }
-
-    # _Handler = socketio.get_tornado_handler(sio)
-    #
-    # class SocketHandler(_Handler):
-    #     def check_origin(self, origin):
-    #         return True
-    #
-    #
-    # app = tornado.web.Application(
-    #     [
-    #         (r'/ui/(.*)', tornado.web.StaticFileHandler, {"path" : 'front/dist'}),
-    #         (r'/js/(.*)', tornado.web.StaticFileHandler, {"path" : 'front/dist/js'}),
-    #         (r'/css/(.*)', tornado.web.StaticFileHandler, {"path" : 'front/dist/css'}),
-    #         (r"/socket.io/", SocketHandler),
-    #     ],
-    #     # **settings
-    #     # ... other application options
-    # )
     app = web.Application()
 
     sio.attach(app)
@@ -83,6 +58,7 @@ def run():
 
 
     loop = asyncio.get_event_loop()
+    task = loop.create_task(connection_watchdog.watch_client_connection_loop())
     loop.set_debug(True)
     web.run_app(app, port=port, host='0.0.0.0')
     # app.listen(port=port, address='0.0.0.0')

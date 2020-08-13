@@ -16,6 +16,7 @@ from pycrunch.session import config
 from pycrunch.session.state import engine
 from pycrunch.shared.models import all_tests
 from . import shared
+from ..watchdog.connection_watchdog import connection_watchdog
 from ..watchdog.tasks import TerminateTestExecutionTask
 from ..watchdog.watchdog import watchdog_dispather_thread
 from ..watchdog.watchdog_pipeline import watchdog_pipeline
@@ -103,7 +104,7 @@ async def connect(sid, environ):
     global thread
     global watchdog_thread
     logger.debug('Client test_connected')
-
+    connection_watchdog.connection_established()
     await pipe.push(
         event_type='connected',
         **dict(
@@ -129,3 +130,4 @@ async def connect(sid, environ):
 @shared.sio.event
 def disconnect(sid):
     logger.debug('Client disconnected')
+    connection_watchdog.connection_lost()
