@@ -1,8 +1,7 @@
 import uuid
 
 from pycrunch.scheduling.scheduler import TestRunScheduler
-from pycrunch.scheduling.sheduled_task import TestRunPlan
-from pycrunch.shared.models import TestMetadata
+from pycrunch.shared.primitives import TestMetadata
 
 def generate_test_fake(name):
     filename = str(uuid.uuid4())

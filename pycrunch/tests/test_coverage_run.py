@@ -6,7 +6,7 @@ from pycrunch.api.serializers import CoverageRun
 from pycrunch.insights.variables_inspection import InsightTimeline, trace
 from pycrunch.introspection.clock import Clock
 from pycrunch.runner.execution_result import ExecutionResult
-from pycrunch.shared.models import TestMetadata
+from pycrunch.shared.primitives import TestMetadata
 
 
 class TestCoverageRun(unittest.TestCase):

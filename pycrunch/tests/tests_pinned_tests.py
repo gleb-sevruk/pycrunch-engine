@@ -4,7 +4,8 @@ from unittest.mock import mock_open, call
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.session.configuration import Configuration
 from pycrunch.session.state import engine
-from pycrunch.shared.models import TestState, TestMetadata, AllTests
+from pycrunch.shared.models import TestState, AllTests
+from pycrunch.shared.primitives import TestMetadata
 
 
 def test_pinned_test_should_change_status():

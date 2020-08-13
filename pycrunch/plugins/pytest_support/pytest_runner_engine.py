@@ -48,9 +48,14 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
             all_args = additional_pytest_args + plugins_arg
             # print(all_args, file=sys.__stdout__)
             if self.child_config.enable_remote_debug:
-                import pydevd_pycharm
-                pydevd_pycharm.settrace('127.0.0.1', suspend=False, port=self.child_config.remote_debug_port, stdoutToServer=True, stderrToServer=True)
-
+                try:
+                    import pydevd_pycharm
+                    pydevd_pycharm.settrace('127.0.0.1', suspend=False, port=self.child_config.remote_debug_port, stdoutToServer=True, stderrToServer=True)
+                except ModuleNotFoundError as e:
+                    print('---\nFailed to import pydevd_pycharm', file=sys.__stdout__)
+                    print('  Make sure you install pudb pycharm bindings by running:', file=sys.__stdout__)
+                    print('pip install pydevd-pycharm\n---', file=sys.__stdout__)
+                    raise
             pytest.main([fqn_test_to_run] + all_args, plugins=[plugin])
 
             # pytest.main([fqn_test_to_run, '-qs'], plugins=[plugin])

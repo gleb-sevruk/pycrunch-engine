@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
 from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
+from pycrunch.introspection.clock import clock
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
@@ -53,7 +54,7 @@ class RemoteDebugParams:
 class RunTestTask(AbstractTask):
     def __init__(self, tests, remote_debug_params: RemoteDebugParams):
         self.remote_debug_params = remote_debug_params
-        self.timestamp = shared.timestamp()
+        self.timestamp = clock.now()
         self.tests = tests
         self.results = None
         self.timeline = Timeline('run tests')
@@ -100,7 +101,7 @@ class RunTestTask(AbstractTask):
         async_tasks_post.append(shared.pipe.push(
             event_type='test_run_completed',
             coverage=cov_to_send,
-            timings=dict(start=self.timestamp, end=shared.timestamp()),
+            timings=dict(start=self.timestamp, end=clock.now()),
         ))
 
         self.timeline.mark_event('Started combined coverage serialization')
@@ -115,7 +116,7 @@ class RunTestTask(AbstractTask):
                 # Todo: why do I need dependencies to be exposed? It is internal state.
                 # dependencies=self.build_dependencies(),
                 aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
-                timings=dict(start=self.timestamp, end=shared.timestamp()),
+                timings=dict(start=self.timestamp, end=clock.now()),
             ))
 
         self.timeline.mark_event('Waiting until post-processing tasks are completed')

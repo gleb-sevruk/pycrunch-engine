@@ -1,8 +1,6 @@
 from pycrunch.api.serializers import CoverageRun
-from pycrunch.child_runtime.child_config import ChildRuntimeConfig
 from pycrunch.child_runtime.coverage_hal import CoverageAbstraction
 from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
-from pycrunch.introspection.clock import clock
 from pycrunch.runner.execution_result import ExecutionResult
 
 DISABLE_COVERAGE = False
@@ -15,9 +13,9 @@ class TestRunner:
 
     def run(self, tests):
         self.timeline.mark_event('Run: inside run method')
-        from pycrunch.api.shared import timestamp
+        from pycrunch.introspection.clock import clock
         from pycrunch.runner.interception import capture_stdout
-        from pycrunch.shared.models import TestMetadata
+        from pycrunch.shared.primitives import TestMetadata
         self.timeline.mark_event('Run: inside run method - imports complete')
 
         results = dict()
@@ -43,11 +41,11 @@ class TestRunner:
                 cov.start()
 
                 with capture_stdout() as get_value:
-                    time_start = timestamp()
+                    time_start = clock.now()
                     self.timeline.mark_event('About to start test execution')
                     execution_result = self.runner_engine.run_test(metadata)
                     self.timeline.mark_event('Test execution complete, postprocessing results')
-                    time_end = timestamp()
+                    time_end = clock.now()
                     time_elapsed = time_end - time_start
 
                     cov.stop()
