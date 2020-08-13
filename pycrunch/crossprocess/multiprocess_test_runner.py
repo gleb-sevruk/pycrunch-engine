@@ -45,9 +45,7 @@ class MultiprocessTestRunner:
         logger.debug('Initializing subprocess...')
         child_processes = []
         for task in self.tasks:
-            shell = True
-            # child_processes.append(asyncio.create_subprocess_shell(self.get_command_line_for_child(port,task.id), cwd=config.working_directory, shell=shell))
-            child_processes.append(asyncio.create_subprocess_exec(sys.executable, *self.get_command_line_for_child_array(port, task.id), cwd=config.working_directory))
+            child_processes.append(self.create_child_subprocess(port, task))
 
         logger.debug(f'Waiting for startup of {len(self.tasks)} subprocess task(s)')
         subprocesses_results = await asyncio.gather(*child_processes)
@@ -69,8 +67,6 @@ class MultiprocessTestRunner:
             logger.warning(f'Reached execution timeout of {self.timeout_if_non_debug()} seconds. ')
             for _ in subprocesses_results:
                 try:
-                    _.terminate()
-
                     _.kill()
                 except:
                     logger.warning('Cannot kill child runner process with, ignoring.')
@@ -104,27 +100,22 @@ class MultiprocessTestRunner:
             raise asyncio.TimeoutError('Test execution timeout.')
         return _results
 
+    def create_child_subprocess(self, port, task):
+        # sys.executable is a full path to python.exe (or ./python) in current virtual environment
+        return asyncio.create_subprocess_exec(sys.executable, *self.get_command_line_for_child(port, task.id), cwd=config.working_directory)
+
     def timeout_if_non_debug(self) -> Optional[float]:
         if self.remote_debug_params.enabled:
             return None
         return self.timeout
 
     def get_command_line_for_child(self, port, task_id):
-        engine_root = f' {config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py '
-        hardcoded_path = engine_root + f'--engine={config.runtime_engine} --port={port} --task-id={task_id} --load-pytest-plugins={str(config.load_pytest_plugins).lower()}'
-        remote_debug_str = ''
-        if self.remote_debug_params.enabled:
-            remote_debug_str = f' --enable-remote-debug --remote-debugger-port={self.remote_debug_params.port}'
-        return sys.executable + hardcoded_path + f'{remote_debug_str}'
-
-    def get_command_line_for_child_array(self, port, task_id):
-        results= []
+        results = []
         results.append(f'{config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py')
         results.append(f'--engine={config.runtime_engine}')
         results.append(f'--port={port}')
         results.append(f'--task-id={task_id}')
         results.append(f'--load-pytest-plugins={str(config.load_pytest_plugins).lower()}')
-        remote_debug_str = ''
         if self.remote_debug_params.enabled:
             results.append(f'--enable-remote-debug')
             results.append(f'--remote-debugger-port={self.remote_debug_params.port}')

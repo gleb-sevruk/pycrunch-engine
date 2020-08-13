@@ -31,12 +31,12 @@ def handle_message(message):
 
 
 @shared.sio.on('json')
-def handle_json(json):
+async def handle_json(json, smth):
     logger.debug('handle_json')
     # logger.debug(session['userid'])
     # url_for1 = url_for('my event', _external=True)
     # logger.debug('url + ' + url_for1)
-    pipe.push(event_type='connected', **{'data': 'Connected'})
+    await pipe.push(event_type='connected', **{'data': 'Connected'})
     logger.debug('received json 2: ' + str(json))
 
 
