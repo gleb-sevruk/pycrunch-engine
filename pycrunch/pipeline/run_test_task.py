@@ -1,11 +1,11 @@
 import asyncio
 import os
-from pprint import pprint
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
 from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
+from pycrunch.introspection.clock import clock
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
@@ -42,9 +42,19 @@ class TestRunStatus:
         return self.status != 'success'
 
 
+class RemoteDebugParams:
+    def __init__(self, enabled: bool, port: Optional[int] = None):
+        self.port = port
+        self.enabled = enabled
+
+    @classmethod
+    def disabled(cls):
+        return RemoteDebugParams(False)
+
 class RunTestTask(AbstractTask):
-    def __init__(self, tests):
-        self.timestamp = shared.timestamp()
+    def __init__(self, tests, remote_debug_params: RemoteDebugParams):
+        self.remote_debug_params = remote_debug_params
+        self.timestamp = clock.now()
         self.tests = tests
         self.results = None
         self.timeline = Timeline('run tests')
@@ -91,7 +101,7 @@ class RunTestTask(AbstractTask):
         async_tasks_post.append(shared.pipe.push(
             event_type='test_run_completed',
             coverage=cov_to_send,
-            timings=dict(start=self.timestamp, end=shared.timestamp()),
+            timings=dict(start=self.timestamp, end=clock.now()),
         ))
 
         self.timeline.mark_event('Started combined coverage serialization')
@@ -106,7 +116,7 @@ class RunTestTask(AbstractTask):
                 # Todo: why do I need dependencies to be exposed? It is internal state.
                 # dependencies=self.build_dependencies(),
                 aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
-                timings=dict(start=self.timestamp, end=shared.timestamp()),
+                timings=dict(start=self.timestamp, end=clock.now()),
             ))
 
         self.timeline.mark_event('Waiting until post-processing tasks are completed')
@@ -138,6 +148,10 @@ class RunTestTask(AbstractTask):
         return results_as_json
 
     def post_process_combined_coverage(self, run_results):
+        if self.remote_debug_params.enabled:
+            self.timeline.mark_event('Postprocessing: combined coverage will not be recomputed.')
+            return
+
         self.timeline.mark_event('Postprocessing: combined coverage, line hits, dependency tree')
         combined_coverage.add_multiple_results(run_results)
         self.timeline.mark_event('Postprocessing: completed')
@@ -151,7 +165,8 @@ class RunTestTask(AbstractTask):
             test_run_scheduler=TestRunScheduler(
                 cpu_cores=config.cpu_cores,
                 threshold=config.multiprocessing_threshold
-            )
+            ),
+            remote_debug_params=self.remote_debug_params,
         )
         return runner
 

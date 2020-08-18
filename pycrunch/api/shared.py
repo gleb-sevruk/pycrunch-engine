@@ -1,6 +1,4 @@
 from asyncio import shield
-from pprint import pprint
-from time import perf_counter
 
 import socketio
 from pycrunch.watcher.fs_watcher import FSWatcher
@@ -14,7 +12,6 @@ async_mode='aiohttp'
 # log_ws_internals = True
 log_ws_internals = False
 sio = socketio.AsyncServer(async_mode=async_mode, cors_allowed_origins='*', logger=log_ws_internals, engineio_logger=log_ws_internals)
-timestamp = perf_counter
 
 
 class ExternalPipe:

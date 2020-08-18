@@ -1,4 +1,5 @@
 import math
+from typing import List
 
 from pycrunch.scheduling.sheduled_task import TestRunPlan
 
@@ -15,7 +16,7 @@ class TestRunScheduler():
         self.cpu_cores = cpu_cores
         self.threshold = threshold
 
-    def schedule_into_tasks(self, tests):
+    def schedule_into_tasks(self, tests) -> List[TestRunPlan]:
         list_of_tasks = []
         total_tests_to_run = len(tests)
         logger.info(f'total_tests_to_run {total_tests_to_run}')

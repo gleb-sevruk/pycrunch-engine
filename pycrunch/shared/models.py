@@ -6,14 +6,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class TestMetadata:
-    def __init__(self, filename, name, module, fqn, state):
-        self.state = state
-        self.fqn = fqn
-        self.module = module
-        self.name = name
-        self.filename = filename
-
 class TestState:
     def __init__(self, discovered_test, execution_result, pinned):
         self.discovered_test = discovered_test
