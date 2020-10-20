@@ -8,10 +8,9 @@ engine:
   cpu-cores: 4
   load-pytest-plugins: false
   multiprocessing-threshold: 4
-  runtime: pytest
+  runtime: nose
   timeout: 0
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:
-- tests_two:test_pin_sleep120
-- pycrunch.tests.tests_configuration:test_environment_vars
+- pycrunch.tests.test_debugging:test_run_via_debug

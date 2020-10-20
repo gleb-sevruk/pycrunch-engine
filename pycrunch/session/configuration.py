@@ -48,7 +48,7 @@ class Configuration:
         self.multiprocessing_threshold = 5
         self.execution_timeout_in_seconds = 60
         # self.runtime_engine = 'pytest'
-        self.available_engines = ['simple', 'pytest', 'django']
+        self.available_engines = ['simple', 'pytest', 'django', 'nose']
         self.environment_vars = dict()
         self.load_pytest_plugins = False
         self.path_mapping = NoPathMapping()
