@@ -59,11 +59,14 @@ class EchoClientProtocol(asyncio.Protocol):
             from pycrunch.child_runtime.child_config import child_config
 
             if child_config.runtime_engine == 'nose':
-                from pycrunch.plugins.nose_support.nose_runner_engine import NoseRunnerEngine
-                runner_engine = NoseRunnerEngine(child_config)
+                from pycrunch.plugins.nose_support.nose_runner_engine import NoseRunnerEngine as RunnerEngine
+            elif child_config.runtime_engine in ['pytest', 'django']:
+                from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine as RunnerEngine
+            elif child_config.runtime_engine == 'simple':
+                from pycrunch.plugins.simple.simple_runner_engine import SimpleTestRunnerEngine as RunnerEngine
             else:
-                from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
-                runner_engine = PyTestRunnerEngine(child_config)
+                raise ValueError("Unsupported engine %r" % child_config.runtime_engine)
+            runner_engine = RunnerEngine(child_config)
 
             # should have env from pycrunch config heve
             r = TestRunner(runner_engine, timeline, child_config)
