@@ -3,7 +3,7 @@ coverage==4.5.3
 # last know working 5.4.3
 pytest
 watchgod
-python-socketio
+python-socketio>=4,<5
 aiohttp
 PyYAML
 pytest-asyncio
