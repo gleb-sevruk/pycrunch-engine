@@ -60,7 +60,7 @@ def run():
     loop = asyncio.get_event_loop()
     task = loop.create_task(connection_watchdog.watch_client_connection_loop())
     loop.set_debug(True)
-    web.run_app(app, port=port, host='0.0.0.0')
+    web.run_app(app, port=port, host='0.0.0.0', shutdown_timeout=3)
     # app.listen(port=port, address='0.0.0.0')
     # tornado.ioloop.IOLoop.current().start()
 
