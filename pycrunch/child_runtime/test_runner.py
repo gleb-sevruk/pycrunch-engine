@@ -39,7 +39,6 @@ class TestRunner:
                     should_disable_coverage = True
                 cov = CoverageAbstraction(should_disable_coverage, self.timeline)
                 cov.start()
-
                 with capture_stdout() as get_value:
                     time_start = clock.now()
                     self.timeline.mark_event('About to start test execution')

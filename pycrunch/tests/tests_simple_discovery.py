@@ -5,6 +5,7 @@ from pprint import pprint
 from unittest import mock
 from unittest.mock import mock_open, create_autospec
 
+from pycrunch.discovery.ast_discovery import AstTestDiscovery
 from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.session.configuration import Configuration
 
@@ -62,4 +63,10 @@ def run_dogfood_discovery():
     actual = sut.find_tests_in_folder(str(current_folder.absolute()))
     return actual
 
+def run_ast_dogfood_discovery():
+    root_folder = Path('.')
+    current_folder = root_folder.joinpath('pycrunch', 'tests', 'dogfood').absolute()
+    sut = AstTestDiscovery(str(root_folder.absolute()), Configuration())
+    actual = sut.find_tests_in_folder(str(current_folder.absolute()))
+    return actual
 

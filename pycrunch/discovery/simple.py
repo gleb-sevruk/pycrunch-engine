@@ -2,6 +2,9 @@ import inspect
 import logging
 import sys
 
+
+from pycrunch.discovery.shared import TestSet, TestsInModule, AbstractTestDiscovery
+from pycrunch.insights import trace
 from pycrunch.plugins.pytest_support.cleanup_contextmanager import ModuleCleanup
 from pycrunch.session import config
 from pycrunch.session.file_map import test_map
@@ -9,43 +12,14 @@ from pycrunch.session.file_map import test_map
 logger = logging.getLogger(__name__)
 
 
-class DiscoveredTest:
-    def __init__(self, name, filename, module):
-        self.filename = filename
-        self.module = module
-        # name of the test
-        self.name = name
-        self.fqn = module + ':' + name
-
-class TestSet:
-    def __init__(self):
-        self.files = set()
-        self.tests = []
-
-    def add_module(self, tests_in_module):
-        self.files.add(tests_in_module.filename)
-        for test in tests_in_module.tests_found:
-            self.tests.append(DiscoveredTest(test, tests_in_module.filename, tests_in_module.module))
 
 
-class TestsInModule:
-    def __init__(self, filename, tests_found, module):
-        # list of raw strings
-        self.tests_found = tests_found
-        self.filename = filename
-        self.module = module
-
-
-
-
-class SimpleTestDiscovery:
-
+class SimpleTestDiscovery(AbstractTestDiscovery):
     def __init__(self, root_directory=None, configuration=None):
         self.root_directory = root_directory
         self.configuration = configuration if configuration is not None else config
 
-    def find_tests_in_folder(self, folder, search_only_in = None):
-
+    def find_tests_in_folder(self, folder, search_only_in = None) -> TestSet:
         import glob, importlib, os, pathlib, sys
 
         if not self.root_directory:
@@ -69,18 +43,17 @@ class SimpleTestDiscovery:
 
         parent_path = pathlib.Path(MODULE_DIR)
         folder_path = pathlib.Path(folder)
-        # for x in folder_path.glob('**/*.py'):
-        #     print('-')
-        #     print(module_name_full)
 
-        # py_files = glob.glob(os.path.join(folder, '*.py'))
         py_files = folder_path.glob('**/*.py')
+
         test_set = TestSet()
+
         from os import environ
         for env_name, env_value in config.environment_vars.items():
             environ[env_name] = env_value
 
         self.configuration.prepare_django()
+        nest_asyncio.apply()
         with ModuleCleanup() as cleanup:
 
             for py_file in py_files:
@@ -89,14 +62,12 @@ class SimpleTestDiscovery:
                     if str(py_file) not in search_only_in:
                         continue
 
-
-                # print(py_file)
                 current_file_path = py_file.relative_to(parent_path)
                 if self.is_excluded_via_configuration(current_file_path):
                     continue
 
                 module_name = self.compute_module_name_from_path(current_file_path)
-                # module_name = pathlib.Path(py_file).stem
+
                 if not self.is_module_with_tests(module_name):
                     continue
                 try:
@@ -112,7 +83,9 @@ class SimpleTestDiscovery:
 
                 filename = str(py_file)
 
+                # this is global state mutation bellow
                 test_map.did_found_tests_in_file(filename, tests_found, module_name)
+
                 test_set.add_module(TestsInModule(filename, tests_found, module_name))
 
                 logger.warning(f'tests found: {tests_found}')
@@ -121,6 +94,12 @@ class SimpleTestDiscovery:
         return test_set
 
     def compute_module_name_from_path(self, current_file_path):
+        """
+        replaces relative file path such as pycrunch/tests/dogfood/test_pytest_classes.py
+          into string
+          pycrunch.tests.dogfood.test_pytest_classes
+
+        """
         if len(current_file_path.parts) > 1:
             module_name = str.join('.', current_file_path.parts[:-1]) + '.' + current_file_path.stem
         else:
@@ -135,6 +114,11 @@ class SimpleTestDiscovery:
         return x
 
     def find_tests_in_module(self, module):
+        """
+        Returns array of strings like
+          ['test_regular'] or
+          ['MyClass::test_method1', 'MyClass::test_method2', 'TestForDummies::test_method1', 'TestForDummies::test_method2']
+        """
         all_variables = dir(module)
         found_methods = []
         for v in all_variables:
