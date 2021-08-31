@@ -1,4 +1,4 @@
-coverage==4.5.3
+coverage==5.5
 
 # last know working 5.4.3
 pytest
