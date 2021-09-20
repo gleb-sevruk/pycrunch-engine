@@ -1,9 +1,10 @@
-import json
 import unittest
 from pprint import pprint
+from unittest.mock import MagicMock
 
 from pycrunch.api.serializers import CoverageRun
-from pycrunch.insights.variables_inspection import InsightTimeline, trace
+from pycrunch.child_runtime.coverage_hal import CoverageAbstraction
+from pycrunch.insights.variables_inspection import InsightTimeline
 from pycrunch.introspection.clock import Clock
 from pycrunch.runner.execution_result import ExecutionResult
 from pycrunch.shared.primitives import TestMetadata
@@ -20,3 +21,20 @@ class TestCoverageRun(unittest.TestCase):
         run = CoverageRun('test1', 1, test_meta, execution_result)
         pprint(run.as_json())
 
+    def test_coverage_lib_version_4(self):
+        sut = self.create_sut(is_v5_or_greater=False)
+
+        assert 'data_file' not in sut.get_coverage_arguments()
+
+    def test_coverage_lib_version_5(self):
+        sut = self.create_sut(is_v5_or_greater=True)
+
+        actual = sut.get_coverage_arguments()
+
+        assert 'data_file' in actual
+        assert actual['data_file'] == None
+
+    def create_sut(self, is_v5_or_greater):
+        sut = CoverageAbstraction(True, None)
+        sut.is_coverage_v5_or_greater = MagicMock(return_value=is_v5_or_greater)
+        return sut

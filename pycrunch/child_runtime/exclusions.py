@@ -11,6 +11,7 @@ exclude_list = py_test_exclusions + [
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_bundle/pydevd_comm.py',
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_frame_eval/pydevd_frame_tracing.py',
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_frame_eval/pydevd_modify_bytecode.py',
+    '*PyCharm.app/Contents/plugins/python/helpers/pydev/*',
     '*site-packages/werkzeug/serving.py',
     '*runner/test_runner.py',
     '*runner/execution_result.py',

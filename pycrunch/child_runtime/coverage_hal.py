@@ -4,11 +4,13 @@ from pycrunch.api.serializers import CoverageRunForSingleFile
 
 
 class CoverageAbstraction:
+    cov: "coverage.Coverage"
+
     def __init__(self, disable, timeline):
         """
 
         :type timeline: pycrunch.introspection.timings.Timeline
-        :type disable: bool
+        :type disable: bool; coverage will be disabled inside debugging session
         """
         self.timeline = timeline
         self.disable = disable
@@ -23,12 +25,24 @@ class CoverageAbstraction:
 
         use_slow_tracer = False
         # user_slow_tracer = True
+        coverage_args = self.get_coverage_arguments()
+
         # todo exclusion list should be configurable
-        cov = coverage.Coverage(config_file=False, timid=use_slow_tracer, branch=False, omit=exclusions.exclude_list)
+        cov = coverage.Coverage(
+            **coverage_args,
+            config_file=False,
+            timid=use_slow_tracer,
+            branch=False,
+            omit=exclusions.exclude_list,
+        )
+
         # logger.debug('-- before coverage.start')
 
+        # !!!!!
         # debug will not work after cov.start is called!
+        # !!!!!
         cov.start()
+
         # cov.exclude('def')
 
         # logger.debug('-- after coverage.start')
@@ -42,6 +56,24 @@ class CoverageAbstraction:
 
         self.cov.stop()
         self.timeline.mark_event('Coverage stopped')
+
+    def get_coverage_arguments(self):
+        coverage_args = dict()
+        if self.is_coverage_v5_or_greater():
+            # dont write on disk `.coverage` files,
+            # it is not needed, and will be deadlocked due to concurrent test execution
+            coverage_args.update(
+                dict(
+                    data_file=None
+                ))
+        return coverage_args
+
+    def is_coverage_v5_or_greater(self):
+        version_info = getattr(coverage, 'version_info', None)
+        if not isinstance(version_info, tuple) or len(version_info) <= 0:
+            return False
+
+        return version_info[0] >= 5
 
     def parse_all_hit_lines(self):
         """
@@ -61,6 +93,7 @@ class CoverageAbstraction:
         for f in coverage_data.measured_files():
             # maybe leave only what we need?
             lines = coverage_data.lines(f)
+
             # arcs = coverage_data.arcs(f)
             #         * The file name for the module.
             #         * A list of line numbers of executable statements.
