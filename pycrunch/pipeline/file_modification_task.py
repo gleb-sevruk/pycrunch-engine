@@ -1,7 +1,7 @@
 import time
 
 from pycrunch.api import shared
-from pycrunch.discovery.simple import SimpleTestDiscovery
+from pycrunch.discovery.strategy import create_test_discovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.pipeline.run_test_task import RunTestTask, RemoteDebugParams
@@ -26,7 +26,7 @@ class FileModifiedNotificationTask(AbstractTask):
         # clean up zombie tests
         # run impacted tests and newly discovered
 
-        discovery = SimpleTestDiscovery()
+        discovery = create_test_discovery()
         old_map = test_map.get_immutable_tests_for_file(self.file)
         possibly_new_tests = discovery.find_tests_in_folder(state.engine.folder, search_only_in=[self.file])
         await state.engine.test_discovery_will_become_available(possibly_new_tests)
