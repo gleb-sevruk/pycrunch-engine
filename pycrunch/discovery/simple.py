@@ -101,6 +101,7 @@ class SimpleTestDiscovery:
                     continue
                 try:
                     logger.warning('importing ' + module_name)
+                    # todo maybe i can use ast for discovery? this will eliminate need of importing modules
                     module = importlib.import_module(module_name)
                     tests_found = self.find_tests_in_module(module)
                 except Exception as ex:

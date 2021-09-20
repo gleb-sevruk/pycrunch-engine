@@ -1,10 +1,13 @@
 from collections import defaultdict
 
+from pycrunch.my_ast.ast_map import AstMap
+
 
 class TestMap:
     def __init__(self):
         # filename -> test_fqn[]
         self.map = defaultdict(set)
+        self.ast_map = AstMap()
 
     def did_found_tests_in_file(self, filename, test_names, module_name):
         if len(test_names) <= 0:
@@ -14,6 +17,7 @@ class TestMap:
         for test in test_names:
             new_list.add(module_name + ':' + test)
 
+        # self.ast_map.add_file(filename)
         self.map[filename] = new_list
 
     def get_immutable_tests_for_file(self, filename):

@@ -10,7 +10,7 @@ class FileWithCoverage:
         self.lines_covered = lines_covered
         self.filename = filename
 
-
+# Represents combined coverage for single file
 class FileStatistics:
     filename: str
     lines_with_entrypoints: Dict[str, Set[str]]
@@ -18,8 +18,6 @@ class FileStatistics:
     def __init__(self, filename):
         self.filename = filename
         # line by line, each line contains one or multiple tests
-
-
         # 1: [module1:test1, ...]
         # 2: [module1:test_1, module2:test_2]
         self.lines_with_entrypoints = defaultdict(set)
@@ -56,6 +54,7 @@ class CombinedCoverage:
         # all files involved in execution of test.
         # FQN will end up showing in multiple files if dependent file was used during run
         self.dependencies = defaultdict(set)
+        # fqn -> set(filename1, filename2) ; mostly for cleaning stale files from old coverage markers
         self.file_dependencies_by_tests = defaultdict(set)
         #  in format
         #   {
