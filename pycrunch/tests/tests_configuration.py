@@ -11,6 +11,19 @@ def test_django_engine_by_default():
     sut = create_sut()
     assert sut.runtime_engine == 'django'
 
+def test_deep_inheritance_is_off_by_default():
+    sut = create_sut()
+    assert not sut.deep_inheritance
+
+def test_deep_inheritance_is_on_in_config():
+    read_data = '''
+       engine:
+         deep-inheritance: true
+       '''
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert sut.deep_inheritance
 
 def test_can_change_to_simple_engine():
     sut = create_sut()

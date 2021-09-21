@@ -43,6 +43,7 @@ class Configuration:
         self.django_ready = False
         self.engine_directory = 'unknown'
         self.engine_mode = 'auto'
+        self.deep_inheritance = False
         self.pinned_tests = set()
         self.cpu_cores = self.get_default_cpu_cores()
         self.multiprocessing_threshold = 5
@@ -111,7 +112,7 @@ class Configuration:
                     execution_timeout = engine_config.get('timeout', None)
                     if execution_timeout is not None:
                         self.execution_timeout_will_change(execution_timeout)
-
+                    self.deep_inheritance_will_change(engine_config)
                 pinned_tests = x.get('pinned-tests', None)
                 if pinned_tests:
                     self.apply_pinned_tests(pinned_tests)
@@ -144,6 +145,12 @@ class Configuration:
         if node is not None:
             if type(node) == bool:
                 self.load_pytest_plugins = node
+
+    def deep_inheritance_will_change(self, engine_config):
+        deep_inheritance: str = engine_config.get('deep-inheritance', None)
+        if deep_inheritance is not None:
+            if type(deep_inheritance) == bool:
+                self.deep_inheritance = deep_inheritance
 
     def execution_timeout_will_change(self, new_timeout: float):
         if new_timeout < 0:

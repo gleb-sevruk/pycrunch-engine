@@ -25,7 +25,9 @@ class TestProblem():
 
 def test_double_inheritance():
     search_only_in = [double_inh.__file__]
-    actual = run_dogfood_discovery(search_only_in)
+    configuration = Configuration()
+    configuration.deep_inheritance = True
+    actual = run_dogfood_discovery(search_only_in, configuration)
     test_names = list(map(lambda _: _.name, actual.tests))
 
     assert 'DoublyInheritedScenario::test_1' in test_names
@@ -50,10 +52,10 @@ def test_classes_with_unit_tests_are_discoverable():
     assert 'TestForDummies::helper_method' not in test_names
 
 
-def run_dogfood_discovery(search_only_in=None):
+def run_dogfood_discovery(search_only_in=None, config=None):
     root_folder = Path('.')
     current_folder = root_folder.joinpath('pycrunch', 'tests', 'dogfood').absolute()
-    sut = AstTestDiscovery(str(root_folder.absolute()), Configuration())
+    sut = AstTestDiscovery(str(root_folder.absolute()), config if config else Configuration())
 
     actual = sut.find_tests_in_folder(
         str(current_folder.absolute()),

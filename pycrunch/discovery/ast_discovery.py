@@ -182,6 +182,9 @@ class AstTestDiscovery:
         #     return False
 
         def special_tactics():
+            if not self.configuration.deep_inheritance:
+                return False
+
             code = compile(ast_module, filename='dummy', mode='exec')
             namespace = {}
             # Todo cache?
