@@ -67,7 +67,7 @@ class AstTestDiscovery:
                 continue
 
             try:
-                logger.warning('importing ' + module_name)
+                logger.debug('Compiling ' + module_name)
                 ast_tree = self.load_syntax_tree_from(py_file)
                 tests_found = self.load_tests_from_ast_representation(ast_tree)
             except Exception as ex:
@@ -82,9 +82,9 @@ class AstTestDiscovery:
             test_map.did_found_tests_in_file(filename, tests_found, module_name)
             test_set.add_module(TestsInModule(filename, tests_found, module_name))
 
-            logger.warning(f'tests found: {tests_found}')
+            logger.debug(f'tests found: {tests_found}')
 
-        logger.warning(f' Time spent parsing AST : {round(self.time_spent, 3)} seconds')
+        logger.info(f' Time spent parsing AST : {round(self.time_spent, 3)} seconds')
 
         return test_set
 
@@ -176,26 +176,19 @@ class AstTestDiscovery:
         return name.startswith('Test') or name.endswith('Test')
 
     def is_subclass_of_unittest(self, ast_module: ast.Module, class_ast: ast.ClassDef) -> bool:
-        # TODO: deep search
-        # if class_ast.name != 'SomeClassDoublyInherited':
-
-        #     return False
-
-        def special_tactics():
+        def search_via_deep_inheritance_analysis():
             if not self.configuration.deep_inheritance:
                 return False
 
+            # Compile and execute module
             code = compile(ast_module, filename='dummy', mode='exec')
             namespace = {}
-            # Todo cache?
             exec(code, namespace)
+
+            # Check inheritance hierarchy
             may_null = namespace.get(class_ast.name)
             if may_null is None:
                 return False
-            try:
-                import unittest
-            except:
-                pass
             may_be_not_loaded = sys.modules.get("unittest")
             is_unit_test_sub = may_be_not_loaded and issubclass(may_null, may_be_not_loaded.TestCase)
 
@@ -215,12 +208,13 @@ class AstTestDiscovery:
             if possible_none in available_subclasses:
                 return True
 
-        special_tactics_result = False
+        deep_inheritance_result = False
         try:
-            special_tactics_result = special_tactics()
+            deep_inheritance_result = search_via_deep_inheritance_analysis()
         except Exception as e:
-            logger.warning(f'Failed to compile special_tactics for {class_ast.name}; Error: {e}')
-        return special_tactics_result
+            hint = 'You can disable this behaviour via `engine->deep-inheritance: false` configuration in .pycrunch-config.yaml'
+            logger.warning(f'Failed to compile module to search via deep_inheritance_analysis for {class_ast.name}; Error: {e};\n{hint}')
+        return deep_inheritance_result
 
 
 # for basecls in inspect.getmro(self.obj.__class__):
