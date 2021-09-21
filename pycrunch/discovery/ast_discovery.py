@@ -1,5 +1,6 @@
 import ast
 import logging
+import sys
 from pathlib import Path
 from typing import List
 
@@ -107,12 +108,12 @@ class AstTestDiscovery:
         def process_class_def(class_ast: ast.ClassDef) -> List[str]:
             class_results = []
             class_ast_name = class_ast.name
-            print(class_ast_name)
-            # if class_ast_name != 'SomeClassDoublyInherited':
-            #     return []
-            c1 = self.is_subclass_of_unittest(class_ast)
+
             c2 = self.looks_like_test_class(class_ast.name)
-            if c1 or c2:
+            if not c2:
+                c2 = self.is_subclass_of_unittest(ast_tree, class_ast)
+
+            if c2:
                 for member in class_ast.body:
                     # TODO nested classes
                     if type(member) != ast.FunctionDef:
@@ -174,11 +175,31 @@ class AstTestDiscovery:
     def looks_like_test_class(self, name: str) -> bool:
         return name.startswith('Test') or name.endswith('Test')
 
-    def is_subclass_of_unittest(self, class_ast: ast.ClassDef) -> bool:
+    def is_subclass_of_unittest(self, ast_module: ast.Module, class_ast: ast.ClassDef) -> bool:
         # TODO: deep search
         # if class_ast.name != 'SomeClassDoublyInherited':
+
         #     return False
+
+        def special_tactics():
+            code = compile(ast_module, filename='dummy', mode='exec')
+            namespace = {}
+            # Todo cache?
+            exec(code, namespace)
+            may_null = namespace.get(class_ast.name)
+            if may_null is None:
+                return False
+            try:
+                import unittest
+            except:
+                pass
+            may_be_not_loaded = sys.modules.get("unittest")
+            is_unit_test_sub = may_be_not_loaded and issubclass(may_null, may_be_not_loaded.TestCase)
+
+            return is_unit_test_sub
+
         available_subclasses = ['TestCase']
+
         for _ in class_ast.bases:
             type_of_base = type(_)
             if type_of_base == ast.Name:
@@ -186,11 +207,17 @@ class AstTestDiscovery:
             elif type_of_base == ast.Attribute:
                 possible_none = getattr(_, 'attr')
             else:
-                return False
+               continue
 
             if possible_none in available_subclasses:
                 return True
-        return False
+
+        special_tactics_result = False
+        try:
+            special_tactics_result = special_tactics()
+        except Exception as e:
+            logger.warning(f'Failed to compile special_tactics for {class_ast.name}; Error: {e}')
+        return special_tactics_result
 
 
 # for basecls in inspect.getmro(self.obj.__class__):
