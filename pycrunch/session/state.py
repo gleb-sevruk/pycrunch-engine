@@ -11,8 +11,8 @@ from pycrunch.shared.models import all_tests
 
 logger = logging.getLogger(__name__)
 
-from pycrunch.discovery.simple import SimpleTestDiscovery
-                                                                                                                                                        
+from pycrunch.discovery.strategy import create_test_discovery
+
 class EngineState:
     def __init__(self):
         # self.all_tests = dict()
@@ -29,7 +29,7 @@ class EngineState:
 
         self.prepare_runtime_configuration_if_necessary()
 
-        discovery_engine = SimpleTestDiscovery()
+        discovery_engine = create_test_discovery()
         test_set = discovery_engine.find_tests_in_folder(self.folder)
         await engine.test_discovery_will_become_available(test_set)
 

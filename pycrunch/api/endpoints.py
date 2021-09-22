@@ -7,7 +7,6 @@ from pathlib import Path
 
 from pycrunch import runner
 from pycrunch.api.shared import file_watcher
-from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.run_test_task import RunTestTask
 from pycrunch.session import config

@@ -16,6 +16,7 @@ from pycrunch.session import config
 from pycrunch.session.state import engine
 from pycrunch.shared.models import all_tests
 from . import shared
+from .. import version
 from ..watchdog.connection_watchdog import connection_watchdog
 from ..watchdog.tasks import TerminateTestExecutionTask
 from ..watchdog.watchdog import watchdog_dispather_thread
@@ -110,10 +111,7 @@ async def connect(sid, environ):
         **dict(
             data='Connected test_connected',
             engine_mode=engine.get_engine_mode(),
-            version=dict(
-                major=1,
-                minor=2,
-            )
+            version=version.version_info
         )
     )
     with thread_lock:

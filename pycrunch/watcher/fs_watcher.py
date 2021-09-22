@@ -4,7 +4,6 @@ from pathlib import Path
 
 from watchgod import watch, Change, PythonWatcher, awatch
 
-from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.file_removed_task import FileRemovedTask
 from ._abstract_watcher import Watcher
