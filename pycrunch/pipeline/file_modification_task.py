@@ -1,9 +1,12 @@
+import asyncio
 import time
 
 from pycrunch.api import shared
+from pycrunch.constants import CONFIG_FILE_NAME
 from pycrunch.discovery.strategy import create_test_discovery
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.abstract_task import AbstractTask
+from pycrunch.pipeline.config_reload_task import ConfigReloadTask
 from pycrunch.pipeline.run_test_task import RunTestTask, RemoteDebugParams
 from pycrunch.session import state
 from pycrunch.session.combined_coverage import combined_coverage
@@ -16,10 +19,16 @@ class FileModifiedNotificationTask(AbstractTask):
         self.timestamp = time.time()
 
     async def run(self):
-        await shared.pipe.push(event_type='file_modification',
+        if self.file.endswith(CONFIG_FILE_NAME):
+            execution_pipeline.add_task(ConfigReloadTask())
+            return
+
+        asyncio.ensure_future(shared.pipe.push(event_type='file_modification',
                          modified_file=self.file,
                          ts=self.timestamp,
-                         )
+                         ))
+
+
 
         # todo
         # look out for new tests in changed files
@@ -29,7 +38,8 @@ class FileModifiedNotificationTask(AbstractTask):
         discovery = create_test_discovery()
         old_map = test_map.get_immutable_tests_for_file(self.file)
         possibly_new_tests = discovery.find_tests_in_folder(state.engine.folder, search_only_in=[self.file])
-        await state.engine.test_discovery_will_become_available(possibly_new_tests)
+        await  state.engine.test_discovery_will_become_available(possibly_new_tests)
+
         new_map = test_map.get_immutable_tests_for_file(self.file)
         removed_tests = set()
         added_tests = set()
@@ -65,9 +75,9 @@ class FileModifiedNotificationTask(AbstractTask):
 
             tests_to_run = state.engine.all_tests.collect_by_fqn(execution_plan)
             dirty_tests = self.consider_engine_mode(tests_to_run)
+
             execution_pipeline.add_task(RunTestTask(dirty_tests, RemoteDebugParams.disabled()))
 
-        pass;
 
     def consider_engine_mode(self, tests_to_run):
         if state.config.engine_mode == 'auto':

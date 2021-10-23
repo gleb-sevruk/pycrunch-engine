@@ -11,7 +11,15 @@ async_mode='aiohttp'
 
 # log_ws_internals = True
 log_ws_internals = False
-sio = socketio.AsyncServer(async_mode=async_mode, cors_allowed_origins='*', logger=log_ws_internals, engineio_logger=log_ws_internals)
+sio_instance = None
+
+
+def sio():
+    global sio_instance
+    if sio_instance is None:
+        sio_instance = socketio.AsyncServer(async_mode=async_mode, cors_allowed_origins='*', logger=log_ws_internals, engineio_logger=log_ws_internals)
+    return sio_instance
+
 
 
 class ExternalPipe:
@@ -19,7 +27,7 @@ class ExternalPipe:
         # print(f'ws event: {event_type}')
         # pprint(kwargs)
 
-        await shield(sio.emit('event',
+        await shield(sio().emit('event',
                        dict(
                            event_type=event_type,
                            **kwargs

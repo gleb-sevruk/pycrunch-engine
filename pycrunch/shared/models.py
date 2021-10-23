@@ -12,6 +12,10 @@ class TestState:
         self.pinned = pinned
         self.execution_result = execution_result
 
+
+    def __repr__(self):
+        return f'TestState-> {self.discovered_test.fqn}'
+
 class AllTests:
     def __init__(self):
         # fqn -> TestState

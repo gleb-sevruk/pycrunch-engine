@@ -1,14 +1,12 @@
 import asyncio
 import logging.config
-import os
 from pathlib import Path
-
-import aiohttp
 import yaml
 from aiohttp import web
 
 from pycrunch import web_ui
 from pycrunch.session import config
+from pycrunch.session.state import engine
 from pycrunch.watchdog.connection_watchdog import connection_watchdog
 
 package_directory = Path(__file__).parent
@@ -23,7 +21,6 @@ with open(configuration_yaml_, 'r') as f:
 
 
 
-import socketio
 import sys
 
 if sys.platform == 'win32':
@@ -41,32 +38,36 @@ def run():
     if args.port:
         port = args.port
     print(f'PyCrunch port will be {port}')
-    print(f'PyCrunch Web-UI at http://0.0.0.0:{port}/ui/')
-    print(f'                or http://127.0.0.1:{port}/ui/')
     use_reloader = not True
 
-    from pycrunch.api.shared import sio
+
     from pycrunch.api import shared
-    import pycrunch.api.socket_handlers
+    from pycrunch.api.socket_handlers import attach_message_handlers_to_sio
+    engine.prepare_runtime_configuration_if_necessary()
 
     app = web.Application()
 
+    sio = shared.sio()
+
+    attach_message_handlers_to_sio(sio)
     sio.attach(app)
-    # This will enable PyCrunch web interface
-    web_ui.enable_for_aiohttp(app, package_directory)
+
+    if config.enable_web_ui:
+        # This will enable PyCrunch web interface
+        print(f'PyCrunch Web-UI at http://0.0.0.0:{port}/ui/')
+        print(f'                or http://127.0.0.1:{port}/ui/')
+        web_ui.enable_for_aiohttp(app, package_directory)
+    else:
+        print(f'PyCrunch Web-UI is disabled.')
+
 
 
 
     loop = asyncio.get_event_loop()
     task = loop.create_task(connection_watchdog.watch_client_connection_loop())
-    loop.set_debug(True)
-    web.run_app(app, port=port, host='0.0.0.0', shutdown_timeout=3)
-    # app.listen(port=port, address='0.0.0.0')
-    # tornado.ioloop.IOLoop.current().start()
+    loop.set_debug(config.enable_asyncio_debug)
+    web.run_app(app, port=port, host='0.0.0.0', shutdown_timeout=1)
 
-
-    # sio.run(app, debug=True)
-    # import eventlet
 
     # eventlet.wsgi.server(eventlet.listen(('', port)),  app,)
 

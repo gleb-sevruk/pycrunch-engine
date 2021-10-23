@@ -1,12 +1,12 @@
 import io
-import multiprocessing
-from pathlib import Path
-
 import logging
-from typing import Optional
+import multiprocessing
+import sys
+from pathlib import Path
+from typing import List, Optional
 
 import yaml
-
+from pycrunch.constants import CONFIG_FILE_NAME
 from pycrunch.session.auto_configuration import AutoConfiguration
 
 logger = logging.getLogger(__name__)
@@ -38,8 +38,8 @@ class Configuration:
     def __init__(self):
         self.allowed_modes = ['auto', 'manual', 'pinned']
         self.discovery_exclusions = ()
+        self.coverage_exclusions = []
         self.working_directory = Path('.')
-        self.runtime_engine = 'django'
         self.django_ready = False
         self.engine_directory = 'unknown'
         self.engine_mode = 'auto'
@@ -48,11 +48,13 @@ class Configuration:
         self.cpu_cores = self.get_default_cpu_cores()
         self.multiprocessing_threshold = 5
         self.execution_timeout_in_seconds = 60
-        # self.runtime_engine = 'pytest'
+        self.runtime_engine = 'pytest'
         self.available_engines = ['simple', 'pytest', 'django']
         self.environment_vars = dict()
         self.load_pytest_plugins = False
         self.path_mapping = NoPathMapping()
+        self.enable_asyncio_debug = False
+        self.enable_web_ui = False
 
     def runtime_engine_will_change(self, new_engine):
         self.throw_if_not_supported_engine(new_engine)
@@ -87,49 +89,71 @@ class Configuration:
 
         try:
             with io.open(self.configuration_file_path(), encoding='utf-8') as f:
-                x = yaml.safe_load(f)
-                discovery = x.get('discovery', None)
-                if discovery:
-                    exc = discovery.get('exclusions', None)
-                    if not hasattr(exc, "__len__"):
-                        raise Exception('.pycrunch-config.yaml: discovery->exclusions should be array')
-                    self.discovery_exclusions = tuple(exc)
-                engine_config = x.get('engine', None)
-                if engine_config:
-                    runtime_engine_name = engine_config.get('runtime', None)
-                    if runtime_engine_name:
-                        self.runtime_engine_will_change(runtime_engine_name)
-                    cpu_cores = engine_config.get('cpu-cores', None)
-                    if cpu_cores:
-                        self.cpu_cores_will_change(cpu_cores)
-                    multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
-                    if multiprocess_threshold:
-                        self.multiprocess_threshold_will_change(multiprocess_threshold)
-                    self.load_pytest_plugin_config(engine_config)
-
-
-                    # this is in seconds
-                    execution_timeout = engine_config.get('timeout', None)
-                    if execution_timeout is not None:
-                        self.execution_timeout_will_change(execution_timeout)
-                    self.deep_inheritance_will_change(engine_config)
-                pinned_tests = x.get('pinned-tests', None)
-                if pinned_tests:
-                    self.apply_pinned_tests(pinned_tests)
-                additional_env = x.get('env', None)
-                if additional_env:
-                    self.apply_additional_env(additional_env)
-                path_mapping = x.get('path-mapping', None)
-                if path_mapping:
-                    self.apply_path_mapping(path_mapping)
-                print(x)
-                print(f)
+                self._load_config_now(f)
         except Exception as e:
-            print("Exception during processing configuration\n" + str(e))
-            raise PycrunchException('configuration parse failed', e)
+            self.raise_configuration_error(e)
+
+    def watch_for_config_changes(self):
+        from pycrunch.api.shared import file_watcher
+        logger.debug('watch_for_config_changes')
+        file_watcher.watch([str(self.configuration_file_path().absolute())])
+
+    def raise_configuration_error(self, e):
+        print("Exception during processing configuration\n" + str(e))
+        raise PycrunchException('configuration parse failed', e)
+
+    def _load_config_now(self, f):
+        x = yaml.safe_load(f)
+        discovery = x.get('discovery', None)
+        if discovery:
+            exc = discovery.get('exclusions', None)
+            if not hasattr(exc, "__len__"):
+                raise Exception('.pycrunch-config.yaml: discovery->exclusions should be array')
+            self.discovery_exclusions = tuple(exc)
+        engine_config = x.get('engine', None)
+        if engine_config:
+            self._load_runtime_configuration_engine(engine_config)
+        pinned_tests = x.get('pinned-tests', None)
+        if pinned_tests:
+            self.apply_pinned_tests(pinned_tests)
+        additional_env = x.get('env', None)
+        if additional_env:
+            self.apply_additional_env(additional_env)
+        path_mapping = x.get('path-mapping', None)
+        if path_mapping:
+            self.apply_path_mapping(path_mapping)
+
+        self.apply_coverage_exclusions(x.get('coverage-exclusions', None))
+
+
+    def _load_runtime_configuration_engine(self, engine_config):
+        runtime_engine_name = engine_config.get('runtime', None)
+        if runtime_engine_name:
+            self.runtime_engine_will_change(runtime_engine_name)
+        cpu_cores = engine_config.get('cpu-cores', None)
+        if cpu_cores:
+            self.cpu_cores_will_change(cpu_cores)
+
+        enable_web_ui = engine_config.get('enable-web-ui', None)
+        if enable_web_ui:
+            if isinstance(enable_web_ui, bool):
+                self.enable_web_ui = enable_web_ui
+            else:
+                print('engine: enable-web-ui parameter should be a boolean')
+        multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
+        if multiprocess_threshold:
+            self.multiprocess_threshold_will_change(multiprocess_threshold)
+        self.load_pytest_plugin_config(engine_config)
+
+
+        # this is in seconds
+        execution_timeout = engine_config.get('timeout', None)
+        if execution_timeout is not None:
+            self.execution_timeout_will_change(execution_timeout)
+        self.deep_inheritance_will_change(engine_config)
 
     def configuration_file_path(self):
-        return self.working_directory.joinpath('.pycrunch-config.yaml')
+        return self.working_directory.joinpath(CONFIG_FILE_NAME)
 
     def runtime_mode_will_change(self, runtime_mode):
         self.throw_if_mode_not_supported(runtime_mode)
@@ -141,7 +165,7 @@ class Configuration:
             raise Exception(f"runtime mode {runtime_mode} not supported. Available options are: {self.allowed_modes}")
 
     def load_pytest_plugin_config(self, engine_config):
-        node :str= engine_config.get('load-pytest-plugins', None)
+        node: Optional[str] = engine_config.get('load-pytest-plugins', None)
         if node is not None:
             if type(node) == bool:
                 self.load_pytest_plugins = node
@@ -211,5 +235,34 @@ class Configuration:
     def multiprocess_threshold_will_change(self, multiprocessing_threshold):
         self.multiprocessing_threshold = multiprocessing_threshold
 
+    def apply_coverage_exclusions(self, exclusions: Optional[List[str]]):
+        if exclusions is None:
+            return
 
-config = Configuration()
+        if not hasattr(exclusions, "__len__"):
+            raise Exception('.pycrunch-config.yaml: apply_coverage->exclusions should be array')
+
+        self.coverage_exclusions = list((f'*{_}*' if not _.endswith('.py') else f'*{_}' for _ in exclusions))
+
+
+class _Lazy(object):
+  _config_instance: Optional[Configuration]
+
+  def __init__(self):
+    self.download = None
+    self._config_instance = None
+
+
+  @property
+  def config(self):
+    if not self._config_instance:
+      self._config_instance = Configuration()
+    return self._config_instance
+
+  def __getattr__(self, name):
+    return self.config.__getattribute__ (name)
+
+
+config = _Lazy() #  type: Optional[Configuration]
+
+

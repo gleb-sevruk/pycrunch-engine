@@ -1,3 +1,5 @@
+import pprint
+
 timeline = None
 
 def trace(*args, **kwargs):
@@ -9,6 +11,7 @@ def trace(*args, **kwargs):
 
     # todo: check for accepted types: str, int, dict() ?
     timeline.record(*args, **kwargs)
+
 
 def inject_timeline(new_timeline):
     global timeline
@@ -28,16 +31,24 @@ class RecordedVariable:
 
     def safe_for_serialization_value(self, value):
         if type(value) not in allowed_types:
-            return str(value)
+            return pprint.pformat(value)
 
         return value
 
     def as_json(self):
+        self.recurse_fix_dict(self.value)
         return dict(
             ts=self.timestamp,
             name=self.name,
             value=self.value,
         )
+
+    def recurse_fix_dict(self, v: dict):
+        if type(v) == dict:
+            for k, inner in v.items():
+                self.recurse_fix_dict(inner)
+                v[k] = self.safe_for_serialization_value(inner)
+
 
 
 class EmptyInsightTimeline:

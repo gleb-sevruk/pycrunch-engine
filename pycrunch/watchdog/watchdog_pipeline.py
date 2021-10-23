@@ -7,9 +7,6 @@ from pycrunch.watchdog.tasks import AbstractWatchdogTask
 logger = logging.getLogger(__name__)
 
 
-
-
-
 class WatchdogPipeline:
     def __init__(self):
         self.q = Queue()

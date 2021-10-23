@@ -97,10 +97,11 @@ class RunTestTask(AbstractTask):
 
         self.timeline.mark_event('Sending: test_run_completed event')
         # todo: i'm only using `filename` in connector, why bother with everything?
-        cov_to_send = dict(all_runs=self.convert_result_to_json(run_results))
+        cov_and_run_details_to_send = dict(all_runs=self.convert_result_to_json(run_results))
+
         async_tasks_post.append(shared.pipe.push(
             event_type='test_run_completed',
-            coverage=cov_to_send,
+            coverage=cov_and_run_details_to_send,
             timings=dict(start=self.timestamp, end=clock.now()),
         ))
 

@@ -36,7 +36,8 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
             # pytest.main(['tests_two.py::test_x', '-p', 'no:terminal'])
             # q - quite
             # s - do not capture console logs
-            additional_pytest_args = ['-qs' ]
+            # l - show variable values in the current stack
+            additional_pytest_args = ['-qs', '-l']
             plugins_arg = []
 
             if not self.child_config.load_pytest_plugins:
@@ -49,6 +50,8 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
             # print(all_args, file=sys.__stdout__)
             if self.child_config.enable_remote_debug:
                 try:
+                    # Todo: this is too late to check for debugger existence.
+                    #   Need verify before `debug` button click
                     import pydevd_pycharm
                     pydevd_pycharm.settrace('127.0.0.1', suspend=False, port=self.child_config.remote_debug_port, stdoutToServer=True, stderrToServer=True)
                 except ModuleNotFoundError as e:
