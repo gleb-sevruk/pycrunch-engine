@@ -4,10 +4,9 @@ from pathlib import Path
 import yaml
 from aiohttp import web
 
-from pycrunch import web_ui
 from pycrunch.session import config
 from pycrunch.session.state import engine
-from pycrunch.watchdog.connection_watchdog import connection_watchdog
+from pycrunch.execution_watchdog.connection_watchdog import connection_watchdog
 
 package_directory = Path(__file__).parent
 print(package_directory)
@@ -41,9 +40,10 @@ def run():
     use_reloader = not True
 
 
+    engine.prepare_runtime_configuration_if_necessary()
+
     from pycrunch.api import shared
     from pycrunch.api.socket_handlers import attach_message_handlers_to_sio
-    engine.prepare_runtime_configuration_if_necessary()
 
     app = web.Application()
 
@@ -56,6 +56,7 @@ def run():
         # This will enable PyCrunch web interface
         print(f'PyCrunch Web-UI at http://0.0.0.0:{port}/ui/')
         print(f'                or http://127.0.0.1:{port}/ui/')
+        from . import web_ui
         web_ui.enable_for_aiohttp(app, package_directory)
     else:
         print(f'PyCrunch Web-UI is disabled.')

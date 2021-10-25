@@ -17,9 +17,9 @@ from pycrunch.session import config
 
 import logging
 
-from pycrunch.watchdog.tasks import TestExecutionBeginTask, TestExecutionEndTask
-from pycrunch.watchdog.watchdog import termination_event
-from pycrunch.watchdog.watchdog_pipeline import watchdog_pipeline
+from pycrunch.execution_watchdog.tasks import TestExecutionBeginTask, TestExecutionEndTask
+from pycrunch.execution_watchdog.execution_watchdog import termination_event
+from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
 

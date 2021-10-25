@@ -17,5 +17,8 @@ class ExecutionPipeline:
     async def get_task(self):
         return await self.q.get()
 
+    async def async_add_task(self, task):
+        await self.q.put(task)
+
 
 execution_pipeline = ExecutionPipeline()

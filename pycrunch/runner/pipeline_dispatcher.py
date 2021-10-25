@@ -1,6 +1,5 @@
 import logging
 
-from pycrunch.api import shared
 from pycrunch.pipeline import execution_pipeline
 
 logger = logging.getLogger(__name__)

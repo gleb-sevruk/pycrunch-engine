@@ -2,8 +2,8 @@ import asyncio
 import logging
 
 from pycrunch.api.shared import pipe
-from pycrunch.watchdog.tasks import AbstractWatchdogTask, TestExecutionBeginTask, TestExecutionEndTask
-from pycrunch.watchdog.watchdog_pipeline import watchdog_pipeline
+from pycrunch.execution_watchdog.tasks import AbstractWatchdogTask, TestExecutionBeginTask, TestExecutionEndTask
+from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
 

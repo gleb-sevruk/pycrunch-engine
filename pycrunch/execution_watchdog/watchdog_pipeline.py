@@ -2,7 +2,7 @@ from asyncio import Queue
 
 import logging
 
-from pycrunch.watchdog.tasks import AbstractWatchdogTask
+from pycrunch.execution_watchdog.tasks import AbstractWatchdogTask
 
 logger = logging.getLogger(__name__)
 

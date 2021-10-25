@@ -10,10 +10,10 @@ from pycrunch.runner.pipeline_dispatcher import dispather_thread
 from pycrunch.session.state import engine
 from pycrunch.shared.models import all_tests
 from .. import version
-from ..watchdog.connection_watchdog import connection_watchdog
-from ..watchdog.tasks import TerminateTestExecutionTask
-from ..watchdog.watchdog import watchdog_dispather_thread
-from ..watchdog.watchdog_pipeline import watchdog_pipeline
+from ..execution_watchdog.connection_watchdog import connection_watchdog
+from ..execution_watchdog.tasks import TerminateTestExecutionTask
+from ..execution_watchdog.execution_watchdog import watchdog_dispather_thread
+from ..execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 
 if typing.TYPE_CHECKING:
