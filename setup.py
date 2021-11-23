@@ -10,10 +10,16 @@ setup(name='pycrunch-engine',
       license='libpng',
       keywords="tdd unit-testing test runner",
       packages=setuptools.find_packages(),
-      download_url='https://github.com/gleb-sevruk/pycrunch-engine/archive/v1.4.tar.gz',
+      project_urls={
+              'Documentation': 'https://pycrunch.com/docs',
+              'Funding': 'https://pycrunch.com/donate',
+              'PyCharm Plugin': 'https://plugins.jetbrains.com/plugin/13264-pycrunch--live-testing',
+              'Source': 'https://github.com/gleb-sevruk/pycrunch-engine',
+              'Tracker': 'https://github.com/gleb-sevruk/pycrunch-engine/issues',
+      },
       setup_requires=['wheel'],
       entry_points={
-          'console_scripts': ['pycrunch-engine=pycrunch.main:run'],
+              'console_scripts': ['pycrunch-engine=pycrunch.main:run'],
       },
       install_requires=[
           'pytest',
