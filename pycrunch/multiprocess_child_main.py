@@ -49,7 +49,7 @@ async def main():
 
     parser = argparse.ArgumentParser(description='PyCrunch CLI')
 
-    parser.add_argument('--engine', help='Engine used, one of [pytest, django, simple]')
+    parser.add_argument('--engine', help='Engine used, one of [pytest, django, simple, nose]')
     parser.add_argument('--port', help='PyCrunch-Engine server port to connect')
     parser.add_argument('--task-id', help='Id of task when multiple test runners ran at same time')
     parser.add_argument('--load-pytest-plugins', help='If this is true, execution will be slower.')
