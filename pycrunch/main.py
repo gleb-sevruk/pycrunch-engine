@@ -5,7 +5,6 @@ import yaml
 from aiohttp import web
 
 from pycrunch.session import config
-from pycrunch.session.state import engine
 from pycrunch.execution_watchdog.connection_watchdog import connection_watchdog
 
 package_directory = Path(__file__).parent
@@ -18,8 +17,6 @@ with open(configuration_yaml_, 'r') as f:
     logging.config.dictConfig(yaml.safe_load(f.read()))
 
 
-
-
 import sys
 
 if sys.platform == 'win32':
@@ -29,17 +26,16 @@ if sys.platform == 'win32':
 
 def run():
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int,
-                        help="Port number to listen")
+    parser.add_argument("--port", type=int, help="Port number to listen")
     args = parser.parse_args()
     port = 5000
     if args.port:
         port = args.port
     print(f'PyCrunch port will be {port}')
     use_reloader = not True
-
-
+    from pycrunch.session.state import engine
     engine.prepare_runtime_configuration_if_necessary()
 
     from pycrunch.api import shared
@@ -57,22 +53,21 @@ def run():
         print(f'PyCrunch Web-UI at http://0.0.0.0:{port}/ui/')
         print(f'                or http://127.0.0.1:{port}/ui/')
         from . import web_ui
+
         web_ui.enable_for_aiohttp(app, package_directory)
     else:
-        print(f'PyCrunch Web-UI is disabled.')
-
-
-
+        print(f'PyCrunch Web-UI is disabled. ')
+        print('    To enable it back, please set `engine->enable-web-ui` in `.pycrunch-config.yaml` to true')
 
     loop = asyncio.get_event_loop()
     task = loop.create_task(connection_watchdog.watch_client_connection_loop())
     loop.set_debug(config.enable_asyncio_debug)
-    web.run_app(app, port=port, host='0.0.0.0', shutdown_timeout=1)
 
+    from pycrunch.compatibility.aiohttp_shim import aiohttp_init_parameters
 
-    # eventlet.wsgi.server(eventlet.listen(('', port)),  app,)
+    additional_kw = aiohttp_init_parameters()
 
-    # shared.socketio.run(app, use_reloader=use_reloader, debug=True, extra_files=['log_configuration.yaml'], host='0.0.0.0', port=port)
+    web.run_app(app, port=port, host='0.0.0.0', shutdown_timeout=1, **additional_kw)
 
 
 if __name__ == '__main__':

@@ -9,7 +9,6 @@ def test_should_trace_something_to_timeline():
     future_is_here = 1
     trace(future_is_here=future_is_here)
     trace(traced_variable=42)
-    pass
 
 def marker(name_of_the_marker):
     pass
@@ -48,7 +47,6 @@ def test_inject_timeline_and_call_it_on_trace():
     inject_timeline(mock)
     trace(future_is_here=future_is_here)
     mock.record.assert_called_with(future_is_here=future_is_here)
-    pass
 
 def test_timeline_one_variable():
     variable_name = 42

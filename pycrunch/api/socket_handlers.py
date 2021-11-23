@@ -14,7 +14,7 @@ from ..execution_watchdog.connection_watchdog import connection_watchdog
 from ..execution_watchdog.tasks import TerminateTestExecutionTask
 from ..execution_watchdog.execution_watchdog import watchdog_dispather_thread
 from ..execution_watchdog.watchdog_pipeline import watchdog_pipeline
-
+from ..session import config
 
 if typing.TYPE_CHECKING:
     import socketio
@@ -72,10 +72,11 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
 
             execution_pipeline.add_task(RunTestTask(tests_to_run, debug_params))
         if action == 'load-file':
-            filename = json.get('filename')
-            logger.debug('download_file ' + filename)
-            #         return asynchronously
-            execution_pipeline.add_task(DownloadFileTask(filename))
+            if config.enable_web_ui:
+                filename = json.get('filename')
+                logger.debug('download_file ' + filename)
+                #         return asynchronously
+                execution_pipeline.add_task(DownloadFileTask(filename))
         if action == 'diagnostics':
             await engine.will_start_diagnostics_collection()
         if action == 'timings':

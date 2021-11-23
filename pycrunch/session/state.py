@@ -3,15 +3,13 @@ from pathlib import Path
 
 from pycrunch.api.serializers import serialize_test_set_state
 from pycrunch.api.shared import file_watcher, pipe
+from pycrunch.discovery.strategy import create_test_discovery
 from pycrunch.introspection.history import execution_history
 from pycrunch.session import config
 from pycrunch.session.diagnostics import diagnostic_engine
 from pycrunch.shared.models import all_tests
 
 logger = logging.getLogger(__name__)
-
-from pycrunch.discovery.strategy import create_test_discovery
-
 
 class EngineState:
     def __init__(self):
@@ -23,10 +21,15 @@ class EngineState:
         self.runtime_configuration_ready = False
 
     async def will_start_test_discovery(self):
+        #  TODO: How about running this automatically before engine is connected?
         self.prepare_runtime_configuration_if_necessary()
+        self.begin_watch_for_config_changes()
         discovery_engine = create_test_discovery()
         test_set = discovery_engine.find_tests_in_folder(self.folder)
         await engine.test_discovery_will_become_available(test_set)
+
+    def begin_watch_for_config_changes(self):
+        config.watch_for_config_changes()
 
     async def will_start_diagnostics_collection(self):
         self.prepare_runtime_configuration_if_necessary()
@@ -99,7 +102,6 @@ class EngineState:
         if not self.runtime_configuration_ready:
             self.runtime_configuration_ready = True
             config.load_runtime_configuration()
-            config.watch_for_config_changes()
 
 
 engine = EngineState()
