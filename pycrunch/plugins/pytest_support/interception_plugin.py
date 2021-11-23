@@ -65,7 +65,4 @@ class PyTestInterceptionPlugin:
         if len(self.failed_tests) > 0:
             return False
 
-        if len(self.passed_tests) <= 0:
-            return False
-        else:
-            return True
+        return len(self.passed_tests) > 0

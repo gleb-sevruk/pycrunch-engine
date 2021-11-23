@@ -44,7 +44,7 @@ class SimpleTestDiscovery:
         self.root_directory = root_directory
         self.configuration = configuration if configuration is not None else config
 
-    def find_tests_in_folder(self, folder, search_only_in = None):
+    def find_tests_in_folder(self, folder, search_only_in=None):
 
         import glob, importlib, os, pathlib, sys
 
