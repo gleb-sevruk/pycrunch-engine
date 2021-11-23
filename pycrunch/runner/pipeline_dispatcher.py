@@ -20,7 +20,7 @@ async def dispather_thread():
         try:
             await task.run()
         except Exception as e:
-            logger.exception('Exception in dispatcher_thread, ', exc_info=e)
+            logger.exception('Exception in dispatcher_thread, execution will begin from the next task', exc_info=e)
 
 
 

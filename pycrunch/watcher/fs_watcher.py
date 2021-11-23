@@ -41,20 +41,19 @@ def create_handler(files_to_watch: "Set[str]", event_loop):
             if not self.should_watch_file(event.src_path):
                 return
 
-            # will also emit `created`
-            # self.send_modification_message(event.dest_path)
 
             what = 'directory' if event.is_directory else 'file'
-            logger.info(
+            logger.debug(
                 "Moved %s: from %s to %s", what, event.src_path, event.dest_path
             )
+            self.send_modification_message(event.dest_path, 'moved')
 
         def on_created(self, event):
             super().on_created(event)
             if not self.should_watch_file(event.src_path):
                 return
 
-            self.send_modification_message(event.src_path)
+            self.send_modification_message(event.src_path, 'created')
 
         def on_deleted(self, event):
             super().on_deleted(event)
@@ -85,17 +84,16 @@ def create_handler(files_to_watch: "Set[str]", event_loop):
             if not self.should_watch_file(event.src_path):
                 return
 
-            self.send_modification_message(event.src_path)
+            self.send_modification_message(event.src_path, 'modified')
 
             what = 'directory' if event.is_directory else 'file'
-            logger.info("Modified %s: %s", what, event.src_path)
+            logger.debug("Modified %s: %s", what, event.src_path)
 
-        def send_modification_message(self, filename):
-            logger.info('Adding file modification for pipeline ' + filename)
+        def send_modification_message(self, filename, context):
+            logger.debug('Adding file modification for processing ' + filename)
 
-            self.add_task_in_queue(FileModifiedNotificationTask(file=filename))
-
-            logger.info(' -- done Added ' + filename)
+            self.add_task_in_queue(FileModifiedNotificationTask(file=filename, context=context))
+            logger.debug(' -- done Added ' + filename)
 
     return CustomFSWatchHandler()
 

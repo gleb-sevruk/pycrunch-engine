@@ -49,10 +49,6 @@ class AstTestDiscovery:
         py_files = folder_path.glob('**/*.py')
         test_set = TestSet()
 
-        from os import environ
-        for env_name, env_value in config.environment_vars.items():
-            environ[env_name] = env_value
-
         for py_file in py_files:
             if search_only_in:
                 if str(py_file) not in search_only_in:

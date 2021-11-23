@@ -1,6 +1,5 @@
-from asyncio import Queue
-
 import logging
+from asyncio import Queue
 
 logger = logging.getLogger(__name__)
 
@@ -13,10 +12,14 @@ class ExecutionPipeline:
         logger.debug('Received task in queue')
         self.q.put_nowait(task)
 
+    def tasks_in_queue(self):
+        return self.q.qsize()
+
     async def get_task(self):
         return await self.q.get()
 
-    def put_raw(self, abstract_task):
-        self.q.put(abstract_task)
+    async def put_raw(self, abstract_task):
+        await self.q.put(abstract_task)
+
 
 execution_pipeline = ExecutionPipeline()

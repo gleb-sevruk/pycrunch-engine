@@ -1,4 +1,5 @@
 import logging
+from asyncio import get_event_loop
 from pathlib import Path
 
 from pycrunch.api.serializers import serialize_test_set_state
@@ -51,14 +52,17 @@ class EngineState:
 
         # TODO: maybe do not wait for the signal from plugin to start discovery.
         self.all_tests.discard_tests_not_in_map()
-        await self.notify_clients_about_tests_change()
-        logger.info('discovery_did_become_available')
-        logger.info(f'Adding files for watch: total of {len(test_set.files)}')
+        self.notify_clients_about_tests_change()
+        logger.debug('discovery_did_become_available')
+        logger.debug(f'Adding files for watch: total of {len(test_set.files)}')
         file_watcher.watch(test_set.files)
 
-    async def notify_clients_about_tests_change(self):
-        logger.info('notify_clients_about_tests_change')
-        await pipe.push(event_type='discovery_did_become_available', **serialize_test_set_state(self.all_tests.tests), folder=self.folder)
+    def notify_clients_about_tests_change(self):
+        logger.debug('notify_clients_about_tests_change')
+        serialized_data = serialize_test_set_state(self.all_tests.tests)
+        get_event_loop().create_task(
+            pipe.push(event_type='discovery_did_become_available', **serialized_data, folder=self.folder)
+        )
 
     async def tests_will_run(self, tests):
         logger.info('tests_will_run')
@@ -66,18 +70,18 @@ class EngineState:
         for test in tests:
             self.all_tests.test_will_run(test.discovered_test.fqn)
 
-        await self.notify_clients_about_tests_change()
+        self.notify_clients_about_tests_change()
 
     async def tests_did_run(self, results):
         for k, v in results.items():
             self.all_tests.test_did_run(k, v)
 
-        await self.notify_clients_about_tests_change()
+        self.notify_clients_about_tests_change()
 
     async def tests_will_pin(self, fqns):
         for fqn in fqns:
             self.all_tests.pin_test(fqn)
-        await self.notify_clients_about_tests_change()
+        self.notify_clients_about_tests_change()
 
         self.save_pinned_state()
 
@@ -87,7 +91,7 @@ class EngineState:
             self.all_tests.unpin_test(fqn)
 
         self.save_pinned_state()
-        await self.notify_clients_about_tests_change()
+        self.notify_clients_about_tests_change()
 
     def save_pinned_state(self):
         config.save_pinned_tests_config(self.all_tests.get_pinned_tests())

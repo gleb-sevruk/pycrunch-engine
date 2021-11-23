@@ -1,7 +1,6 @@
 import io
 import logging
 import multiprocessing
-import sys
 from pathlib import Path
 from typing import List, Optional
 
@@ -203,6 +202,7 @@ class Configuration:
             self.pinned_tests.add(fqn)
 
     def apply_additional_env(self, additional_env):
+        print('Using additional env from config:')
         print(additional_env)
         for env in additional_env:
             self.environment_vars[env] = additional_env[env]
