@@ -37,7 +37,6 @@ def create_handler(files_to_watch: "Set[str]", event_loop):
             if self.known_file(event.src_path):
                 self.add_task_in_queue(FileRemovedTask(file=event.src_path))
 
-            # todo test dirs move
             if not self.should_watch_file(event.src_path):
                 return
 
