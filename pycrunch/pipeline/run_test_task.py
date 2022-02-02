@@ -110,16 +110,14 @@ class RunTestTask(AbstractTask):
         self.timeline.mark_event('Completed combined coverage serialization')
 
         self.timeline.mark_event('Sending: combined coverage over WS')
-        # async_tasks_post.append(
-        await shared.pipe.push(
-            event_type='combined_coverage_updated',
-            combined_coverage=serialized,
-            # Todo: why do I need dependencies to be exposed? It is internal state.
-            # dependencies=self.build_dependencies(),
-            aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
-            timings=dict(start=self.timestamp, end=clock.now())
+        async_tasks_post.append(
+            shared.pipe.push(
+                event_type='combined_coverage_updated',
+                combined_coverage=serialized,
+                aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
+                timings=dict(start=self.timestamp, end=clock.now())
+            )
         )
-            # ))
 
         self.timeline.mark_event('Waiting until post-processing tasks are completed')
         await asyncio.gather(*async_tasks_post)
