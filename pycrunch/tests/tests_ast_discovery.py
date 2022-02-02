@@ -1,5 +1,4 @@
 from pathlib import Path
-from unittest import skip
 
 from pycrunch.discovery.ast_discovery import AstTestDiscovery
 from pycrunch.session.configuration import Configuration

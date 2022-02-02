@@ -6,15 +6,15 @@ discovery:
   - pycrunch/tests/dogfood
   - tests_discovery_specs_demo.py
 engine:
-  cpu-cores: 2
+  cpu-cores: 4
   load-pytest-plugins: false
   multiprocessing-threshold: 4
   runtime: pytest
-  timeout: 10
+  timeout: 0
 #   requires restart
   enable-web-ui: false
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:
-- pycrunch.tests.tests_configuration:test_should_call_auto_config
+- tests_two:test_pin_sleep120
 - pycrunch.tests.tests_configuration:test_environment_vars
