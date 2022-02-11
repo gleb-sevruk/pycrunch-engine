@@ -114,7 +114,7 @@ class EchoClientProtocol(asyncio.Protocol):
 
     def connection_lost(self, exc):
         self.timeline.mark_event(f'TCP: Connection to server lost')
-        print(f'[{os.getpid()}] [task_id: {self.task_id}] - The connection to parent pycrunch-engine process lost')
+        print(f'[{os.getpid()}] [task_id: {self.task_id}] - Child process for test runner is about to exit')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):
