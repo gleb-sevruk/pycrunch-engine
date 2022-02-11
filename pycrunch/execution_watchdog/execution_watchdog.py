@@ -2,14 +2,21 @@ import asyncio
 import logging
 
 from pycrunch.api.shared import pipe
-from pycrunch.watchdog.tasks import AbstractWatchdogTask, TestExecutionBeginTask, TestExecutionEndTask
-from pycrunch.watchdog.watchdog_pipeline import watchdog_pipeline
+from pycrunch.execution_watchdog.tasks import AbstractWatchdogTask, TestExecutionBeginTask, TestExecutionEndTask
+from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
 
-# Block until the internal flag is true.
+# Blocks until the internal flag is true.
 termination_event = asyncio.Event()
 
+
+"""
+  Responsible for debugger/execution 
+    - stop run button visibility 
+    - signal to stop received from plugin
+    - Timeout deadline while waiting for tests
+"""
 class WatchdogDispatcher:
     def __init__(self):
         pass

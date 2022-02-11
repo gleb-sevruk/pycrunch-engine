@@ -17,7 +17,10 @@ class AutoConfiguration:
     def create_default_configuration_file(self):
         default_config_file = '''# documentation https://pycrunch.com/docs/configuration-file
 engine:
-    runtime: pytest'''
+    runtime: pytest
+    enable-web-ui: false
+    load-pytest-plugins: false
+'''
         with io.open(self.configuration_file, encoding='utf-8', mode='w') as f:
             f.write(default_config_file)
 

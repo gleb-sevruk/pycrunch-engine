@@ -33,17 +33,15 @@ class EchoClientProtocol(asyncio.Protocol):
         self.timeline.mark_event(f'TCP: Connection established...')
         self.transport = transport
         msg = HandshakeMessage(self.task_id)
-        msg_bites = pickle.dumps(msg)
+        msg_bytes = pickle.dumps(msg)
         # print(f'[{self.connection_counter}]Handshake sent: {msg.task_id}')
-        self.send_with_header(msg_bites)
+        self.send_with_header(msg_bytes)
 
 
 
     def data_received(self, data):
         msg = pickle.loads(data)
         if msg.kind == 'test-run-task':
-            # import pydevd_pycharm
-            # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
             print(f'[{os.getpid()}] [task_id: {msg.task.id}] Data received: test-run-task;')
             timeline = self.timeline
             timeline.mark_event(f'TCP: Received tests to run; id: {msg.task.id}')
@@ -53,23 +51,21 @@ class EchoClientProtocol(asyncio.Protocol):
             timeline.mark_event('Deciding on runner engine...')
             from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
 
-            from pycrunch.session import config
             if self.engine_to_use == 'django':
+                from pycrunch.session import config
+                config.runtime_engine_will_change(self.engine_to_use)
                 config.prepare_django()
 
             from pycrunch.child_runtime.child_config import child_config
             runner_engine = PyTestRunnerEngine(child_config)
 
-            # should have env from pycrunch config heve
-            r = TestRunner(runner_engine, timeline, child_config)
+            # should have env from pycrunch config here
+            r = TestRunner(runner_engine, timeline, msg.coverage_exclusions, child_config)
             timeline.mark_event(f'Run: about to run tests')
             try:
                 timeline.mark_event(f'Run: total tests planned: {len(msg.task.tests)}')
                 results = r.run(msg.task.tests)
                 timeline.mark_event('Run: Completed, sending results')
-
-                # import pydevd_pycharm
-                # pydevd_pycharm.settrace('localhost', port=21345, stdoutToServer=True, stderrToServer=True)
 
                 msg = TestResultsAvailableMessage(results)
                 bytes_to_send = self.safe_pickle(msg)
@@ -85,12 +81,11 @@ class EchoClientProtocol(asyncio.Protocol):
 
             timeline.stop()
 
-            msg = TestRunTimingsMessage(timeline)
-            bytes_to_send1 = pickle.dumps(msg)
-            # xxx = bytearray(12345678)
-            self.send_with_header(bytes_to_send1)
+            if child_config.collect_timings:
+                msg = TestRunTimingsMessage(timeline)
+                bytes_to_send1 = pickle.dumps(msg)
+                self.send_with_header(bytes_to_send1)
 
-            # time.sleep(0.01)
             msg = CloseConnectionMessage(self.task_id)
             bytes_to_send2 = pickle.dumps(msg)
             self.send_with_header(bytes_to_send2)
@@ -119,7 +114,7 @@ class EchoClientProtocol(asyncio.Protocol):
 
     def connection_lost(self, exc):
         self.timeline.mark_event(f'TCP: Connection to server lost')
-        print(f'[{os.getpid()}] [task_id: {self.task_id}] - The connection to parent pycrunch-engine process lost')
+        print(f'[{os.getpid()}] [task_id: {self.task_id}] - Child process for test runner is about to exit')
         self.on_con_lost.set_result(True)
 
     def error_received(self, exc):

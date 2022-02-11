@@ -138,10 +138,10 @@ def serialize_combined_coverage(combined: CombinedCoverage):
 
 
 def compute_lines(x):
-    zzz = {line_number:list(entry_points) for (line_number, entry_points) in x.lines_with_entrypoints.items()}
-    return zzz
-
-    # return result
+    return {
+        line_number: list(entry_points)
+        for (line_number, entry_points) in x.lines_with_entrypoints.items()
+    }
 
 
 combined_coverage = CombinedCoverage()

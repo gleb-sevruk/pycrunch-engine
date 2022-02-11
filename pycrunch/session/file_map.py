@@ -1,4 +1,7 @@
+import logging
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 
 class TestMap:
@@ -20,6 +23,9 @@ class TestMap:
         return list(self.map.get(filename, set()))
 
     def file_did_removed(self, filename):
+        if filename not in self.map:
+            logger.info(f'file_did_removed could not find  {filename}. Probably it was removed earlier.')
+            return
         self.map.pop(filename)
 
     def test_exist(self, filename, fqn):

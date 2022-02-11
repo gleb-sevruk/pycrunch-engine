@@ -2,7 +2,7 @@ coverage
 
 # last know working 5.4.3
 pytest
-watchgod
+watchdog
 python-socketio>=4,<5
 aiohttp
 PyYAML

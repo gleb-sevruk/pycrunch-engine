@@ -1,15 +1,12 @@
-
 import asyncio
-import io
+import logging
 import pickle
-import struct
-from queue import Queue, Empty
+from queue import Empty, Queue
 
 from pycrunch.introspection.history import execution_history
 from pycrunch.networking.protocol_state import ProtocolState
 from pycrunch.scheduling.messages import ScheduledTaskDefinitionMessage
-
-import logging
+from pycrunch.session import config
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +57,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
                 raise Exception('no task found for subprocess. ')
 
             logger.debug(f'sending task definition, {found_task.id}')
-            msg_to_reply = ScheduledTaskDefinitionMessage(task=found_task)
+            msg_to_reply = ScheduledTaskDefinitionMessage(task=found_task, coverage_exclusions=config.coverage_exclusions)
             bytes_msg = pickle.dumps(msg_to_reply)
             self.transport.write(bytes_msg)
         if msg.kind == 'test_run_results':

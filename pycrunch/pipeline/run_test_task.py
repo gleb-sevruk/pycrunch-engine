@@ -17,9 +17,9 @@ from pycrunch.session import config
 
 import logging
 
-from pycrunch.watchdog.tasks import TestExecutionBeginTask, TestExecutionEndTask
-from pycrunch.watchdog.watchdog import termination_event
-from pycrunch.watchdog.watchdog_pipeline import watchdog_pipeline
+from pycrunch.execution_watchdog.tasks import TestExecutionBeginTask, TestExecutionEndTask
+from pycrunch.execution_watchdog.execution_watchdog import termination_event
+from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -97,10 +97,11 @@ class RunTestTask(AbstractTask):
 
         self.timeline.mark_event('Sending: test_run_completed event')
         # todo: i'm only using `filename` in connector, why bother with everything?
-        cov_to_send = dict(all_runs=self.convert_result_to_json(run_results))
+        cov_and_run_details_to_send = dict(all_runs=self.convert_result_to_json(run_results))
+
         async_tasks_post.append(shared.pipe.push(
             event_type='test_run_completed',
-            coverage=cov_to_send,
+            coverage=cov_and_run_details_to_send,
             timings=dict(start=self.timestamp, end=clock.now()),
         ))
 
@@ -113,11 +114,10 @@ class RunTestTask(AbstractTask):
             shared.pipe.push(
                 event_type='combined_coverage_updated',
                 combined_coverage=serialized,
-                # Todo: why do I need dependencies to be exposed? It is internal state.
-                # dependencies=self.build_dependencies(),
                 aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
-                timings=dict(start=self.timestamp, end=clock.now()),
-            ))
+                timings=dict(start=self.timestamp, end=clock.now())
+            )
+        )
 
         self.timeline.mark_event('Waiting until post-processing tasks are completed')
         await asyncio.gather(*async_tasks_post)

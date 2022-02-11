@@ -52,8 +52,11 @@ class TestAutoConfigCreation(unittest.TestCase):
             sut = AutoConfiguration(self.config_file_mock)
             sut.create_default_configuration_file()
             handle = io_mock()
-            default_config_file = '''# documentation https://pycrunch.com/docs/configuration-file
+            default_config_file ='''# documentation https://pycrunch.com/docs/configuration-file
 engine:
-    runtime: pytest'''
+    runtime: pytest
+    enable-web-ui: false
+    load-pytest-plugins: false
+'''
             handle.write.assert_called_once_with(default_config_file)
 

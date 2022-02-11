@@ -6,7 +6,9 @@ from pycrunch.api.serializers import CoverageRunForSingleFile
 class CoverageAbstraction:
     cov: "coverage.Coverage"
 
-    def __init__(self, disable, timeline):
+    def __init__(self, disable,
+                 coverage_exclusions,  # type: list[str]
+                 timeline):
         """
 
         :type timeline: pycrunch.introspection.timings.Timeline
@@ -14,6 +16,7 @@ class CoverageAbstraction:
         """
         self.timeline = timeline
         self.disable = disable
+        self.coverage_exclusions = coverage_exclusions
         self.cov = None
 
     def start(self):
@@ -33,7 +36,7 @@ class CoverageAbstraction:
             config_file=False,
             timid=use_slow_tracer,
             branch=False,
-            omit=exclusions.exclude_list,
+            omit=exclusions.exclude_list + self.coverage_exclusions,
         )
 
         # logger.debug('-- before coverage.start')

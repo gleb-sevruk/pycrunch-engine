@@ -1,3 +1,6 @@
+import datetime
+import os
+
 from pycrunch.api.serializers import CoverageRun
 from pycrunch.child_runtime.coverage_hal import CoverageAbstraction
 from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
@@ -6,10 +9,11 @@ from pycrunch.runner.execution_result import ExecutionResult
 DISABLE_COVERAGE = False
 
 class TestRunner:
-    def __init__(self, runner_engine, timeline, child_config):
+    def __init__(self, runner_engine, timeline, coverage_exclusions, child_config):
         self.runner_engine = runner_engine
         self.timeline = timeline
         self.child_config = child_config
+        self.coverage_exclusions = coverage_exclusions
 
     def run(self, tests):
         self.timeline.mark_event('Run: inside run method')
@@ -37,7 +41,7 @@ class TestRunner:
                 should_disable_coverage = DISABLE_COVERAGE
                 if self.child_config.enable_remote_debug:
                     should_disable_coverage = True
-                cov = CoverageAbstraction(should_disable_coverage, self.timeline)
+                cov = CoverageAbstraction(should_disable_coverage, self.coverage_exclusions, self.timeline)
                 cov.start()
 
                 with capture_stdout() as get_value:
@@ -49,6 +53,10 @@ class TestRunner:
                     time_elapsed = time_end - time_start
 
                     cov.stop()
+
+                    _now = datetime.datetime.now()
+
+                    print(f'{os.linesep}at {_now.strftime("%X.%f")[:-3]} {_now.strftime("%x")}')
 
                     captured_output = get_value()
                     self.timeline.mark_event('Received captured output')

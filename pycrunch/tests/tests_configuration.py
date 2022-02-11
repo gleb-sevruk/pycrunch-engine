@@ -1,4 +1,3 @@
-from _pydecimal import DecimalException
 from unittest import mock
 from unittest.mock import mock_open, patch, Mock
 
@@ -7,13 +6,15 @@ import pytest
 from pycrunch import session
 
 
-def test_django_engine_by_default():
+def test_pytest_engine_by_default():
     sut = create_sut()
-    assert sut.runtime_engine == 'django'
+    assert sut.runtime_engine == 'pytest'
+
 
 def test_deep_inheritance_is_off_by_default():
     sut = create_sut()
     assert not sut.deep_inheritance
+
 
 def test_deep_inheritance_is_on_in_config():
     read_data = '''
@@ -24,6 +25,7 @@ def test_deep_inheritance_is_on_in_config():
         sut = create_sut()
         sut.load_runtime_configuration()
         assert sut.deep_inheritance
+
 
 def test_can_change_to_simple_engine():
     sut = create_sut()
@@ -38,19 +40,27 @@ def test_can_change_to_django_engine():
 
 
 def create_sut():
-    return session.configuration.Configuration()
+    configuration = session.configuration.Configuration()
+    configuration.watch_for_config_changes = Mock()
+    return configuration
+
 
 def test_should_call_auto_config():
-    with patch('pycrunch.session.configuration.AutoConfiguration.ensure_configuration_exist') as auto:
+    with patch(
+        'pycrunch.session.configuration.AutoConfiguration.ensure_configuration_exist'
+    ) as auto:
         sut = create_sut()
         sut.load_runtime_configuration()
         auto.assert_called_once()
 
+
 def test_non_supported_engine_throws():
     import pytest
+
     sut = create_sut()
     with pytest.raises(Exception):
         sut.runtime_engine_will_change('not-supported')
+
 
 read_data = '''
 engine:
@@ -63,6 +73,8 @@ discovery:
 mode: manual
 
 '''
+
+
 def test_exclusion_list():
     with mock.patch('io.open', mock_open(read_data=read_data)) as x:
         sut = create_sut()
@@ -71,14 +83,31 @@ def test_exclusion_list():
         assert 'directory_2' in sut.discovery_exclusions
         assert 'directory_3' not in sut.discovery_exclusions
 
+
+def test_coverage_excluded():
+    read_data = '''coverage-exclusions:
+   - 'my/dir/_module'
+   - 'my/dir2/_module2'
+   - 'file.py'
+    '''
+    with mock.patch('io.open', mock_open(read_data=read_data)) as x:
+        sut = create_sut()
+        sut.load_runtime_configuration()
+        assert '*my/dir/_module*' in sut.coverage_exclusions
+        assert '*my/dir2/_module2*' in sut.coverage_exclusions
+        assert '*file.py' in sut.coverage_exclusions
+
+
 def test_engine_mode_auto_by_default():
     sut = create_sut()
     assert sut.engine_mode == 'auto'
+
 
 def test_unsupported_engine_mode_raises_exception():
     sut = create_sut()
     with pytest.raises(Exception):
         sut.runtime_mode_will_change('no-way')
+
 
 def test_runtime_engine_from_config():
     with mock.patch('io.open', mock_open(read_data=read_data)) as x:
@@ -86,9 +115,11 @@ def test_runtime_engine_from_config():
         sut.load_runtime_configuration()
         assert sut.runtime_engine == 'simple'
 
+
 def test_timeout_is_1min_by_default():
     sut = create_sut()
     assert sut.execution_timeout_in_seconds == 60
+
 
 def test_timeout_is_none_when_zero():
     # this will force task to wait forever
@@ -96,12 +127,14 @@ def test_timeout_is_none_when_zero():
     sut.execution_timeout_in_seconds = 0
     assert sut.get_execution_timeout() is None
 
+
 def test_timeout_is_taken_from_config():
     with mock.patch('io.open', mock_open(read_data=read_data)) as x:
         sut = create_sut()
         sut.load_runtime_configuration()
 
         assert sut.execution_timeout_in_seconds == 42
+
 
 def test_environment_vars():
     read_data = '''
@@ -123,7 +156,6 @@ def test_environment_vars():
         assert 'insuredportal.settings' == sut.environment_vars.get('DJANGO_SETTINGS')
         assert 'test' == sut.environment_vars.get('ENV2')
         assert sut.environment_vars.get('NOT') == None
-
 
 
 def test_path_map_config_read():
@@ -149,7 +181,6 @@ def test_path_map_config_read():
         assert '/localfs/easyproject' == sut.path_mapping.path_on_local_ide
 
 
-
 def test_cpu_cores_considered():
     read_data = '''
     discovery:
@@ -166,8 +197,11 @@ def test_cpu_cores_considered():
         sut.load_runtime_configuration()
         assert sut.cpu_cores == 42
 
+
 def test_cpu_cores_by_default_no_more_than_4():
-    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+    with mock.patch(
+        'pycrunch.session.configuration.multiprocessing'
+    ) as multiprocessing_mock:
         # lets just use 4 by default to not burn machine
         multiprocessing_mock.cpu_count.return_value = 16
         sut = create_sut()
@@ -175,19 +209,27 @@ def test_cpu_cores_by_default_no_more_than_4():
 
 
 def test_two_cores_use_1_by_default():
-    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+    with mock.patch(
+        'pycrunch.session.configuration.multiprocessing'
+    ) as multiprocessing_mock:
         multiprocessing_mock.cpu_count.return_value = 2
         sut = create_sut()
         assert sut.cpu_cores == 1
 
+
 def test_one_core_use_1_by_default():
-    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+    with mock.patch(
+        'pycrunch.session.configuration.multiprocessing'
+    ) as multiprocessing_mock:
         multiprocessing_mock.cpu_count.return_value = 1
         sut = create_sut()
         assert sut.cpu_cores == 1
 
+
 def test_from_3_to_7_cores_use_half_of_them_by_default():
-    with mock.patch('pycrunch.session.configuration.multiprocessing') as multiprocessing_mock:
+    with mock.patch(
+        'pycrunch.session.configuration.multiprocessing'
+    ) as multiprocessing_mock:
         # lets just use 4 by default to not burn machine
         multiprocessing_mock.cpu_count.return_value = 6
         sut = create_sut()
@@ -217,6 +259,7 @@ def test_load_pytest_plugins_false_by_default():
     sut = create_sut()
     assert sut.load_pytest_plugins == False
 
+
 def test_load_pytest_plugins():
     read_data = '''
 engine:
@@ -233,4 +276,3 @@ mode: manual
         sut = create_sut()
         sut.load_runtime_configuration()
         assert sut.load_pytest_plugins == True
-

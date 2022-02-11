@@ -12,6 +12,10 @@ class TestState:
         self.pinned = pinned
         self.execution_result = execution_result
 
+
+    def __repr__(self):
+        return f'TestState-> {self.discovered_test.fqn}'
+
 class AllTests:
     def __init__(self):
         # fqn -> TestState
@@ -24,11 +28,19 @@ class AllTests:
 
     def test_will_run(self, fqn):
         test_to_be_run = self.tests.get(fqn, None)
+        if test_to_be_run is None:
+            # removed?? not parsed?
+            return
         test_to_be_run.execution_result.run_did_queued()
 
     def test_did_run(self, fqn, test_run):
         test_to_be_run = self.tests.get(fqn, None)
+
         #  TestState
+        if test_to_be_run is None:
+            # this test no longer exists
+            return
+
         test_to_be_run.execution_result = test_run.execution_result
 
     def pin_test(self, fqn):
@@ -46,7 +58,7 @@ class AllTests:
 
     def collect_by_fqn(self, fqns):
         result = list()
-        logger.info(f'collecting {len(fqns)} tests for run')
+        logger.info(f'Found {len(fqns)} tests for run')
         for fqn in fqns:
 
             current_test = self.tests[fqn]
@@ -73,7 +85,7 @@ class AllTests:
         for fqn in list(self.tests):
             test = self.tests[fqn]
             if not test_map.test_exist(test.discovered_test.filename, fqn):
-                print(f'test no longer in file_map {fqn} - Removed')
+                logger.debug(f'test no longer in file_map {fqn} - Removed')
                 del self.tests[fqn]
                 combined_coverage.test_did_removed(fqn)
 

@@ -1,18 +1,16 @@
 import asyncio
-import sys
+import logging
 import os
+import sys
 from typing import List, Optional
 
 from pycrunch.networking.server_protocol import TestRunnerServerProtocol
-
-import logging
-
 from pycrunch.session import config
 
 logger = logging.getLogger(__name__)
 
-class MultiprocessTestRunner:
 
+class MultiprocessTestRunner:
     def __init__(self, timeout: Optional[float], timeline, test_run_scheduler, remote_debug_params: "RemoteDebugParams"):
         self.client_connections: List[TestRunnerServerProtocol] = []
         self.completion_futures = []
@@ -119,6 +117,10 @@ class MultiprocessTestRunner:
         if self.remote_debug_params.enabled:
             results.append(f'--enable-remote-debug')
             results.append(f'--remote-debugger-port={self.remote_debug_params.port}')
+        if config.enable_web_ui:
+            # No need to collect performance metrics if there is no web-ui
+            results.append(f'--collect-perf')
+
         return results
 
     def create_server_protocol(self):
