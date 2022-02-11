@@ -118,6 +118,7 @@ class MultiprocessTestRunner:
             results.append(f'--enable-remote-debug')
             results.append(f'--remote-debugger-port={self.remote_debug_params.port}')
         if config.enable_web_ui:
+            # No need to collect performance metrics if there is no web-ui
             results.append(f'--collect-perf')
 
         return results

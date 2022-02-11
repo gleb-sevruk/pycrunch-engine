@@ -9,7 +9,6 @@ def trace(*args, **kwargs):
         # print('trace called, but no timeline injected: ', kwargs)
         return
 
-    # todo: check for accepted types: str, int, dict() ?
     timeline.record(*args, **kwargs)
 
 
