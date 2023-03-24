@@ -1,12 +1,6 @@
 from collections import OrderedDict
-from typing import TYPE_CHECKING, List
 
 from pycrunch.session import config
-from pycrunch.session.recorded_exception import RecordedException
-
-if TYPE_CHECKING:
-    from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
-
 
 class CoverageRunForSingleFile:
     def __init__(self, filename, lines):
@@ -17,15 +11,13 @@ class CoverageRunForSingleFile:
         return OrderedDict(filename=config.path_mapping.map_to_local_fs(self.filename), lines_covered=self.lines,)
 
 class CoverageRun:
-    files: List[CoverageRunForSingleFile]
-
     def __init__(self, fqn, time_elapsed, test_metadata, execution_result):
         self.test_metadata = test_metadata
         self.time_elapsed = time_elapsed
         self.entry_point = fqn
         self.execution_result = execution_result  # type: SingleTestExecutionResult
         self.percentage_covered = -1
-        self.files: List[CoverageRunForSingleFile] = []
+        self.files = []  # type: List[CoverageRunForSingleFile]
 
     def store_files_coverage(self, files):
         """
@@ -38,7 +30,7 @@ class CoverageRun:
     def as_json(self):
         files_ = [x.as_json() for x in self.files]
         exception_info = None
-        possible_exception : RecordedException = self.execution_result.recorded_exception
+        possible_exception = self.execution_result.recorded_exception  # type: RecordedException
         if possible_exception:
             exception_info = OrderedDict(
                 filename=possible_exception.filename,
@@ -56,9 +48,6 @@ class CoverageRun:
             captured_output=self.execution_result.captured_output,
             variables_state=self.execution_result.state_timeline.as_json(),
         )
-
-
-
 
 
 def serialize_test_set_state(test_set):
