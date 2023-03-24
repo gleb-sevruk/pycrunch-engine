@@ -1,5 +1,6 @@
 import asyncio
 import os
+from collections import OrderedDict
 from typing import Dict, Any, Optional
 
 from pycrunch.api import shared
@@ -9,7 +10,7 @@ from pycrunch.introspection.clock import clock
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
-from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.scheduling.scheduler import TestRunScheduler
 from pycrunch.session.combined_coverage import combined_coverage, serialize_combined_coverage
 from pycrunch.session.state import engine
@@ -51,6 +52,7 @@ class RemoteDebugParams:
     def disabled(cls):
         return RemoteDebugParams(False)
 
+
 class RunTestTask(AbstractTask):
     def __init__(self, tests, remote_debug_params: RemoteDebugParams):
         self.remote_debug_params = remote_debug_params
@@ -79,7 +81,7 @@ class RunTestTask(AbstractTask):
 
             for _ in converted_tests:
                 candidate_fqn = _['fqn']
-                cov_run = CoverageRun(candidate_fqn, -1, None, execution_result=ExecutionResult.create_failed_with_reason(failure_reason))
+                cov_run = CoverageRun(candidate_fqn, -1, None, execution_result=SingleTestExecutionResult.create_failed_with_reason(failure_reason))
                 run_results_compound.results[candidate_fqn] = cov_run
 
 
@@ -97,7 +99,7 @@ class RunTestTask(AbstractTask):
 
         self.timeline.mark_event('Sending: test_run_completed event')
         # todo: i'm only using `filename` in connector, why bother with everything?
-        cov_and_run_details_to_send = dict(all_runs=self.convert_result_to_json(run_results))
+        cov_and_run_details_to_send = OrderedDict(all_runs=self.convert_result_to_json(run_results))
 
         async_tasks_post.append(shared.pipe.push(
             event_type='test_run_completed',
@@ -142,7 +144,7 @@ class RunTestTask(AbstractTask):
         return failure_reason
 
     def convert_result_to_json(self, run_results):
-        results_as_json = dict()
+        results_as_json = OrderedDict()
         for k, v in run_results.items():
             results_as_json[k] = v.as_json()
         return results_as_json

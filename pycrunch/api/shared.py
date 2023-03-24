@@ -3,7 +3,6 @@ from asyncio import shield
 import socketio
 
 from pycrunch.watcher.fs_watcher import FSWatcher
-# from pycrunch.watcher.fs_watcher_heavy import FSWatcher
 
 file_watcher = FSWatcher()
 

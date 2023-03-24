@@ -1,10 +1,14 @@
-from pprint import pprint
+import traceback
+
+from pycrunch.plugins.pytest_support.exception_utilities import get_originating_frame_and_location, stringify_locals
+from pycrunch.session.recorded_exception import RecordedException
 
 
 class PyTestInterceptionPlugin:
     def __init__(self, tests_to_run):
         self.passed_tests = set()
         self.failed_tests = set()
+        self.recorded_exception = None  # type: RecordedException
 
     def pytest_runtest_setup(item):
         # called for running each test in 'a' directory
@@ -30,18 +34,28 @@ class PyTestInterceptionPlugin:
         """
         # print(f"pytest_runtest_logfinish {location}", nodeid)
 
-    def pytest_exception_interact(node, call, report):
-        """called when an exception was raised which can potentially be
-        interactively handled.
+    def pytest_exception_interact(self, node, call, report):
+        exc_type = call.excinfo.type  # The exception type, e.g. AssertionError, ValueError, etc.
+        exc_value = call.excinfo.value  # The exception instance, containing the error message and other details
+        exc_traceback = call.excinfo.tb  # The traceback object
 
-        This hook is only called if an exception was raised
-        that is not an internal exception like ``skip.Exception``.
-        """
-        # pprint(call)
-        # print(f"pytest_exception_interact {call}")
+        # Get the formatted traceback as a list of strings
+        # formatted_traceback = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        # Print the exception details for demonstration purposes
 
-        # pprint(vars(report))
-        pass
+        formatted_traceback = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        full_traceback_str = "".join(formatted_traceback)
+
+        frame, filename, line_number, frames = get_originating_frame_and_location(exc_traceback)
+        _locals = stringify_locals(frame)
+        # print(f"locals: {locals}")
+        # print(f"Most recent stack frame: {frame}")
+        # print(f"Filename: {filename}")
+        # print(f"Line number: {line_number}")
+        DISABLE_LOCALS = False
+        if DISABLE_LOCALS:
+            _locals = {}
+        self.recorded_exception = RecordedException(filename, line_number, full_traceback_str, _locals)
 
     def pytest_runtest_logreport(self, report):
         # pprint(vars(report))
@@ -69,3 +83,6 @@ class PyTestInterceptionPlugin:
             return False
         else:
             return True
+
+    def get_recorded_exception(self, test_name):
+        return self.recorded_exception

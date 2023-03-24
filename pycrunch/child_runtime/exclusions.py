@@ -1,3 +1,4 @@
+# TODO: Make configurable
 py_test_exclusions = [
     '*_pytest/*',
     '*site-packages/*',
@@ -14,7 +15,7 @@ exclude_list = py_test_exclusions + [
     '*PyCharm.app/Contents/plugins/python/helpers/pydev/*',
     '*site-packages/werkzeug/serving.py',
     '*runner/test_runner.py',
-    '*runner/execution_result.py',
+    '*runner/single_test_execution_result.py',
     '*plugins/pytest_support/hot_reload.py',
     '*plugins/pytest_support/pytest_runner_engine.py',
     '*runner/interception.py',

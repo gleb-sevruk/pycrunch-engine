@@ -1,7 +1,7 @@
 from unittest import mock
 from unittest.mock import mock_open, call
 
-from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.session.configuration import Configuration
 from pycrunch.session.state import engine
 from pycrunch.shared.models import TestState, AllTests
@@ -11,7 +11,7 @@ from pycrunch.shared.primitives import TestMetadata
 def test_pinned_test_should_change_status():
     sut = AllTests()
     fqn = 'module:test'
-    state = TestState(TestMetadata('dummy', 'dummy', 'dummy', fqn, 'pending'), ExecutionResult(), False)
+    state = TestState(TestMetadata('dummy', 'dummy', 'dummy', fqn, 'pending'), SingleTestExecutionResult(), False)
     sut.test_discovered(fqn, state, False)
     single_test = sut.tests.get(fqn, None)
     assert single_test.pinned == False

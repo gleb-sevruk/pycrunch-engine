@@ -54,7 +54,7 @@ class EngineState:
         self.all_tests.discard_tests_not_in_map()
         self.notify_clients_about_tests_change()
         logger.debug('discovery_did_become_available')
-        logger.debug(f'Adding files for watch: total of {len(test_set.files)}')
+        logger.debug(f'Adding files for watch: total of {len(test_set.files)} files')
         file_watcher.watch(test_set.files)
 
     def notify_clients_about_tests_change(self):

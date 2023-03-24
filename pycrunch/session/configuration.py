@@ -54,6 +54,10 @@ class Configuration:
         self.path_mapping = NoPathMapping()
         self.enable_asyncio_debug = False
         self.enable_web_ui = False
+        self.change_detection_root: str = self._get_working_directory()
+
+    def _get_working_directory(self):
+        return str(Path('.').absolute())
 
     def runtime_engine_will_change(self, new_engine):
         self.throw_if_not_supported_engine(new_engine)
@@ -139,6 +143,12 @@ class Configuration:
                 self.enable_web_ui = enable_web_ui
             else:
                 print('engine: enable-web-ui parameter should be a boolean')
+        change_detection_root = engine_config.get('change-detection-root', None)
+        if change_detection_root:
+            if isinstance(change_detection_root, str):
+                self.change_detection_root = change_detection_root
+            else:
+                print('engine: change_detection_root parameter should be a string')
         multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
         if multiprocess_threshold:
             self.multiprocess_threshold_will_change(multiprocess_threshold)

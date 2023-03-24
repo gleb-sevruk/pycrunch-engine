@@ -46,8 +46,6 @@ class EchoClientProtocol(asyncio.Protocol):
             timeline = self.timeline
             timeline.mark_event(f'TCP: Received tests to run; id: {msg.task.id}')
 
-            runner_engine = None
-
             timeline.mark_event('Deciding on runner engine...')
             from pycrunch.plugins.pytest_support.pytest_runner_engine import PyTestRunnerEngine
 
@@ -60,11 +58,11 @@ class EchoClientProtocol(asyncio.Protocol):
             runner_engine = PyTestRunnerEngine(child_config)
 
             # should have env from pycrunch config here
-            r = TestRunner(runner_engine, timeline, msg.coverage_exclusions, child_config)
+            test_runner = TestRunner(runner_engine, timeline, msg.coverage_exclusions, child_config)
             timeline.mark_event(f'Run: about to run tests')
             try:
                 timeline.mark_event(f'Run: total tests planned: {len(msg.task.tests)}')
-                results = r.run(msg.task.tests)
+                results = test_runner.run(msg.task.tests)
                 timeline.mark_event('Run: Completed, sending results')
 
                 msg = TestResultsAvailableMessage(results)

@@ -4,7 +4,7 @@ import os
 from pycrunch.api.serializers import CoverageRun
 from pycrunch.child_runtime.coverage_hal import CoverageAbstraction
 from pycrunch.insights.variables_inspection import InsightTimeline, inject_timeline
-from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 
 DISABLE_COVERAGE = False
 
@@ -47,7 +47,7 @@ class TestRunner:
                 with capture_stdout() as get_value:
                     time_start = clock.now()
                     self.timeline.mark_event('About to start test execution')
-                    execution_result = self.runner_engine.run_test(metadata)
+                    execution_result = self.runner_engine.run_test(metadata)  # type: SingleTestExecutionResult
                     self.timeline.mark_event('Test execution complete, postprocessing results')
                     time_end = clock.now()
                     time_elapsed = time_end - time_start
@@ -74,7 +74,7 @@ class TestRunner:
                 tb = self.get_detailed_traceback(metadata.fqn)
                 print(tb, file=sys.__stdout__)
                 from pycrunch.api.serializers import CoverageRun
-                result = ExecutionResult.create_failed_with_reason(tb)
+                result = SingleTestExecutionResult.create_failed_with_reason(tb)
                 # inject fake run to not crash entire pipeline
                 coverage_for_run = CoverageRun(metadata.fqn, -1, test_to_run, execution_result=result)
 

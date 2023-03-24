@@ -11,8 +11,9 @@ engine:
   multiprocessing-threshold: 4
   runtime: pytest
   timeout: 0
+  change-detection-root: .
 #   requires restart
-  enable-web-ui: false
+  enable-web-ui: true
 env:
   DJANGO_SETTINGS_MODULE: insuredportal.settings.local
 pinned-tests:

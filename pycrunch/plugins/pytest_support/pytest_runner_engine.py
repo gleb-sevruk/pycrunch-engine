@@ -5,9 +5,11 @@ import traceback
 
 import pytest
 
+from pycrunch.plugins.pytest_support.exception_utilities import get_originating_frame_and_location
 from pycrunch.plugins.pytest_support.interception_plugin import PyTestInterceptionPlugin
 from pycrunch.runner import _abstract_runner
-from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
+from pycrunch.session.recorded_exception import RecordedException
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +27,9 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
         """
 
         :type test: object
-        :return val pycrunch.runner.execution_result.ExecutionResult
+        :return val pycrunch.runner.execution_result.SingleTestExecutionResult
         """
-        execution_result = ExecutionResult()
+        execution_result = SingleTestExecutionResult()
         try:
             fqn_test_to_run = test.filename + '::' + test.name
 
@@ -62,20 +64,20 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
             pytest.main([fqn_test_to_run] + all_args, plugins=[plugin])
 
             # pytest.main([fqn_test_to_run, '-qs'], plugins=[plugin])
-
             if plugin.guess_run_status(test.name):
                 execution_result.run_did_succeed()
             else:
+                possible_exception = plugin.get_recorded_exception(test.name)
+                execution_result.record_exception(possible_exception)
                 execution_result.run_did_fail()
-            # x.stop()
-            # logger.debug('after exec_module')
         except Exception as e:
             etype, value, current_traceback = sys.exc_info()
-            execution_result.record_exception(etype=etype, value=value, current_traceback=current_traceback)
+            _, filename, line_number, _ = get_originating_frame_and_location(current_traceback)
+            execution_result.record_exception(RecordedException(filename, line_number, str(current_traceback), {}))
             execution_result.run_did_fail()
             last_call = -1
-            traceback.print_exception(etype=etype, value=value, tb=current_traceback, limit=last_call, file=sys.stdout)
-            # traceback.print_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stdout)
+            traceback.print_exception(etype, value, current_traceback, limit=last_call, file=sys.stdout)
             # print(str(e))
             logger.exception('Error while executing _run_test', exc_info=e)
         return execution_result

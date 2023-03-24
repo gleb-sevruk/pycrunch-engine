@@ -1,4 +1,4 @@
-from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.session.combined_coverage import combined_coverage
 from pycrunch.session.file_map import test_map
 import logging
@@ -23,7 +23,7 @@ class AllTests:
 
     def test_discovered(self, fqn, discovered_test, is_pinned):
         # todo preserve state
-        self.tests[fqn] = TestState(discovered_test, ExecutionResult(), is_pinned)
+        self.tests[fqn] = TestState(discovered_test, SingleTestExecutionResult(), is_pinned)
         combined_coverage.test_did_removed(fqn)
 
     def test_will_run(self, fqn):

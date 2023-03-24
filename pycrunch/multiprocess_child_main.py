@@ -1,5 +1,10 @@
-import asyncio
+# Note to maintainers:
+#   Important - no typying here to speed up process startup
+#   If I add typing here or in any other file referenced by child process
+#   it takes 0.36 additional seconds to start the process (on intel)
 
+import asyncio
+import sys
 
 async def run(engine_to_use, timeline, port, task_id):
     from pycrunch.child_runtime.client_protocol import EchoClientProtocol
@@ -94,11 +99,26 @@ async def main():
     )
 
 
-loop = asyncio.get_event_loop()
+if sys.version_info >= (3, 10):
+    # Python 3.10 or newer
+    loop = asyncio.new_event_loop()
 
-try:
-    loop.run_until_complete(main())
-    # loop.run_forever()
-except KeyboardInterrupt:
-    print('graceful quit!')
-    pass
+    try:
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        print('graceful quit!')
+        pass
+    finally:
+        loop.close()
+else:
+    # Python 3.9 or older
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        print('graceful quit!')
+        pass
+    finally:
+        loop.close()
+

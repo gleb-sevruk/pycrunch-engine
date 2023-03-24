@@ -1,1 +1,1 @@
-version_info = dict(major=1, minor=4)
+version_info = dict(major=1, minor=5)

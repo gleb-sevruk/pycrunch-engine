@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from pathlib import Path
 from typing import Set
 
@@ -10,6 +11,7 @@ from watchdog.observers import Observer
 
 from ..constants import CONFIG_FILE_NAME
 from ._abstract_watcher import Watcher
+from ..session import config
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +29,11 @@ def create_handler(files_to_watch: "Set[str]", event_loop):
 
         def should_watch_file(self, entry: 'str') -> bool:
             return entry.endswith(('.py', '.pyx', '.pyd', CONFIG_FILE_NAME))
+            # logger.debug(f'Checking if file should be watched: {entry}')
+            # logger.debug(f' - {result}')
+            # return result
 
-        def known_file(self, file):
+        def known_file(self, file: str):
             return file in self.files_to_watch
 
         def on_moved(self, event):
@@ -110,17 +115,39 @@ class FSWatcher(Watcher):
 
         self.start_thread_if_not_running()
 
+    def _expand_path(self, target_path: str, base_dir: str = None) -> str:
+        if base_dir is None:
+            base_dir = os.getcwd()
+        """
+        Expands a given path, making it absolute by joining it with the base directory if the path is relative.
+            If the path is already absolute, it is returned unchanged.
+
+        Parameters:
+            path (str): The path to be expanded. Can be a relative or absolute path.
+            base_dir (str): The base directory to use when expanding relative paths.
+                                      Defaults to the current working directory if not provided.
+        """
+        path_obj = Path(target_path)
+
+        if path_obj.is_absolute():
+            return str(path_obj)
+        else:
+            return str((Path(base_dir) / path_obj).resolve())
+
     def start_thread_if_not_running(self):
         if self._started:
             return
-
+        expanded = self._expand_path(config.change_detection_root)
         logger.debug('start_thread_if_not_running->Creating fs_observer')
-        path = str(Path('.').absolute())
-        logger.debug('watch root path: ', path)
+        logger.info(f"change-detection-root: `{expanded}` \n"
+                    f"Changes outside of this folder won't be tracked for test execution.\n"
+                    f"If you want to change this, please edit engine->change-detection-root file in {CONFIG_FILE_NAME}")
+
+
         observer = Observer()
         observer.schedule(
             create_handler(self.files, event_loop=self.event_loop),
-            path=path,
+            path=expanded,
             recursive=True,
         )
         observer.start()

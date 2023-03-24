@@ -1,6 +1,11 @@
 from collections import OrderedDict
+from typing import TYPE_CHECKING, List
 
 from pycrunch.session import config
+from pycrunch.session.recorded_exception import RecordedException
+
+if TYPE_CHECKING:
+    from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 
 
 class CoverageRunForSingleFile:
@@ -12,13 +17,15 @@ class CoverageRunForSingleFile:
         return OrderedDict(filename=config.path_mapping.map_to_local_fs(self.filename), lines_covered=self.lines,)
 
 class CoverageRun:
+    files: List[CoverageRunForSingleFile]
+
     def __init__(self, fqn, time_elapsed, test_metadata, execution_result):
         self.test_metadata = test_metadata
         self.time_elapsed = time_elapsed
         self.entry_point = fqn
-        self.execution_result = execution_result
+        self.execution_result = execution_result  # type: SingleTestExecutionResult
         self.percentage_covered = -1
-        self.files = []
+        self.files: List[CoverageRunForSingleFile] = []
 
     def store_files_coverage(self, files):
         """
@@ -30,12 +37,22 @@ class CoverageRun:
 
     def as_json(self):
         files_ = [x.as_json() for x in self.files]
-        return dict(
+        exception_info = None
+        possible_exception : RecordedException = self.execution_result.recorded_exception
+        if possible_exception:
+            exception_info = OrderedDict(
+                filename=possible_exception.filename,
+                line_number=possible_exception.line_number,
+                full_traceback=possible_exception.full_traceback,
+                variables=possible_exception.variables,
+            )
+        return OrderedDict(
             entry_point=self.entry_point,
             time_elapsed=round(self.time_elapsed * 1000, 2),
             test_metadata=self.test_metadata,
             files=files_,
             status=self.execution_result.status,
+            captured_exception=exception_info,
             captured_output=self.execution_result.captured_output,
             variables_state=self.execution_result.state_timeline.as_json(),
         )
