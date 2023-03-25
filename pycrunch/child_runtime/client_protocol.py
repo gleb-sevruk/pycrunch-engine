@@ -94,6 +94,7 @@ class EchoClientProtocol(asyncio.Protocol):
         except Exception as e:
             for k, v in msg.results.items():
                 v.execution_result.state_timeline.make_safe_for_pickle()
+                v.execution_result.recorded_exception.make_safe_for_pickle()
 
         return pickle.dumps(msg)
 

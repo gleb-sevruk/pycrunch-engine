@@ -70,7 +70,7 @@ def custom_repr(obj, depth=2):
                 #     stringified_value = "<non-serializable>"
                 # else:
                 stringified_value = custom_repr(value, depth=depth - 1)
-                stringified_attributes[key] = stringified_value
+                stringified_attributes[str(key)] = stringified_value
             return {"object": classname, "props": stringified_attributes}
 
         # this line will fail for primitives,
@@ -103,7 +103,7 @@ def custom_repr(obj, depth=2):
             except Exception:
                 stringified_value = repr(value)
 
-            stringified_attributes[key] = stringified_value
+            stringified_attributes[str(key)] = stringified_value
 
         return {"object": classname, "props": stringified_attributes}
     except Exception as e:
