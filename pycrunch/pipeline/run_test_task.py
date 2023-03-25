@@ -1,7 +1,6 @@
 import asyncio
 import os
-from collections import OrderedDict
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
@@ -99,7 +98,7 @@ class RunTestTask(AbstractTask):
 
         self.timeline.mark_event('Sending: test_run_completed event')
         # todo: i'm only using `filename` in connector, why bother with everything?
-        cov_and_run_details_to_send = OrderedDict(all_runs=self.convert_result_to_json(run_results))
+        cov_and_run_details_to_send = dict(all_runs=self.convert_result_to_json(run_results))
 
         async_tasks_post.append(shared.pipe.push(
             event_type='test_run_completed',
@@ -144,7 +143,7 @@ class RunTestTask(AbstractTask):
         return failure_reason
 
     def convert_result_to_json(self, run_results):
-        results_as_json = OrderedDict()
+        results_as_json = dict()
         for k, v in run_results.items():
             results_as_json[k] = v.as_json()
         return results_as_json
