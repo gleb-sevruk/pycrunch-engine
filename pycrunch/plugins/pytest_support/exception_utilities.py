@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+MAXIMUM_BYTES_TO_REPR = 1024
+
 
 def get_originating_frame_and_location(tb):
     """
@@ -51,9 +53,17 @@ def custom_repr_dict(value, depth):
     return stringified_value
 
 
+def limited_repr(obj):
+    representation = repr(obj)
+    if len(representation) > MAXIMUM_BYTES_TO_REPR:
+        remaining_bytes = len(representation) - MAXIMUM_BYTES_TO_REPR
+        return representation[:MAXIMUM_BYTES_TO_REPR] + f'... ({remaining_bytes} more bytes not recorded)'
+    return representation
+
+
 def custom_repr(obj, depth=2):
     if depth == 0:
-        return repr(obj)
+        return limited_repr(obj)
 
     try:
         classname = obj.__class__.__name__
@@ -101,10 +111,10 @@ def custom_repr(obj, depth=2):
                 else:
                     stringified_value = custom_repr(value, depth=depth - 1)
             except Exception:
-                stringified_value = repr(value)
+                stringified_value = limited_repr(value)
 
             stringified_attributes[str(key)] = stringified_value
 
         return {"object": classname, "props": stringified_attributes}
     except Exception as e:
-        return repr(obj)
+        return limited_repr(obj)

@@ -3,17 +3,14 @@ from pycrunch.plugins.pytest_support.exception_utilities import custom_repr
 
 
 def some_error_method():
-    print('ssss')
-    # raise Exception('some exception')
-    print('eeee')
+    raise Exception('some exception')
+
 def test_some_exception():
     print('ssss')
     my_var_1 = 'a'
     my_var_2 = 'b'
-    # raise Exception('some exception')
     some_error_method()
     assert 1 == 2
-    print('eeee')
 
 def test_small_dict():
     x = dict(x=2)
