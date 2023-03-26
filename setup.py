@@ -3,7 +3,8 @@ from distutils.core import setup
 
 setup(name='pycrunch-engine',
       version='1.5.0',
-      description='Automatic Test Runner Engine',
+      description='PyCrunch Engine - Connector for PyCharm plugin, providing real-time test feedback and precise test '
+                  'coverage tracking for Python projects.',
       url='http://github.com/gleb-sevruk/pycrunch-engine',
       author='Gleb Sevruk',
       author_email='support@pycrunch.com',
