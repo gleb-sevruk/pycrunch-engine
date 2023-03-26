@@ -8,7 +8,7 @@ from pycrunch.api.serializers import CoverageRun
 from pycrunch.child_runtime.coverage_hal import CoverageAbstraction
 from pycrunch.insights.variables_inspection import InsightTimeline
 from pycrunch.introspection.clock import Clock
-from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.shared.primitives import TestMetadata
 
 
@@ -17,7 +17,7 @@ class TestCoverageRun(unittest.TestCase):
         test_meta = self.sample_metadata()
         state_timeline = InsightTimeline(clock=Clock())
 
-        execution_result = ExecutionResult()
+        execution_result = SingleTestExecutionResult()
         execution_result.run_did_succeed()
         execution_result.state_timeline_did_become_available(state_timeline)
         run = CoverageRun('test1', 1, test_meta, execution_result)
@@ -39,7 +39,7 @@ class TestCoverageRun(unittest.TestCase):
         state_timeline.record(TestCoverageRun)
         state_timeline.record(self)
 
-        execution_result = ExecutionResult()
+        execution_result = SingleTestExecutionResult()
         execution_result.run_did_succeed()
         execution_result.state_timeline_did_become_available(state_timeline)
         x = json.dumps(state_timeline.as_json())

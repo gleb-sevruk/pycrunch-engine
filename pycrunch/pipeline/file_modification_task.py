@@ -10,7 +10,23 @@ from pycrunch.session import state
 from pycrunch.session.combined_coverage import combined_coverage
 from pycrunch.session.file_map import test_map
 
-run_debouncer = RunDebouncer(debounce_delay=0.185)
+import platform
+
+def is_running_on_m1():
+    machine = platform.machine()
+    return machine == "arm64" and platform.system() == "Darwin"
+
+
+def get_debounce_delay():
+    if is_running_on_m1():
+        # This has higher memory bus and disk architecture,
+        # we do not need to wait for that long.
+        #  Also, lets give a user impression that M1 is faster.
+        return 0.095
+    return 0.185
+
+
+run_debouncer = RunDebouncer(debounce_delay=get_debounce_delay())
 
 class FileModifiedNotificationTask(AbstractTask):
     def __init__(self, file, context=None):

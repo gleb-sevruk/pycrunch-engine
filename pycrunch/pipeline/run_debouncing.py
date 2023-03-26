@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 from asyncio import get_event_loop, sleep
 
 from pycrunch.introspection.clock import clock
@@ -91,7 +92,7 @@ class RunDebouncer:
                 delay = self.debounce_delay
             logger.debug(f'execute_with_delay->waiting for {round(delay, 4)} seconds')
             while clock.now() < target_at_enter:
-                await sleep(0.01, loop=self._loop)
+                await self.sleep_for_mutiple_python_versions()
         except asyncio.CancelledError as e:
             logger.debug(f'execute_with_delay: cancelled to aggregate more tasks')
             return
@@ -113,3 +114,10 @@ class RunDebouncer:
         self.run_pending = False
         self.reset_deadline()
         self.run_timer = None
+
+    async def sleep_for_mutiple_python_versions(self):
+        if sys.version_info >= (3, 10):
+            await sleep(0.01)
+        else:
+            await sleep(0.01, loop=self._loop)
+

@@ -2,7 +2,6 @@ from collections import OrderedDict
 
 from pycrunch.session import config
 
-
 class CoverageRunForSingleFile:
     def __init__(self, filename, lines):
         self.lines = lines
@@ -16,9 +15,9 @@ class CoverageRun:
         self.test_metadata = test_metadata
         self.time_elapsed = time_elapsed
         self.entry_point = fqn
-        self.execution_result = execution_result
+        self.execution_result = execution_result  # type: SingleTestExecutionResult
         self.percentage_covered = -1
-        self.files = []
+        self.files = []  # type: List[CoverageRunForSingleFile]
 
     def store_files_coverage(self, files):
         """
@@ -30,18 +29,25 @@ class CoverageRun:
 
     def as_json(self):
         files_ = [x.as_json() for x in self.files]
-        return dict(
+        exception_info = None
+        possible_exception = self.execution_result.recorded_exception  # type: RecordedException
+        if possible_exception:
+            exception_info = OrderedDict(
+                filename=possible_exception.filename,
+                line_number=possible_exception.line_number,
+                full_traceback=possible_exception.full_traceback,
+                variables=possible_exception.variables,
+            )
+        return OrderedDict(
             entry_point=self.entry_point,
             time_elapsed=round(self.time_elapsed * 1000, 2),
             test_metadata=self.test_metadata,
             files=files_,
             status=self.execution_result.status,
+            captured_exception=exception_info,
             captured_output=self.execution_result.captured_output,
             variables_state=self.execution_result.state_timeline.as_json(),
         )
-
-
-
 
 
 def serialize_test_set_state(test_set):

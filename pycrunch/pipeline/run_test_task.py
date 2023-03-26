@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
@@ -9,7 +9,7 @@ from pycrunch.introspection.clock import clock
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
-from pycrunch.runner.execution_result import ExecutionResult
+from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.scheduling.scheduler import TestRunScheduler
 from pycrunch.session.combined_coverage import combined_coverage, serialize_combined_coverage
 from pycrunch.session.state import engine
@@ -51,6 +51,7 @@ class RemoteDebugParams:
     def disabled(cls):
         return RemoteDebugParams(False)
 
+
 class RunTestTask(AbstractTask):
     def __init__(self, tests, remote_debug_params: RemoteDebugParams):
         self.remote_debug_params = remote_debug_params
@@ -79,7 +80,7 @@ class RunTestTask(AbstractTask):
 
             for _ in converted_tests:
                 candidate_fqn = _['fqn']
-                cov_run = CoverageRun(candidate_fqn, -1, None, execution_result=ExecutionResult.create_failed_with_reason(failure_reason))
+                cov_run = CoverageRun(candidate_fqn, -1, None, execution_result=SingleTestExecutionResult.create_failed_with_reason(failure_reason))
                 run_results_compound.results[candidate_fqn] = cov_run
 
 

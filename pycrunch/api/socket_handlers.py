@@ -99,7 +99,7 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
     async def connect(sid, environ):
         global thread
         global watchdog_thread
-        logger.debug('Client test_connected')
+        logger.debug('Client connected')
         connection_watchdog.connection_established()
         await pipe.push(
             event_type='connected',

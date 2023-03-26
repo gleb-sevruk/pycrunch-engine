@@ -1,9 +1,11 @@
 from collections import defaultdict
-from typing import Dict, Any, Union, Set
+from typing import Dict, Any, Union, Set, TYPE_CHECKING, Tuple
 
 from pycrunch.api.shared import file_watcher
 from pycrunch.session import config
 
+if TYPE_CHECKING:
+    from pycrunch.api.serializers import CoverageRun
 
 class FileWithCoverage:
     def __init__(self, filename, lines_covered):
@@ -13,7 +15,7 @@ class FileWithCoverage:
 
 class FileStatistics:
     filename: str
-    lines_with_entrypoints: Dict[str, Set[str]]
+    lines_with_entrypoints: Dict[int, Set[str]]
 
     def __init__(self, filename):
         self.filename = filename
@@ -36,7 +38,33 @@ class FileStatistics:
         for possibly_stale_line in self.lines_with_entrypoints:
             self.lines_with_entrypoints[possibly_stale_line].discard(fqn)
 
+class ExceptionsMap:
+    """
+      This class holds a mapping of Fully Qualified Names (FQNs) of tests to their corresponding
+      (filename, line_number) tuples. This design allows for faster search in combined coverage.
 
+      By storing this mapping in the ExceptionsMap class, we avoid an O(n^2) complexity (files * tests)
+      that would be required if the mapping was stored in each test and we had to iterate over all
+      tests for each file in the plugin to find exception marks.
+    """
+
+    # fqn -> (filename, line_number)
+    exceptions: Dict[str, Tuple[str, int]]
+    def __init__(self):
+        self.exceptions = dict()
+
+    def add_exception(self, fqn: str, filename: str, line_number: int):
+        self.exceptions[fqn] = (filename, line_number)
+
+    def clear_exception(self, fqn: str):
+        if fqn in self.exceptions:
+            del self.exceptions[fqn]
+
+    def get_files_and_lines(self) -> Dict[str, Set[int]]:
+        result = defaultdict(set)
+        for fqn, (filename, line) in self.exceptions.items():
+            result[filename].add(line)
+        return result
 
 class CombinedCoverage:
     # FQN -> Files touched during run - i.e.: [file1.py, file2.py]
@@ -50,6 +78,10 @@ class CombinedCoverage:
         files[] -> line 1 -> [test1, test2]
                    line 2 -> [test2]
     """
+
+    # filename -> line_number
+    exceptions: ExceptionsMap
+
     def __init__(self):
         self.files = dict()
 
@@ -57,6 +89,7 @@ class CombinedCoverage:
         # FQN will end up showing in multiple files if dependent file was used during run
         self.dependencies = defaultdict(set)
         self.file_dependencies_by_tests = defaultdict(set)
+        self.exceptions = ExceptionsMap()
         #  in format
         #   {
         #       module:test_name : { status:failed },
@@ -83,6 +116,7 @@ class CombinedCoverage:
             statistics = self.files[stale_file]
             statistics.clear_file_from_test(fqn=fqn)
 
+        self.exceptions.clear_exception(fqn)
 
 
     def mark_coverage(self, fqn, filename, lines_covered, test_run):
@@ -95,7 +129,7 @@ class CombinedCoverage:
             statistics = FileStatistics(filename=filename)
             self.files[filename] = statistics
 
-    def add_multiple_results(self, results):
+    def add_multiple_results(self, results: Dict[str, "CoverageRun"]):
         # todo invalidate\remove outdated runs
 
         for fqn, test_run in results.items():
@@ -109,9 +143,17 @@ class CombinedCoverage:
 
                 self.mark_coverage(fqn=fqn, filename=file_with_coverage.filename, lines_covered=file_with_coverage.lines_covered, test_run=test_run)
 
+            self.mark_exceptions(fqn=fqn, test_run=test_run)
+
         file_watcher.watch(self.files.keys())
 
+    def mark_exceptions(self, fqn, test_run: "CoverageRun"):
+        if test_run.execution_result.recorded_exception is None:
+            self.exceptions.clear_exception(fqn)
+            return
 
+        recorded_exception = test_run.execution_result.recorded_exception
+        self.exceptions.add_exception(fqn, recorded_exception.filename, recorded_exception.line_number)
 
     def clean_coverage_in_stale_files(self, fqn, test_run):
         # if file was not hit at all, we need to clear combined coverage there from previous runs
@@ -130,10 +172,13 @@ class CombinedCoverage:
 
 
 def serialize_combined_coverage(combined: CombinedCoverage):
+    file_lines_with_exceptions = combined.exceptions.get_files_and_lines()
     return [
         dict(
             filename=config.path_mapping.map_to_local_fs(x.filename),
-            lines_with_entrypoints=compute_lines(x)) for x in combined.files.values()
+            exceptions=list(file_lines_with_exceptions.get(x.filename, [])),
+            lines_with_entrypoints=compute_lines(x)
+        ) for x in combined.files.values()
     ]
 
 

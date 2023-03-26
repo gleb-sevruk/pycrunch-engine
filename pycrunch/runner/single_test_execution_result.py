@@ -12,15 +12,15 @@ failed_status = 'failed'
 success_status = 'success'
 queued_status = 'queued'
 
-class ExecutionResult:
+class SingleTestExecutionResult:
     def __init__(self):
         self.captured_output = None
         self.status = 'pending'
-        self.intercepted_exception = None
+        self.recorded_exception = None  # type: RecordedException
         self.state_timeline = EmptyInsightTimeline()
 
-    def record_exception(self, etype, value, current_traceback):
-        self.intercepted_exception = ErrorRecord(etype=etype, value=value, current_traceback=current_traceback)
+    def record_exception(self, possible_exception):
+        self.recorded_exception = possible_exception
 
     def run_did_fail(self):
         self.status = failed_status
