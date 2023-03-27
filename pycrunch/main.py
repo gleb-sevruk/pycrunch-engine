@@ -52,6 +52,9 @@ def run():
         # This will enable PyCrunch web interface
         print(f'PyCrunch Web-UI at http://0.0.0.0:{port}/ui/')
         print(f'                or http://127.0.0.1:{port}/ui/')
+        print(f'')
+        print(f'Files in watch:')
+        print(f'                or http://127.0.0.1:{port}/watched-files/')
         from . import web_ui
 
         web_ui.enable_for_aiohttp(app, package_directory)

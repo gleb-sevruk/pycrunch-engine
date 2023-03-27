@@ -7,6 +7,14 @@ py_test_exclusions = [
 
 ]
 
+coverage_6_exclusions = [
+    '**_pytest/**',
+    '**site-packages/**',
+    '**.pytest_cache/**',
+    '**pytest_support/interception_plugin.py',
+
+]
+
 exclude_list = py_test_exclusions + [
     '*PyCharm.app/Contents/helpers/pydev/pydevd_file_utils.py',
     '*PyCharm.app/Contents/helpers/pydev/_pydevd_bundle/pydevd_comm.py',
