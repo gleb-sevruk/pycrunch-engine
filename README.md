@@ -11,16 +11,16 @@ PyCrunch is written and supports Python 3.6+.
 ## How to run:
 ### Using PyCharm Connector extension
 
- Download extension and install it from disk using PyCharm
- https://pycrunch-dist.s3.eu-central-1.amazonaws.com/pycrunch-intellij-connector-latest.zip
+ Install extension from JetBrains marketplace
+ https://plugins.jetbrains.com/plugin/13264-pycrunch--live-testing
  
  Open your project in PyCharm, and select "Run/Restart PyCrunch Engine"
 
-Engine will be started automatically, and you will be able to see your test in PyCrunch plugin window
+ Engine will be started automatically, and you will be able to see your tests in PyCrunch plugin window
 
 ### Manual (Without PyCharm)
 
-In python project root, run: 
+In python project root, inside correct virtual environment, after installation via `pip install pycrunch-engine`, run: 
 
 `pycrunch-engine`
 
@@ -29,13 +29,14 @@ Optionally, port can be specified, in order to run more than one instance of eng
 
 `pycrunch-engine --port=31234`
 
+From the PyCrunch menu in PyCharm, select "Connect to Custom PyCrunch Engine", and enter port number
+
 
 ### Configuration file
 
-Configuration file should be created prior to the first use of pycrunch-engine
+Configuration file will be created automatically on the first use of pycrunch-engine
 
-
-Configuration file `.pycrunch-config.yaml` should be created and placed at project root
+Configuration file `.pycrunch-config.yaml` will be created and placed at project root (which is current working directory where engine is started)
 
 Minimum configuration 
 ```yaml
@@ -43,6 +44,45 @@ engine:
   runtime: pytest
 ```
 
+Most of the parameters listed:
+```yaml
+discovery:
+  # Paths, that will be excluded during test discovery.
+  # The file will be excluded from discovery, if either starts_with or ends_with condition is true on filename. File path is relative to project root folder.
+  exclusions:
+  - front/
+  - venv/
+  - test_runner.py
+engine:
+  # default - `pytest` [django, pytest]
+  runtime: pytest
+  # execution timeout in seconds (60 seconds by default, 0 - no timeout)
+  timeout: 60
+
+  # maximum number of concurrent test runners
+  cpu-cores: 4
+
+  # minimum number of tests to schedule per core (5 by default)
+  multiprocessing-threshold: 4
+
+  # When this is on, pytest plugins will be loaded
+  # By default this option is off, to speed-up individual test execution
+  load-pytest-plugins: true
+
+  # Use runtime analysis to find TestCase class inheritors
+  deep-inheritance: false
+
+  # Useful if you work in monorepo with multiple python projects (Default - `.`)
+  change-detection-root: .
+
+  # Enable web UI (Default - `false`)
+  enable-web-ui: true
+
+# Environment variables to forward to pytest executors
+env:
+  DJANGO_SETTINGS_MODULE: django_app.settings.local
+  DB_HOST: 0.0.0.0
+```
 
 Django configuration
 
@@ -58,15 +98,27 @@ env:
   DJANGO_SETTINGS_MODULE: djangoapp.settings.local
 ```
 
-Configuration File may be checked-in the to source control, to allow other developers to use engine.
+Configuration file may be checked-in the to source control, to allow other developers to use engine.
 
-###### Beta restriction
-For Django, you probably need to disable logging, pasting following line in your settings file:
-```python
-LOGGING_CONFIG = None
+See more examples and detailed description of each parameter available
+https://pycrunch.com/docs/configuration-file/
 
-```
-This issue is already on roadmap and will be addressed soon. 
+## Debugging tests
+It is possible to run tests with debugger from PyCrunch extension. 
+
+First, you need to install correct version of `pydevd-pycharm` package, depending on your PyCharm version.
+
+You can find out the required version of pydevd-pycharm by going into run configuration, creating new `Python Debug Server`, and copy-paste command like: 
+
+`pip install pydevd-pycharm~=223.8617.48`
+
+After that you can run tests with debugger from PyCrunch extension.
+
+> **Warning**
+> Coverage will not be collected when test is executed under debugger.
+
+See here for more details: 
+https://pycrunch.com/docs/debugging-support
 
 ## Django Support Details
 
