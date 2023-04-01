@@ -154,6 +154,9 @@ class CombinedCoverage:
 
         recorded_exception = test_run.execution_result.recorded_exception
         self.exceptions.add_exception(fqn, recorded_exception.filename, recorded_exception.line_number)
+        # Add file to dependencies because otherwise it will not be sent in combined coverage
+        if recorded_exception.filename not in self.files:
+            self.ensure_file_statistics_exist(recorded_exception.filename)
 
     def clean_coverage_in_stale_files(self, fqn, test_run):
         # if file was not hit at all, we need to clear combined coverage there from previous runs

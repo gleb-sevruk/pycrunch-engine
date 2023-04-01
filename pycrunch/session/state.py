@@ -16,7 +16,7 @@ class EngineState:
     def __init__(self):
         # self.all_tests = dict()
         folder_auto = str(Path('.').absolute())
-        logger.info(f'folder is: {folder_auto}')
+        logger.info(f'Current working directory is: {folder_auto}')
         self.folder = folder_auto
         self.all_tests = all_tests
         self.runtime_configuration_ready = False

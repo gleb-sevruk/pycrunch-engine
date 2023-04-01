@@ -4,6 +4,7 @@ from pathlib import Path
 import yaml
 from aiohttp import web
 
+import pycrunch.version
 from pycrunch.session import config
 from pycrunch.execution_watchdog.connection_watchdog import connection_watchdog
 
@@ -33,7 +34,7 @@ def run():
     port = 5000
     if args.port:
         port = args.port
-    print(f'PyCrunch port will be {port}')
+    print(f'PyCrunch [v{pycrunch.version.version_info_str}]; port will be {port} ')
     use_reloader = not True
     from pycrunch.session.state import engine
     engine.prepare_runtime_configuration_if_necessary()

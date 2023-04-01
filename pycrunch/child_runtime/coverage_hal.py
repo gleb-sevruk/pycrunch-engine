@@ -107,8 +107,10 @@ class CoverageAbstraction:
             # TODO: look at numbits -> smart hash or what it is in coverage.py db
             #  maybe i will want to send it (encode this way)
             lines = coverage_data.lines(f)
+
             if len(lines) <= 0:
                 continue
+
             # arcs = coverage_data.arcs(f)
             #         * The file name for the module.
             #         * A list of line numbers of executable statements.
