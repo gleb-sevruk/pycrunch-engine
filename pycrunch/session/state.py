@@ -16,7 +16,7 @@ class EngineState:
     def __init__(self):
         # self.all_tests = dict()
         folder_auto = str(Path('.').absolute())
-        logger.info(f'folder is: {folder_auto}')
+        logger.info(f'Current working directory is: {folder_auto}')
         self.folder = folder_auto
         self.all_tests = all_tests
         self.runtime_configuration_ready = False
@@ -31,6 +31,10 @@ class EngineState:
 
     def begin_watch_for_config_changes(self):
         config.watch_for_config_changes()
+
+    def plugin_vesrion(self, intellij_connector_version):
+        logger.info(f'Intellij connector version: {intellij_connector_version}')
+        config.intellij_connector_version = intellij_connector_version
 
     async def will_start_diagnostics_collection(self):
         self.prepare_runtime_configuration_if_necessary()

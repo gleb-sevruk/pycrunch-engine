@@ -1,7 +1,11 @@
+import os
+
 import coverage
 
 from pycrunch.api.serializers import CoverageRunForSingleFile
 
+
+COVER_LIBS = False
 
 class CoverageAbstraction:
     cov: "coverage.Coverage"
@@ -29,6 +33,11 @@ class CoverageAbstraction:
         use_slow_tracer = False
         # user_slow_tracer = True
         coverage_args = self.get_coverage_arguments()
+        if COVER_LIBS:
+            import site
+            # Get the path to your virtual environment's site-packages
+            site_packages_path = site.getsitepackages()[0]
+            coverage_args["source"] = [site_packages_path, '.']
 
         # todo exclusion list should be configurable
         cov = coverage.Coverage(
@@ -63,7 +72,7 @@ class CoverageAbstraction:
     def get_coverage_arguments(self):
         coverage_args = dict()
         if self.is_coverage_v5_or_greater():
-            # dont write on disk `.coverage` files,
+            # don't write on disk `.coverage` files,
             # it is not needed, and will be deadlocked due to concurrent test execution
             coverage_args.update(
                 dict(
@@ -95,7 +104,12 @@ class CoverageAbstraction:
         coverage_data = self.cov.get_data()
         for f in coverage_data.measured_files():
             # maybe leave only what we need?
+            # TODO: look at numbits -> smart hash or what it is in coverage.py db
+            #  maybe i will want to send it (encode this way)
             lines = coverage_data.lines(f)
+
+            if len(lines) <= 0:
+                continue
 
             # arcs = coverage_data.arcs(f)
             #         * The file name for the module.
@@ -104,7 +118,9 @@ class CoverageAbstraction:
             #         * A list of line numbers of statements not run (missing from
             #           execution).
             #         * A readable formatted string of the missing line numbers.
-            # // todo exclude lines hits
             # analysis = cov.analysis2(f)
+            # TODO or not todo?
+            # f = normalize_path(f)
+
             interim_results.append(CoverageRunForSingleFile(f, lines))
         return interim_results
