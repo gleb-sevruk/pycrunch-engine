@@ -53,6 +53,9 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
         action = json.get('action')
         if action == 'discovery':
             await engine.will_start_test_discovery()
+        if action == 'plugin_version':
+            intellij_connector_version = json.get('plugin_version')
+            engine.plugin_vesrion(intellij_connector_version)
         if action == 'run-tests' or action == 'debug-tests':
             if 'tests' not in json:
                 logger.error('run-tests command received, but no tests specified')

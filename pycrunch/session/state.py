@@ -32,6 +32,10 @@ class EngineState:
     def begin_watch_for_config_changes(self):
         config.watch_for_config_changes()
 
+    def plugin_vesrion(self, intellij_connector_version):
+        logger.info(f'Intellij connector version: {intellij_connector_version}')
+        config.intellij_connector_version = intellij_connector_version
+
     async def will_start_diagnostics_collection(self):
         self.prepare_runtime_configuration_if_necessary()
 

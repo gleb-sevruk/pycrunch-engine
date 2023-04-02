@@ -55,6 +55,7 @@ class Configuration:
         self.enable_asyncio_debug = False
         self.enable_web_ui = False
         self.change_detection_root: str = self._get_working_directory()
+        self.intellij_connector_version = 'unknown'
 
     def _get_working_directory(self):
         return str(Path('.').absolute())
