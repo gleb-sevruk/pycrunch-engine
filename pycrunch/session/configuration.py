@@ -3,6 +3,7 @@ import logging
 import multiprocessing
 from pathlib import Path
 from typing import List, Optional
+from os import environ
 
 import yaml
 from pycrunch.constants import CONFIG_FILE_NAME
@@ -217,6 +218,10 @@ class Configuration:
         print(additional_env)
         for env in additional_env:
             self.environment_vars[env] = additional_env[env]
+
+        for env_name, env_value in self.environment_vars.items():
+            environ[env_name] = env_value
+
 
     def apply_path_mapping(self, path_mapping):
         print('custom path map')
