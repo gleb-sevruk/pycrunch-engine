@@ -1,4 +1,4 @@
-import logging
+
 import os
 import sys
 import traceback
@@ -11,7 +11,6 @@ from pycrunch.runner import _abstract_runner
 from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.session.recorded_exception import RecordedException
 
-logger = logging.getLogger(__name__)
 
 
 class PyTestRunnerEngine(_abstract_runner.Runner):
@@ -79,6 +78,8 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
             traceback.print_exc(file=sys.stdout)
             traceback.print_exception(etype, value, current_traceback, limit=last_call, file=sys.stdout)
             # print(str(e))
+            import logging
+            logger = logging.getLogger(__name__)
             logger.exception('Error while executing _run_test', exc_info=e)
         return execution_result
 

@@ -55,10 +55,14 @@ class EchoClientProtocol(asyncio.Protocol):
                 config.prepare_django()
 
             from pycrunch.child_runtime.child_config import child_config
-            runner_engine = PyTestRunnerEngine(child_config)
+            if not child_config.use_new_execution_model:
+                runner_engine = PyTestRunnerEngine(child_config)
+                # should have env from pycrunch config here
+                test_runner = TestRunner(runner_engine, timeline, msg.coverage_exclusions, child_config)
+            else:
+                from pycrunch.child_runtime.pytest_aware_runner.pytest_aware_runner import PytestAwareTestRunner
+                test_runner = PytestAwareTestRunner(timeline, msg.coverage_exclusions, child_config)
 
-            # should have env from pycrunch config here
-            test_runner = TestRunner(runner_engine, timeline, msg.coverage_exclusions, child_config)
             timeline.mark_event(f'Run: about to run tests')
             try:
                 timeline.mark_event(f'Run: total tests planned: {len(msg.task.tests)}')

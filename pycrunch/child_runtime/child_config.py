@@ -5,6 +5,7 @@ class ChildRuntimeConfig:
         self.remote_debug_port = -1
         self.runtime_engine = 'pytest'
         self.collect_timings = False
+        self.use_new_execution_model = False
 
     def use_engine(self, new_engine):
         self.runtime_engine = new_engine

@@ -1,5 +1,6 @@
 # Interval -> contains start, end, nested intervals, and markers (relative to interval)
 import os
+import sys
 from datetime import datetime
 
 from pycrunch.introspection.clock import clock
@@ -64,6 +65,16 @@ class Timeline:
         self.intervals_stack.append(self.root)
         self.relative_to = None
 
+    # def get_header(self):
+    #     return f"{datetime.now().isoformat()}"
+
+    def get_header(self):
+        now_ = clock.now() - self.relative_to
+        now__ = str(now_)[0:5]
+        return now__
+        # return datetime.now().strftime('%H:%M:%S.%f')[:-3]
+        # return datetime.now().strftime('%H:%M:%S.%f')[:-3]
+
     def start(self):
         self.relative_to = clock.now()
         self.root.start()
@@ -76,6 +87,9 @@ class Timeline:
         return self.root.duration()
 
     def begin_nested_interval(self, name):
+
+        print(f'{self.get_header()} nested_interval: {name}', file=sys.__stdout__)
+
         self.intervals_stack.append(self.current_interval().begin_nested_interval(name))
 
     def current_interval(self):
@@ -89,7 +103,7 @@ class Timeline:
         self.root.to_console()
 
     def mark_event(self, event_name):
-        # print(f'[{os.getpid()}] {datetime.now().isoformat()} {event_name}')
+        print(f'{self.get_header()} {event_name}', file=sys.__stdout__)
         self.current_interval().mark_event(event_name, self.relative_to)
         pass
 

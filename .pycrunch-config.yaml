@@ -6,7 +6,7 @@ discovery:
   - pycrunch/tests/dogfood
   - tests_discovery_specs_demo.py
 engine:
-  cpu-cores: 4
+  cpu-cores: 1
   load-pytest-plugins: false
   multiprocessing-threshold: 4
   runtime: pytest

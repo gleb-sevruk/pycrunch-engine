@@ -1,4 +1,5 @@
 import os
+from unittest.mock import MagicMock
 
 import coverage
 
@@ -22,6 +23,19 @@ class CoverageAbstraction:
         self.disable = disable
         self.coverage_exclusions = coverage_exclusions
         self.cov = None
+
+    def switch_context(self, new_context):
+        if self.disable:
+            self.timeline.mark_event('Run: Coverage disabled. switch_context is not available.')
+            return
+
+        self.cov.switch_context(new_context)
+
+    def raw(self):
+        if self.disable:
+            return MagicMock()
+            return
+        return self.cov
 
     def start(self):
         if self.disable:
