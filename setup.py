@@ -2,9 +2,9 @@ import setuptools
 from distutils.core import setup
 
 setup(name='pycrunch-engine',
-      version='1.5.2',
+      version='1.6.0',
       description='PyCrunch Engine - Connector for PyCharm plugin, providing real-time test feedback and precise test '
-                  'coverage tracking for Python projects.',
+                  'coverage tracking for Python projects. ',
       url='http://github.com/gleb-sevruk/pycrunch-engine',
       author='Gleb Sevruk',
       author_email='support@pycrunch.com',
@@ -27,7 +27,7 @@ setup(name='pycrunch-engine',
           'coverage>4',
           'PyYAML',
           'watchdog',
-          'python-socketio>=4,<5',
+          'python-socketio>=5',
           'aiohttp',
       ],
       include_package_data=True,

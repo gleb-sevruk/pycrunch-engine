@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 from typing import Dict, Optional
 
 from pycrunch.api import shared
@@ -22,6 +23,8 @@ from pycrunch.execution_watchdog.execution_watchdog import termination_event
 from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
+
+python_version = float(".".join(map(str, sys.version_info[:2])))
 
 
 class TestRunStatus:
@@ -60,6 +63,7 @@ class RunTestTask(AbstractTask):
         self.results = None
         self.timeline = Timeline('run tests')
         self.timeline.start()
+
 
     async def run(self):
         """
@@ -178,7 +182,12 @@ class RunTestTask(AbstractTask):
             # 2. Test runner events
             #  2.1 Run to end
             #  2.2 Timeout during run
-            waited = await asyncio.wait([termination_event.wait(), runner_task], return_when=asyncio.FIRST_COMPLETED)
+            if python_version == 3.6:
+                waited = await asyncio.wait([termination_event.wait(), runner_task], return_when=asyncio.FIRST_COMPLETED)
+            else:
+                t1 = asyncio.create_task(termination_event.wait())
+                waited = await asyncio.wait([t1, runner_task], return_when=asyncio.FIRST_COMPLETED)
+
             if runner_task.done():
                 return TestRunStatus('success', runner_task.result())
             if termination_event.is_set():
