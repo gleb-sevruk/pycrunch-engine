@@ -176,6 +176,17 @@ You will probably need to rebuild containers using `docker-compose up --build` i
 
 From PyCharm extension menu, select "Connect to Custom PyCrunch Engine"
 
+### Troubleshooting
+
+If you see the error like:
+
+ `engineio.server - ERROR - The client is using an unsupported version of the Socket.IO or Engine.IO protocols`
+   
+Please update the engine via `pip install --upgrade pycrunch-engine`
+
+Make sure both engine and plugin are 1.6.0 version or higher.
+
+This was major dependency change, so please report any issues you may have. 
 
 ### Contacts:
  
