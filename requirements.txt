@@ -7,3 +7,4 @@ python-socketio>=5
 aiohttp
 PyYAML
 pytest-asyncio
+nest-asyncio

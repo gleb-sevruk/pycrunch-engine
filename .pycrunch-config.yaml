@@ -7,7 +7,7 @@ discovery:
   - tests_discovery_specs_demo.py
 engine:
   cpu-cores: 4
-  load-pytest-plugins: false
+  load-pytest-plugins: true
   multiprocessing-threshold: 4
   runtime: pytest
   timeout: 0
