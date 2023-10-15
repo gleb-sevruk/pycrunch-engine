@@ -56,7 +56,7 @@ class TestAutoConfigCreation(unittest.TestCase):
 engine:
     runtime: pytest
     enable-web-ui: false
-    load-pytest-plugins: false
+    load-pytest-plugins: true
 '''
             handle.write.assert_called_once_with(default_config_file)
 

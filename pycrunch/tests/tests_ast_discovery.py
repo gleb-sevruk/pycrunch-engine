@@ -46,6 +46,7 @@ def test_classes_with_unit_tests_are_discoverable():
     assert 'TestX::test_1' in test_names
     assert 'MyClass::test_method1' in test_names
     assert 'MyClass::test_method2' in test_names
+    assert 'test_async' in test_names
     assert 'TestForDummies::test_method1' in test_names
     assert 'TestForDummies::test_method2' in test_names
     assert 'TestForDummies::helper_method' not in test_names

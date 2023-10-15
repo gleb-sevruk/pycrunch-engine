@@ -5,6 +5,8 @@
 
 import asyncio
 import sys
+import nest_asyncio
+nest_asyncio.apply()
 
 async def run(engine_to_use, timeline, port, task_id):
     from pycrunch.child_runtime.client_protocol import EchoClientProtocol

@@ -19,7 +19,7 @@ class AutoConfiguration:
 engine:
     runtime: pytest
     enable-web-ui: false
-    load-pytest-plugins: false
+    load-pytest-plugins: true
 '''
         with io.open(self.configuration_file, encoding='utf-8', mode='w') as f:
             f.write(default_config_file)

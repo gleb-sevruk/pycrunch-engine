@@ -29,6 +29,7 @@ setup(name='pycrunch-engine',
           'watchdog',
           'python-socketio>=5',
           'aiohttp',
+          'nest-asyncio',
       ],
       include_package_data=True,
       zip_safe=False)
