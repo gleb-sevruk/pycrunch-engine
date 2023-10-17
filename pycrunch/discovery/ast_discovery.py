@@ -2,7 +2,7 @@ import ast
 import logging
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from pycrunch.discovery.simple import TestSet, TestsInModule
 from pycrunch.introspection.clock import Clock
@@ -95,7 +95,7 @@ class AstTestDiscovery:
     def load_tests_from_ast_representation(self, ast_tree: ast.Module) -> List[str]:
         results = []
 
-        def process_function_def(func: ast.FunctionDef | ast.AsyncFunctionDef) -> List[str]:
+        def process_function_def(func: Union[ast.FunctionDef, ast.AsyncFunctionDef]) -> List[str]:
             if self.looks_like_test_name(func.name):
                 return [func.name]
 
@@ -112,9 +112,9 @@ class AstTestDiscovery:
             if c2:
                 for member in class_ast.body:
                     # TODO nested classes
-                    if not isinstance(member, ast.FunctionDef | ast.AsyncFunctionDef):
+                    if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
                         continue
-                    member: ast.FunctionDef | ast.AsyncFunctionDef
+                    member: Union[ast.FunctionDef, ast.AsyncFunctionDef]
                     if self.looks_like_test_name(member.name):
                         class_results.append(f"{class_ast_name}::{member.name}")
             return class_results
