@@ -4,7 +4,6 @@ py_test_exclusions = [
     '*site-packages/*',
     '*.pytest_cache/*',
     '*pytest_support/interception_plugin.py',
-
 ]
 
 coverage_6_exclusions = [
@@ -12,7 +11,6 @@ coverage_6_exclusions = [
     '**site-packages/**',
     '**.pytest_cache/**',
     '**pytest_support/interception_plugin.py',
-
 ]
 
 exclude_list = py_test_exclusions + [
@@ -28,7 +26,5 @@ exclude_list = py_test_exclusions + [
     '*plugins/pytest_support/pytest_runner_engine.py',
     '*runner/interception.py',
     '*pycrunch/introspection/*',
-    '*pycrunch/shared/models.py'
-
+    '*pycrunch/shared/models.py',
 ]
-

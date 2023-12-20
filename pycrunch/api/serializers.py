@@ -2,13 +2,18 @@ from collections import OrderedDict
 
 from pycrunch.session import config
 
+
 class CoverageRunForSingleFile:
     def __init__(self, filename, lines):
         self.lines = lines
         self.filename = filename
 
     def as_json(self):
-        return OrderedDict(filename=config.path_mapping.map_to_local_fs(self.filename), lines_covered=self.lines,)
+        return OrderedDict(
+            filename=config.path_mapping.map_to_local_fs(self.filename),
+            lines_covered=self.lines,
+        )
+
 
 class CoverageRun:
     def __init__(self, fqn, time_elapsed, test_metadata, execution_result):
@@ -24,8 +29,6 @@ class CoverageRun:
         :type files: typing.List[CoverageRunForSingleFile]
         """
         self.files = files
-
-
 
     def as_json(self):
         files_ = [x.as_json() for x in self.files]
@@ -69,4 +72,4 @@ def serialize_test_set_state(test_set):
 
     return dict(
         tests=[serialize_test(v) for (k, v) in test_set.items()],
-        )
+    )

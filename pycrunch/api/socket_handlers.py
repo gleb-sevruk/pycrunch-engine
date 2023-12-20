@@ -33,7 +33,6 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
     def handle_message(message):
         logger.debug('received message 2: ' + message)
 
-
     @sio.on('json')
     async def handle_json(json, smth):
         logger.debug('handle_json')
@@ -42,7 +41,6 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
         # logger.debug('url + ' + url_for1)
         await pipe.push(event_type='connected', **{'data': 'Connected'})
         logger.debug('received json 2: ' + str(json))
-
 
     @sio.on('my event')
     async def handle_my_custom_event(sid, json):
@@ -109,8 +107,8 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
             **dict(
                 data='Connected test_connected',
                 engine_mode=engine.get_engine_mode(),
-                version=version.version_info
-            )
+                version=version.version_info,
+            ),
         )
 
         with thread_lock:

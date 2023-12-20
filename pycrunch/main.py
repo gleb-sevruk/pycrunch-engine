@@ -19,7 +19,6 @@ with open(configuration_yaml_, 'r') as f:
     logging.config.dictConfig(yaml.safe_load(f.read()))
 
 
-
 if sys.platform == 'win32':
     policy = asyncio.get_event_loop_policy()
     policy._loop_factory = asyncio.ProactorEventLoop
@@ -37,6 +36,7 @@ def run():
     print(f'PyCrunch [v{pycrunch.version.version_info_str}]; port will be {port} ')
     # use_reloader = not True
     from pycrunch.session.state import engine
+
     engine.prepare_runtime_configuration_if_necessary()
 
     from pycrunch.api import shared
@@ -61,7 +61,9 @@ def run():
         web_ui.enable_for_aiohttp(app, package_directory)
     else:
         print('PyCrunch Web-UI is disabled. ')
-        print('    To enable it back, please set `engine->enable-web-ui` in `.pycrunch-config.yaml` to true')
+        print(
+            '    To enable it back, please set `engine->enable-web-ui` in `.pycrunch-config.yaml` to true'
+        )
 
     loop = asyncio.get_event_loop()
     loop.create_task(connection_watchdog.watch_client_connection_loop())

@@ -1,7 +1,7 @@
 from pycrunch.insights.variables_inspection import EmptyInsightTimeline
 
 
-class ErrorRecord: 
+class ErrorRecord:
     def __init__(self, etype, value, current_traceback):
         self.current_traceback = current_traceback
         self.value = value
@@ -11,6 +11,7 @@ class ErrorRecord:
 failed_status = 'failed'
 success_status = 'success'
 queued_status = 'queued'
+
 
 class SingleTestExecutionResult:
     def __init__(self):
@@ -36,7 +37,7 @@ class SingleTestExecutionResult:
 
     def state_timeline_did_become_available(self, state_timeline):
         self.state_timeline = state_timeline
-    
+
     @classmethod
     def create_failed_with_reason(cls, reason):
         """

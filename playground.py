@@ -3,6 +3,7 @@ def my_sum():
     b = 3
     return a + b
 
+
 def unused():
     return 'wtf'
 
@@ -19,5 +20,5 @@ def kurlik(a, b):
 
     return -42
 
-print('module imported!')
 
+print('module imported!')

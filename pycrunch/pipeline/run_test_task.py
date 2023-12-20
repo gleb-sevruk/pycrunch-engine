@@ -12,13 +12,19 @@ from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.scheduling.scheduler import TestRunScheduler
-from pycrunch.session.combined_coverage import combined_coverage, serialize_combined_coverage
+from pycrunch.session.combined_coverage import (
+    combined_coverage,
+    serialize_combined_coverage,
+)
 from pycrunch.session.state import engine
 from pycrunch.session import config
 
 import logging
 
-from pycrunch.execution_watchdog.tasks import TestExecutionBeginTask, TestExecutionEndTask
+from pycrunch.execution_watchdog.tasks import (
+    TestExecutionBeginTask,
+    TestExecutionEndTask,
+)
 from pycrunch.execution_watchdog.execution_watchdog import termination_event
 from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
@@ -28,7 +34,7 @@ python_version = float(".".join(map(str, sys.version_info[:2])))
 
 
 class TestRunStatus:
-    def __init__(self, status, results = None):
+    def __init__(self, status, results=None):
         """
         :type state: str
         :type results: Dict[str, CoverageRun]
@@ -64,14 +70,15 @@ class RunTestTask(AbstractTask):
         self.timeline = Timeline('run tests')
         self.timeline.start()
 
-
     async def run(self):
         """
-            Here we run multiple tests at once using one or multiple processes
+        Here we run multiple tests at once using one or multiple processes
         """
         self.timeline.mark_event('run')
         watchdog_pipeline.add_task(TestExecutionBeginTask(len(self.tests)))
-        socket_notification_task = asyncio.ensure_future(engine.tests_will_run(self.tests)) # noqa: F841
+        socket_notification_task = asyncio.ensure_future(
+            engine.tests_will_run(self.tests)
+        )  # noqa: F841
 
         converted_tests = self.get_converted_test_list()
         runner = self.create_test_runner()
@@ -80,13 +87,21 @@ class RunTestTask(AbstractTask):
         runner_task = asyncio.ensure_future(runner.run(tests=converted_tests))
         run_results_compound = await self.wait_with_cancellation(runner_task)
         if run_results_compound.is_failed():
-            failure_reason = self.user_friendly_error_message(run_results_compound.status)
+            failure_reason = self.user_friendly_error_message(
+                run_results_compound.status
+            )
 
             for _ in converted_tests:
                 candidate_fqn = _['fqn']
-                cov_run = CoverageRun(candidate_fqn, -1, None, execution_result=SingleTestExecutionResult.create_failed_with_reason(failure_reason))
+                cov_run = CoverageRun(
+                    candidate_fqn,
+                    -1,
+                    None,
+                    execution_result=SingleTestExecutionResult.create_failed_with_reason(
+                        failure_reason
+                    ),
+                )
                 run_results_compound.results[candidate_fqn] = cov_run
-
 
         run_results = run_results_compound.results
 
@@ -94,21 +109,23 @@ class RunTestTask(AbstractTask):
 
         # asynchronously send message over websocket
         # Line bellow communicates test statuses as a side effect
-        async_tasks_post = [
-            engine.tests_did_run(run_results)
-        ]
+        async_tasks_post = [engine.tests_did_run(run_results)]
 
         self.post_process_combined_coverage(run_results)
 
         self.timeline.mark_event('Sending: test_run_completed event')
         # todo: i'm only using `filename` in connector, why bother with everything?
-        cov_and_run_details_to_send = dict(all_runs=self.convert_result_to_json(run_results))
+        cov_and_run_details_to_send = dict(
+            all_runs=self.convert_result_to_json(run_results)
+        )
 
-        async_tasks_post.append(shared.pipe.push(
-            event_type='test_run_completed',
-            coverage=cov_and_run_details_to_send,
-            timings=dict(start=self.timestamp, end=clock.now()),
-        ))
+        async_tasks_post.append(
+            shared.pipe.push(
+                event_type='test_run_completed',
+                coverage=cov_and_run_details_to_send,
+                timings=dict(start=self.timestamp, end=clock.now()),
+            )
+        )
 
         self.timeline.mark_event('Started combined coverage serialization')
         serialized = serialize_combined_coverage(combined_coverage)
@@ -120,7 +137,7 @@ class RunTestTask(AbstractTask):
                 event_type='combined_coverage_updated',
                 combined_coverage=serialized,
                 aggregated_results=engine.all_tests.legacy_aggregated_statuses(),
-                timings=dict(start=self.timestamp, end=clock.now())
+                timings=dict(start=self.timestamp, end=clock.now()),
             )
         )
 
@@ -154,10 +171,14 @@ class RunTestTask(AbstractTask):
 
     def post_process_combined_coverage(self, run_results):
         if self.remote_debug_params.enabled:
-            self.timeline.mark_event('Postprocessing: combined coverage will not be recomputed.')
+            self.timeline.mark_event(
+                'Postprocessing: combined coverage will not be recomputed.'
+            )
             return
 
-        self.timeline.mark_event('Postprocessing: combined coverage, line hits, dependency tree')
+        self.timeline.mark_event(
+            'Postprocessing: combined coverage, line hits, dependency tree'
+        )
         combined_coverage.add_multiple_results(run_results)
         self.timeline.mark_event('Postprocessing: completed')
 
@@ -168,14 +189,15 @@ class RunTestTask(AbstractTask):
             timeout=config.get_execution_timeout(),
             timeline=self.timeline,
             test_run_scheduler=TestRunScheduler(
-                cpu_cores=config.cpu_cores,
-                threshold=config.multiprocessing_threshold
+                cpu_cores=config.cpu_cores, threshold=config.multiprocessing_threshold
             ),
             remote_debug_params=self.remote_debug_params,
         )
         return runner
 
-    async def wait_with_cancellation(self, runner_task: asyncio.Future) -> TestRunStatus:
+    async def wait_with_cancellation(
+        self, runner_task: asyncio.Future
+    ) -> TestRunStatus:
         try:
             # Here we wait for the first event, which may be:
             # 1. Watchdog termination signal
@@ -183,10 +205,15 @@ class RunTestTask(AbstractTask):
             #  2.1 Run to end
             #  2.2 Timeout during run
             if python_version == 3.6:
-                waited = await asyncio.wait([termination_event.wait(), runner_task], return_when=asyncio.FIRST_COMPLETED) # noqa: F841
+                waited = await asyncio.wait(
+                    [termination_event.wait(), runner_task],
+                    return_when=asyncio.FIRST_COMPLETED,
+                )  # noqa: F841
             else:
                 t1 = asyncio.create_task(termination_event.wait())
-                waited = await asyncio.wait([t1, runner_task], return_when=asyncio.FIRST_COMPLETED) # noqa: F841
+                waited = await asyncio.wait(
+                    [t1, runner_task], return_when=asyncio.FIRST_COMPLETED
+                )  # noqa: F841
 
             if runner_task.done():
                 return TestRunStatus('success', runner_task.result())
@@ -198,13 +225,20 @@ class RunTestTask(AbstractTask):
             logger.warning('Timeout reached while waiting for tests...')
             return TestRunStatus('timeout')
 
-
     def get_converted_test_list(self):
         converted_tests = list()
         for test in self.tests:
             # todo why is this line exist?
             converted_tests.append(
-                dict(fqn=test.discovered_test.fqn, filename=test.discovered_test.filename, name=test.discovered_test.name, module=test.discovered_test.module, state='converted'))
+                dict(
+                    fqn=test.discovered_test.fqn,
+                    filename=test.discovered_test.filename,
+                    name=test.discovered_test.name,
+                    module=test.discovered_test.module,
+                    state='converted',
+                )
+            )
         return converted_tests
+
 
 # https://stackoverflow.com/questions/45369128/python-multithreading-queue

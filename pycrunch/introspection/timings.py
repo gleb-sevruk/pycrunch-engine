@@ -33,13 +33,16 @@ class Interval:
 
     def to_console(self, indent=0):
         join = " ".join([" " for x in range(1, indent + 1)])
-        print(f'{join}  {self.name} [{self.started_at} ... {self.stopped_at}] ({self.duration():.3f} seconds)')
+        print(
+            f'{join}  {self.name} [{self.started_at} ... {self.stopped_at}] ({self.duration():.3f} seconds)'
+        )
         for evt in self.events:
-            print(f'    {join}  [event] [{evt.relative_timestamp()}] {evt.name} at {evt.timestamp} (in {self.name}) ')
+            print(
+                f'    {join}  [event] [{evt.relative_timestamp()}] {evt.name} at {evt.timestamp} (in {self.name}) '
+            )
 
         for interval in self.intervals:
-            interval.to_console(indent=indent+3)
-
+            interval.to_console(indent=indent + 3)
 
 
 class Marker:
@@ -51,6 +54,7 @@ class Marker:
     def relative_timestamp(self):
         # relative to entire Timeline
         return round(self.timestamp - self.relative_to, 3)
+
 
 class Timeline:
     # todo use interval stacks
@@ -90,4 +94,3 @@ class Timeline:
         # print(f'[{os.getpid()}] {datetime.now().isoformat()} {event_name}')
         self.current_interval().mark_event(event_name, self.relative_to)
         pass
-

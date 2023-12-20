@@ -41,7 +41,6 @@ class RunDebouncer:
         # print(f' {self.ts_created} < {now} < {self.ts_target}')
         # print(f' === {inside_debounce_interval}')
         if inside_debounce_interval:
-
             self.ts_target += self.debounce_delay * 1
 
             if self.ts_target - now > 1.0:
@@ -54,9 +53,7 @@ class RunDebouncer:
             )
 
             if self.run_pending and self.run_timer:
-                logger.debug(
-                    'run_pending, cancelling...'
-                )
+                logger.debug('run_pending, cancelling...')
                 copied_ref = self.run_timer
                 copied_ref.cancel()
                 logger.debug(
@@ -64,7 +61,6 @@ class RunDebouncer:
                 )
                 self.run_timer = None
                 self.force_schedule_run()
-
 
     def add_tests(self, tests: "List[TestState]"):
         # until we have tests, wait...
@@ -125,4 +121,3 @@ class RunDebouncer:
             await sleep(0.01)
         else:
             await sleep(0.01, loop=self._loop)
-

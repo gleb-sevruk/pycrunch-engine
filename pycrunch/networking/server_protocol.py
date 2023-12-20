@@ -50,7 +50,6 @@ class TestRunnerServerProtocol(asyncio.Protocol):
 
             self.process_single_message(msg)
 
-
     def process_single_message(self, msg):
         logger.info(f'process_single_message - {msg.kind}')
         if msg.kind == 'handshake':
@@ -59,7 +58,9 @@ class TestRunnerServerProtocol(asyncio.Protocol):
                 raise Exception('no task found for subprocess. ')
 
             logger.debug(f'sending task definition, {found_task.id}')
-            msg_to_reply = ScheduledTaskDefinitionMessage(task=found_task, coverage_exclusions=config.coverage_exclusions)
+            msg_to_reply = ScheduledTaskDefinitionMessage(
+                task=found_task, coverage_exclusions=config.coverage_exclusions
+            )
             bytes_msg = pickle.dumps(msg_to_reply)
             self.transport.write(bytes_msg)
         if msg.kind == 'test_run_results':
@@ -84,7 +85,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
             # print('process_messages: nothing to process')
         return msg
 
-    def connection_lost(self, ex = None):
+    def connection_lost(self, ex=None):
         if not self.completion_future.done():
             self.completion_future.set_result(self.results)
 
@@ -102,4 +103,3 @@ class TestRunnerServerProtocol(asyncio.Protocol):
     def force_close(self):
         self.transport.close()
         self.completion_future.cancel()
-

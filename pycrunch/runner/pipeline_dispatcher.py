@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
     - File tracking
 """
 
+
 async def dispather_thread():
     logger.info('Dispatcher thread -- Start')
     while True:
@@ -21,10 +22,9 @@ async def dispather_thread():
         try:
             await task.run()
         except Exception as e:
-            logger.exception('Exception in dispatcher_thread, execution will begin from the next task', exc_info=e)
-
-
-
-
+            logger.exception(
+                'Exception in dispatcher_thread, execution will begin from the next task',
+                exc_info=e,
+            )
 
     logger.debug('Dispatcher thread -- End')

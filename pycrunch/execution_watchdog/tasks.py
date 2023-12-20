@@ -1,5 +1,6 @@
 class AbstractWatchdogTask:
     name: str
+
     def run(self):
         raise Exception('Abstract method call in AbstractWatchdogTask->run.')
 

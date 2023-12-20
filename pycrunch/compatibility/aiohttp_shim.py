@@ -6,7 +6,6 @@ from pycrunch.compatibility.version_utils import parse_version_string
 
 
 def aiohttp_init_parameters() -> Dict[str, Any]:
-
     # aiohttp since 3.8 creates new event loop on startup.
     #   https://github.com/aio-libs/aiohttp/pull/5572
     # aiohttp <= 3.7 does not have `loop` argument, we do not want to pass it

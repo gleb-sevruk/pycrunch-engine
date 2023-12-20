@@ -24,7 +24,9 @@ class TestMap:
 
     def file_did_removed(self, filename):
         if filename not in self.map:
-            logger.info(f'file_did_removed could not find  {filename}. Probably it was removed earlier.')
+            logger.info(
+                f'file_did_removed could not find  {filename}. Probably it was removed earlier.'
+            )
             return
         self.map.pop(filename)
 

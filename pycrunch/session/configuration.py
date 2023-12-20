@@ -31,8 +31,10 @@ class PathMapping:
     def map_local_to_remote(self, filename):
         return filename.replace(self.path_on_local_ide, self.path_in_container, 1)
 
+
 class PycrunchException(Exception):
     pass
+
 
 class Configuration:
     def __init__(self):
@@ -71,15 +73,20 @@ class Configuration:
             logger.info('!!! Importing Django and calling django.setup')
             try:
                 import django
+
                 django.setup()
             except Exception as e:
-                logger.exception('Failed to import or set up django! Are you sure it is django project?', exc_info=e)
+                logger.exception(
+                    'Failed to import or set up django! Are you sure it is django project?',
+                    exc_info=e,
+                )
             self.django_ready = True
-
 
     def throw_if_not_supported_engine(self, new_engine):
         if new_engine not in self.available_engines:
-            raise Exception(f'engine {new_engine} not available. Possible options: {self.available_engines}')
+            raise Exception(
+                f'engine {new_engine} not available. Possible options: {self.available_engines}'
+            )
 
     def set_engine_directory(self, engine_directory):
         self.engine_directory = engine_directory
@@ -100,6 +107,7 @@ class Configuration:
 
     def watch_for_config_changes(self):
         from pycrunch.api.shared import file_watcher
+
         logger.debug('watch_for_config_changes')
         file_watcher.watch([str(self.configuration_file_path().absolute())])
 
@@ -113,7 +121,9 @@ class Configuration:
         if discovery:
             exc = discovery.get('exclusions', None)
             if not hasattr(exc, "__len__"):
-                raise Exception('.pycrunch-config.yaml: discovery->exclusions should be array')
+                raise Exception(
+                    '.pycrunch-config.yaml: discovery->exclusions should be array'
+                )
             self.discovery_exclusions = tuple(exc)
         engine_config = x.get('engine', None)
         if engine_config:
@@ -129,7 +139,6 @@ class Configuration:
             self.apply_path_mapping(path_mapping)
 
         self.apply_coverage_exclusions(x.get('coverage-exclusions', None))
-
 
     def _load_runtime_configuration_engine(self, engine_config):
         runtime_engine_name = engine_config.get('runtime', None)
@@ -156,7 +165,6 @@ class Configuration:
             self.multiprocess_threshold_will_change(multiprocess_threshold)
         self.load_pytest_plugin_config(engine_config)
 
-
         # this is in seconds
         execution_timeout = engine_config.get('timeout', None)
         if execution_timeout is not None:
@@ -168,12 +176,16 @@ class Configuration:
 
     def runtime_mode_will_change(self, runtime_mode):
         self.throw_if_mode_not_supported(runtime_mode)
-        print(f'Engine execution mode will change from {self.engine_mode} to {runtime_mode}')
+        print(
+            f'Engine execution mode will change from {self.engine_mode} to {runtime_mode}'
+        )
         self.engine_mode = runtime_mode
 
     def throw_if_mode_not_supported(self, runtime_mode):
         if runtime_mode not in self.allowed_modes:
-            raise Exception(f"runtime mode {runtime_mode} not supported. Available options are: {self.allowed_modes}")
+            raise Exception(
+                f"runtime mode {runtime_mode} not supported. Available options are: {self.allowed_modes}"
+            )
 
     def load_pytest_plugin_config(self, engine_config):
         node: Optional[str] = engine_config.get('load-pytest-plugins', None)
@@ -189,10 +201,14 @@ class Configuration:
 
     def execution_timeout_will_change(self, new_timeout: float):
         if new_timeout < 0:
-            logger.error(f'Execution timeout of {new_timeout} not valid. Fallback to default 60 sec. Please use positive numbers')
+            logger.error(
+                f'Execution timeout of {new_timeout} not valid. Fallback to default 60 sec. Please use positive numbers'
+            )
             return
 
-        print(f'Using custom execution timeout of {new_timeout} seconds (default - 60 seconds)')
+        print(
+            f'Using custom execution timeout of {new_timeout} seconds (default - 60 seconds)'
+        )
         self.execution_timeout_in_seconds = new_timeout
 
     def save_pinned_tests_config(self, fqns):
@@ -221,7 +237,6 @@ class Configuration:
 
         for env_name, env_value in self.environment_vars.items():
             environ[env_name] = env_value
-
 
     def apply_path_mapping(self, path_mapping):
         print('custom path map')
@@ -256,29 +271,30 @@ class Configuration:
             return
 
         if not hasattr(exclusions, "__len__"):
-            raise Exception('.pycrunch-config.yaml: apply_coverage->exclusions should be array')
+            raise Exception(
+                '.pycrunch-config.yaml: apply_coverage->exclusions should be array'
+            )
 
-        self.coverage_exclusions = list((f'*{_}*' if not _.endswith('.py') else f'*{_}' for _ in exclusions))
+        self.coverage_exclusions = list(
+            (f'*{_}*' if not _.endswith('.py') else f'*{_}' for _ in exclusions)
+        )
 
 
 class _Lazy(object):
-  _config_instance: Optional[Configuration]
+    _config_instance: Optional[Configuration]
 
-  def __init__(self):
-    self.download = None
-    self._config_instance = None
+    def __init__(self):
+        self.download = None
+        self._config_instance = None
 
+    @property
+    def config(self):
+        if not self._config_instance:
+            self._config_instance = Configuration()
+        return self._config_instance
 
-  @property
-  def config(self):
-    if not self._config_instance:
-      self._config_instance = Configuration()
-    return self._config_instance
-
-  def __getattr__(self, name):
-    return self.config.__getattribute__ (name)
-
-
-config = _Lazy() #  type: Optional[Configuration]
+    def __getattr__(self, name):
+        return self.config.__getattribute__(name)
 
 
+config = _Lazy()  #  type: Optional[Configuration]

@@ -1,6 +1,9 @@
 import traceback
 
-from pycrunch.plugins.pytest_support.exception_utilities import get_originating_frame_and_location, stringify_locals
+from pycrunch.plugins.pytest_support.exception_utilities import (
+    get_originating_frame_and_location,
+    stringify_locals,
+)
 from pycrunch.session.recorded_exception import RecordedException
 
 
@@ -17,14 +20,14 @@ class PyTestInterceptionPlugin:
 
     def pytest_runtest_logstart(nodeid, location):
         """
-            :param str nodeid: full id of the item
-            :param location: a triple of ``(filename, linenum, testname)``
+        :param str nodeid: full id of the item
+        :param location: a triple of ``(filename, linenum, testname)``
         """
         # print(f"pytest_runtest_logstart {location}", nodeid)
         pass
 
     def pytest_runtest_logfinish(nodeid, location):
-        """ signal the complete finish of running a single test item.
+        """signal the complete finish of running a single test item.
 
         This hook will be called **after** :func:`pytest_runtest_setup`, :func:`pytest_runtest_call` and
         :func:`pytest_runtest_teardown` hooks.
@@ -35,18 +38,26 @@ class PyTestInterceptionPlugin:
         # print(f"pytest_runtest_logfinish {location}", nodeid)
 
     def pytest_exception_interact(self, node, call, report):
-        exc_type = call.excinfo.type  # The exception type, e.g. AssertionError, ValueError, etc.
-        exc_value = call.excinfo.value  # The exception instance, containing the error message and other details
+        exc_type = (
+            call.excinfo.type
+        )  # The exception type, e.g. AssertionError, ValueError, etc.
+        exc_value = (
+            call.excinfo.value
+        )  # The exception instance, containing the error message and other details
         exc_traceback = call.excinfo.tb  # The traceback object
 
         # Get the formatted traceback as a list of strings
         # formatted_traceback = traceback.format_exception(exc_type, exc_value, exc_traceback)
         # Print the exception details for demonstration purposes
 
-        formatted_traceback = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        formatted_traceback = traceback.format_exception(
+            exc_type, exc_value, exc_traceback
+        )
         full_traceback_str = "".join(formatted_traceback)
 
-        frame, filename, line_number, frames = get_originating_frame_and_location(exc_traceback) # noqa F841
+        frame, filename, line_number, frames = get_originating_frame_and_location(
+            exc_traceback
+        )  # noqa F841
         _locals = stringify_locals(frame)
         # print(f"locals: {locals}")
         # print(f"Most recent stack frame: {frame}")
@@ -55,7 +66,9 @@ class PyTestInterceptionPlugin:
         DISABLE_LOCALS = False
         if DISABLE_LOCALS:
             _locals = {}
-        self.recorded_exception = RecordedException(filename, line_number, full_traceback_str, _locals)
+        self.recorded_exception = RecordedException(
+            filename, line_number, full_traceback_str, _locals
+        )
 
     def pytest_runtest_logreport(self, report):
         # pprint(vars(report))

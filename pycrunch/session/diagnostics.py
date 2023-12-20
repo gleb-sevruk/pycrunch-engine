@@ -3,7 +3,6 @@ import sys
 
 
 class DiagnosticEngine:
-
     def summary(self):
         return dict(env=self.get_env(), modules=self.get_modules())
 
@@ -12,5 +11,6 @@ class DiagnosticEngine:
 
     def get_modules(self):
         return list(sys.modules)
+
 
 diagnostic_engine = DiagnosticEngine()

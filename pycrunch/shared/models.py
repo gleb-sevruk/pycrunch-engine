@@ -14,9 +14,9 @@ class TestState:
         self.pinned = pinned
         self.execution_result = execution_result
 
-
     def __repr__(self):
         return f'TestState-> {self.discovered_test.fqn}'
+
 
 class AllTests:
     def __init__(self):
@@ -25,7 +25,9 @@ class AllTests:
 
     def test_discovered(self, fqn, discovered_test, is_pinned):
         # todo preserve state
-        self.tests[fqn] = TestState(discovered_test, SingleTestExecutionResult(), is_pinned)
+        self.tests[fqn] = TestState(
+            discovered_test, SingleTestExecutionResult(), is_pinned
+        )
         combined_coverage.test_did_removed(fqn)
 
     def test_will_run(self, fqn):
@@ -55,14 +57,15 @@ class AllTests:
 
     def legacy_aggregated_statuses(self):
         # todo rename to status for consistency
-        return {fqn: dict(state=test_run_short_info.execution_result.status) for fqn, test_run_short_info in self.tests.items()}
-
+        return {
+            fqn: dict(state=test_run_short_info.execution_result.status)
+            for fqn, test_run_short_info in self.tests.items()
+        }
 
     def collect_by_fqn(self, fqns):
         result = list()
         logger.info(f'Found {len(fqns)} tests for run')
         for fqn in fqns:
-
             current_test = self.tests[fqn]
             self.log_test_details(current_test)
             result.append(current_test)
@@ -71,7 +74,9 @@ class AllTests:
 
     def log_test_details(self, current_test):
         logger.debug('---')
-        logger.debug(f'current_test filename is {current_test.discovered_test.filename}')
+        logger.debug(
+            f'current_test filename is {current_test.discovered_test.filename}'
+        )
         logger.debug(f'current_test fqn is {current_test.discovered_test.fqn}')
         logger.debug(f'current_test module is {current_test.discovered_test.module}')
         logger.debug('---')
@@ -90,5 +95,6 @@ class AllTests:
                 logger.debug(f'test no longer in file_map {fqn} - Removed')
                 del self.tests[fqn]
                 combined_coverage.test_did_removed(fqn)
+
 
 all_tests = AllTests()

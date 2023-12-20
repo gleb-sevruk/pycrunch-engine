@@ -49,7 +49,6 @@ def create_handler(files_to_watch: "Set[str]", event_loop):
             if not self.should_watch_file(event.src_path):
                 return
 
-
             what = 'directory' if event.is_directory else 'file'
             logger.debug(
                 "Moved %s: from %s to %s", what, event.src_path, event.dest_path
@@ -100,7 +99,9 @@ def create_handler(files_to_watch: "Set[str]", event_loop):
         def send_modification_message(self, filename, context):
             logger.debug('Adding file modification for processing ' + filename)
 
-            self.add_task_in_queue(FileModifiedNotificationTask(file=filename, context=context))
+            self.add_task_in_queue(
+                FileModifiedNotificationTask(file=filename, context=context)
+            )
             logger.debug(' -- done Added ' + filename)
 
     return CustomFSWatchHandler()
@@ -143,10 +144,11 @@ class FSWatcher(Watcher):
             return
         expanded = self._expand_path(config.change_detection_root)
         logger.debug('start_thread_if_not_running->Creating fs_observer')
-        logger.info(f"change-detection-root: `{expanded}` \n"
-                    f"Changes outside of this folder won't be tracked for test execution.\n"
-                    f"If you want to change this, please edit engine->change-detection-root file in {CONFIG_FILE_NAME}")
-
+        logger.info(
+            f"change-detection-root: `{expanded}` \n"
+            f"Changes outside of this folder won't be tracked for test execution.\n"
+            f"If you want to change this, please edit engine->change-detection-root file in {CONFIG_FILE_NAME}"
+        )
 
         observer = Observer()
         observer.schedule(

@@ -5,7 +5,9 @@ import traceback
 
 import pytest
 
-from pycrunch.plugins.pytest_support.exception_utilities import get_originating_frame_and_location
+from pycrunch.plugins.pytest_support.exception_utilities import (
+    get_originating_frame_and_location,
+)
 from pycrunch.plugins.pytest_support.interception_plugin import PyTestInterceptionPlugin
 from pycrunch.runner import _abstract_runner
 from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
@@ -21,7 +23,6 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
         :type child_config: pycrunch.child_runtime.child_config.ChildRuntimeConfig
         """
         self.child_config = child_config
-
 
     def run_test(self, test):
         """
@@ -55,10 +56,20 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
                     # Todo: this is too late to check for debugger existence.
                     #   Need verify before `debug` button click
                     import pydevd_pycharm
-                    pydevd_pycharm.settrace('127.0.0.1', suspend=False, port=self.child_config.remote_debug_port, stdoutToServer=True, stderrToServer=True)
+
+                    pydevd_pycharm.settrace(
+                        '127.0.0.1',
+                        suspend=False,
+                        port=self.child_config.remote_debug_port,
+                        stdoutToServer=True,
+                        stderrToServer=True,
+                    )
                 except ModuleNotFoundError:
                     print('---\nFailed to import pydevd_pycharm', file=sys.__stdout__)
-                    print('  Make sure you install pudb pycharm bindings by running:', file=sys.__stdout__)
+                    print(
+                        '  Make sure you install pudb pycharm bindings by running:',
+                        file=sys.__stdout__,
+                    )
                     print('pip install pydevd-pycharm\n---', file=sys.__stdout__)
                     raise
             pytest.main([fqn_test_to_run] + all_args, plugins=[plugin])
@@ -72,13 +83,18 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
                 execution_result.run_did_fail()
         except Exception as e:
             etype, value, current_traceback = sys.exc_info()
-            _, filename, line_number, _ = get_originating_frame_and_location(current_traceback)
-            execution_result.record_exception(RecordedException(filename, line_number, str(current_traceback), {}))
+            _, filename, line_number, _ = get_originating_frame_and_location(
+                current_traceback
+            )
+            execution_result.record_exception(
+                RecordedException(filename, line_number, str(current_traceback), {})
+            )
             execution_result.run_did_fail()
             last_call = -1
             traceback.print_exc(file=sys.stdout)
-            traceback.print_exception(etype, value, current_traceback, limit=last_call, file=sys.stdout)
+            traceback.print_exception(
+                etype, value, current_traceback, limit=last_call, file=sys.stdout
+            )
             # print(str(e))
             logger.exception('Error while executing _run_test', exc_info=e)
         return execution_result
-

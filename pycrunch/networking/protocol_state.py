@@ -2,7 +2,8 @@ import io
 import pickle
 import struct
 
-class ProtocolState():
+
+class ProtocolState:
     def __init__(self, message_queue):
         self.message_queue = message_queue
         # what if header split?
@@ -46,8 +47,13 @@ class ProtocolState():
                 read_header_amount = self.header_size - self.header_bytes_so_far
                 # print(f'read_header_amount {read_header_amount}')
                 # print(f'header_bytes_so_far {self.header_bytes_so_far}')
-                if self.current_payload_size - self.current_payload_read_so_far < read_header_amount:
-                    read_header_amount = self.current_payload_size - self.current_payload_read_so_far
+                if (
+                    self.current_payload_size - self.current_payload_read_so_far
+                    < read_header_amount
+                ):
+                    read_header_amount = (
+                        self.current_payload_size - self.current_payload_read_so_far
+                    )
 
                 message_header_bytes = input_stream.read(read_header_amount)
                 self.header_buffer.write(message_header_bytes)
@@ -57,7 +63,9 @@ class ProtocolState():
                 if self.header_bytes_so_far >= self.header_size:
                     getbuffer = self.header_buffer.getbuffer()
                     # print(f'self.header_buffer.len() {len(getbuffer)}')
-                    self.message_bytes_total = struct.unpack('i', getbuffer.tobytes())[0]
+                    self.message_bytes_total = struct.unpack('i', getbuffer.tobytes())[
+                        0
+                    ]
                     # print(f'!!! Expecting message_bytes_total: {self.message_bytes_total}')
                     self.header_buffer = None
                     self.header_bytes_so_far = 0
@@ -68,8 +76,13 @@ class ProtocolState():
                     break
 
             read_amount = self.message_bytes_total - self.message_bytes_so_far
-            if self.message_bytes_total - self.message_bytes_so_far > self.current_payload_size - self.current_payload_read_so_far:
-                read_amount = self.current_payload_size - self.current_payload_read_so_far
+            if (
+                self.message_bytes_total - self.message_bytes_so_far
+                > self.current_payload_size - self.current_payload_read_so_far
+            ):
+                read_amount = (
+                    self.current_payload_size - self.current_payload_read_so_far
+                )
 
             if not self.buffer:
                 # print('creating new buffer')

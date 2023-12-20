@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 # http://forums.cgsociety.org/t/proper-way-of-reloading-a-python-module-with-new-code-without-having-to-restart-maya/1648174/8
 
-class ModuleCleanup():
+
+class ModuleCleanup:
     def __init__(self):
         self.modules_before = []
 
@@ -28,7 +29,7 @@ class ModuleCleanup():
         modules_for_unload = unload_candidates(difference)
         # pprint(modules_for_unload)
         for m in modules_for_unload:
-        # wont work witth django without check?! find out why?
+            # wont work witth django without check?! find out why?
             if m in sys.modules:
                 del sys.modules[m]
 

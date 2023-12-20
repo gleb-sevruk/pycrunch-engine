@@ -12,4 +12,6 @@ class RecordedException:
         self.variables = _locals  # type: Optional[Dict[str, Any]]
 
     def make_safe_for_pickle(self):
-        self.variables = {'cannot pickle all variables with depth 3': 'pickle error, check pycrunch.plugins.pytest_support.exception_utilities.custom_repr depth' }
+        self.variables = {
+            'cannot pickle all variables with depth 3': 'pickle error, check pycrunch.plugins.pytest_support.exception_utilities.custom_repr depth'
+        }

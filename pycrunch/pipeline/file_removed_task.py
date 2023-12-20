@@ -12,11 +12,14 @@ class FileRemovedTask(AbstractTask):
 
     async def run(self):
         from pycrunch.session import state
-        await shared.pipe.push(event_type='file_modification',
-                               modified_file=self.file,
-                               ts=self.timestamp,
-                               )
+
+        await shared.pipe.push(
+            event_type='file_modification',
+            modified_file=self.file,
+            ts=self.timestamp,
+        )
 
         test_map.file_did_removed(self.file)
         from pycrunch.discovery.simple import TestSet
+
         await state.engine.test_discovery_will_become_available(TestSet())

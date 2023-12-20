@@ -6,7 +6,9 @@
 import asyncio
 import sys
 import nest_asyncio
+
 nest_asyncio.apply()
+
 
 async def run(engine_to_use, timeline, port, task_id):
     from pycrunch.child_runtime.client_protocol import EchoClientProtocol
@@ -32,7 +34,7 @@ async def run(engine_to_use, timeline, port, task_id):
 
     on_con_lost = loop.create_future()
     timeline.mark_event('TCP: Opening connection')
-    transport, protocol1 = await loop.create_connection( # noqa F841
+    transport, protocol1 = await loop.create_connection(  # noqa F841
         lambda: EchoClientProtocol(on_con_lost, task_id, timeline, engine_to_use),
         '127.0.0.1',
         port,
@@ -123,4 +125,3 @@ else:
         pass
     finally:
         loop.close()
-

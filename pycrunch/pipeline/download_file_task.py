@@ -8,6 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class DownloadFileTask(AbstractTask):
     def __init__(self, filename):
         self.filename = filename
@@ -17,8 +18,9 @@ class DownloadFileTask(AbstractTask):
         my_file = io.FileIO(target_file, 'r')
         content = my_file.read()
         logger.debug(f'sending file {self.filename}')
-        await shared.pipe.push(event_type='file_did_load',
-                         filename=self.filename,
-                         file_contents=content,
-                         )
+        await shared.pipe.push(
+            event_type='file_did_load',
+            filename=self.filename,
+            file_contents=content,
+        )
         # return Response(content, mimetype='application/x-python-code')
