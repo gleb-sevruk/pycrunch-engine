@@ -1,6 +1,14 @@
 # front
 
 ## Project setup
+Node version: This was compiled for node v8 and using Intel macbook
+hence - configure node to use:
+```
+nvm install 8
+nvm use 8
+```
+M1 is not supported here;
+
 ```
 npm install
 ```
