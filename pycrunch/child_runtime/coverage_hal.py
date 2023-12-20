@@ -1,18 +1,19 @@
-import os
-
 import coverage
 
 from pycrunch.api.serializers import CoverageRunForSingleFile
 
-
 COVER_LIBS = False
+
 
 class CoverageAbstraction:
     cov: "coverage.Coverage"
 
-    def __init__(self, disable,
-                 coverage_exclusions,  # type: list[str]
-                 timeline):
+    def __init__(
+        self,
+        disable,
+        coverage_exclusions,  # type: list[str]
+        timeline,
+    ):
         """
 
         :type timeline: pycrunch.introspection.timings.Timeline
@@ -35,6 +36,7 @@ class CoverageAbstraction:
         coverage_args = self.get_coverage_arguments()
         if COVER_LIBS:
             import site
+
             # Get the path to your virtual environment's site-packages
             site_packages_path = site.getsitepackages()[0]
             coverage_args["source"] = [site_packages_path, '.']
@@ -74,10 +76,7 @@ class CoverageAbstraction:
         if self.is_coverage_v5_or_greater():
             # don't write on disk `.coverage` files,
             # it is not needed, and will be deadlocked due to concurrent test execution
-            coverage_args.update(
-                dict(
-                    data_file=None
-                ))
+            coverage_args.update(dict(data_file=None))
         return coverage_args
 
     def is_coverage_v5_or_greater(self):
@@ -89,12 +88,12 @@ class CoverageAbstraction:
 
     def parse_all_hit_lines(self):
         """
-          Converts data from coverage.py format to internal format
+        Converts data from coverage.py format to internal format
 
-          And plans are to integrate it with PyTrace Coverage
-          But then pytrace should be optimized/compiled for multi-platform
+        And plans are to integrate it with PyTrace Coverage
+        But then pytrace should be optimized/compiled for multi-platform
 
-          :rtype: typing.List[pycrunch.api.serializers.CoverageRunForSingleFile]
+        :rtype: typing.List[pycrunch.api.serializers.CoverageRunForSingleFile]
         """
 
         if self.disable:

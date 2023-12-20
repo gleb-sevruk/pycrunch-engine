@@ -2,6 +2,7 @@ import pprint
 
 timeline = None
 
+
 def trace(*args, **kwargs):
     global timeline
     # todo: do not override, existing, create a list of subscribers
@@ -21,6 +22,7 @@ def inject_timeline(new_timeline):
 
 
 allowed_types = [int, str, float, dict, type(None), bool]
+
 
 class RecordedVariable:
     def __init__(self, name, value, timestamp):
@@ -43,16 +45,16 @@ class RecordedVariable:
         )
 
     def recurse_fix_dict(self, v: dict):
-        if type(v) == dict:
+        if isinstance(v, dict):
             for k, inner in v.items():
                 self.recurse_fix_dict(inner)
                 v[k] = self.safe_for_serialization_value(inner)
 
 
-
 class EmptyInsightTimeline:
     def as_json(self):
         return []
+
 
 class InsightTimeline:
     # Timeline must be viewed as chrome performance timeline or jetbrains timeline profiler UI
@@ -84,7 +86,9 @@ class InsightTimeline:
             # print(key + ' - ' + str(value))
             self.variables.append(RecordedVariable(key, value, adjusted_time))
         for value in args:
-            self.variables.append(RecordedVariable(str(self.counter), value, adjusted_time))
+            self.variables.append(
+                RecordedVariable(str(self.counter), value, adjusted_time)
+            )
             self.counter += 1
 
     def adjust_to_timeline_start(self, ts):
@@ -94,9 +98,9 @@ class InsightTimeline:
         # this is last resort call,
         # consider avoiding it in first place to not lose performance
         import pickle
+
         for variable in self.variables:
             try:
                 pickle.dumps(variable)
-            except Exception as e:
-                variable.value = \
-                    f'This cannot be traced: {str(variable.value)}\n\nConsider removing this trace call for faster test execution.'
+            except Exception:
+                variable.value = f'This cannot be traced: {str(variable.value)}\n\nConsider removing this trace call for faster test execution.'

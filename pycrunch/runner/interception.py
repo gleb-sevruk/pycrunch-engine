@@ -1,6 +1,7 @@
-from io import StringIO
 import sys
 from contextlib import contextmanager
+from io import StringIO
+
 
 #  from https://stackoverflow.com/questions/17067560/intercept-pythons-print-statement-and-display-in-gui
 @contextmanager

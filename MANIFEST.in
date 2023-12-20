@@ -1,2 +1,4 @@
 include pycrunch/log_configuration.yaml
 recursive-include pycrunch/web-ui *
+
+recursive-exclude pycrunch_tests *

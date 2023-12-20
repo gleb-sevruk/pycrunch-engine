@@ -2,16 +2,26 @@ import asyncio
 import logging
 import os
 import sys
+import typing
 from typing import List, Optional
 
 from pycrunch.networking.server_protocol import TestRunnerServerProtocol
 from pycrunch.session import config
 
+if typing.TYPE_CHECKING:
+    from pycrunch.pipeline.run_test_task import RemoteDebugParams
+
 logger = logging.getLogger(__name__)
 
 
 class MultiprocessTestRunner:
-    def __init__(self, timeout: Optional[float], timeline, test_run_scheduler, remote_debug_params: "RemoteDebugParams"):
+    def __init__(
+        self,
+        timeout: Optional[float],
+        timeline,
+        test_run_scheduler,
+        remote_debug_params: "RemoteDebugParams",
+    ):
         self.client_connections: List[TestRunnerServerProtocol] = []
         self.completion_futures = []
         self.timeline = timeline
@@ -26,7 +36,9 @@ class MultiprocessTestRunner:
         self.results = results
 
     async def run(self, tests):
-        self.timeline.mark_event(f'Splitting into CPU tasks. Total tests to run: {len(tests)}')
+        self.timeline.mark_event(
+            f'Splitting into CPU tasks. Total tests to run: {len(tests)}'
+        )
         #
 
         self.tasks = self.test_run_scheduler.schedule_into_tasks(tests)
@@ -34,8 +46,8 @@ class MultiprocessTestRunner:
 
         loop = asyncio.get_event_loop()
         server = await loop.create_server(
-            lambda: self.create_server_protocol(),
-            '127.0.0.1')
+            lambda: self.create_server_protocol(), '127.0.0.1'
+        )
         # Allocate dynamic port. Extract port number from socket.
         port = server.sockets[0].getsockname()[1]
         self.timeline.mark_event('Subprocess: starting...')
@@ -57,25 +69,26 @@ class MultiprocessTestRunner:
         timeout_reached = False
         try:
             await asyncio.wait_for(
-                asyncio.gather(*child_waiters),
-                timeout=self.timeout_if_non_debug()
+                asyncio.gather(*child_waiters), timeout=self.timeout_if_non_debug()
             )
-        except (asyncio.TimeoutError, asyncio.CancelledError) as e:
+        except (asyncio.TimeoutError, asyncio.CancelledError):
             timeout_reached = True
-            logger.warning(f'Reached execution timeout of {self.timeout_if_non_debug()} seconds. ')
+            logger.warning(
+                f'Reached execution timeout of {self.timeout_if_non_debug()} seconds. '
+            )
             for _ in subprocesses_results:
                 try:
                     _.kill()
-                except:
+                except Exception:
                     logger.warning('Cannot kill child runner process with, ignoring.')
 
         logger.debug('All subprocesses are completed')
-        logger.debug(f'Waiting for completion from TCP server')
+        logger.debug('Waiting for completion from TCP server')
         demo_results = []
         try:
             demo_results = await asyncio.wait_for(
                 asyncio.gather(*self.completion_futures, return_exceptions=True),
-                timeout=self.timeout_if_non_debug()
+                timeout=self.timeout_if_non_debug(),
             )
         except asyncio.TimeoutError as ex:
             print(ex)
@@ -86,21 +99,25 @@ class MultiprocessTestRunner:
                 print(_)
             pass
 
-        logger.debug(f'TCP ran to the end')
-        logger.debug(f'1 - merge_task_results')
+        logger.debug('TCP ran to the end')
+        logger.debug('1 - merge_task_results')
         _results = self.merge_task_results(demo_results)
-        logger.debug(f'1 - done')
+        logger.debug('1 - done')
 
         server.close()
 
-        logger.debug(f' ---- TCP server and child processes ran to the end')
+        logger.debug(' ---- TCP server and child processes ran to the end')
         if timeout_reached:
             raise asyncio.TimeoutError('Test execution timeout.')
         return _results
 
     def create_child_subprocess(self, port, task):
         # sys.executable is a full path to python.exe (or ./python) in current virtual environment
-        return asyncio.create_subprocess_exec(sys.executable, *self.get_command_line_for_child(port, task.id), cwd=config.working_directory)
+        return asyncio.create_subprocess_exec(
+            sys.executable,
+            *self.get_command_line_for_child(port, task.id),
+            cwd=config.working_directory,
+        )
 
     def timeout_if_non_debug(self) -> Optional[float]:
         if self.remote_debug_params.enabled:
@@ -109,17 +126,21 @@ class MultiprocessTestRunner:
 
     def get_command_line_for_child(self, port, task_id):
         results = []
-        results.append(f'{config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py')
+        results.append(
+            f'{config.engine_directory}{os.sep}pycrunch{os.sep}multiprocess_child_main.py'
+        )
         results.append(f'--engine={config.runtime_engine}')
         results.append(f'--port={port}')
         results.append(f'--task-id={task_id}')
-        results.append(f'--load-pytest-plugins={str(config.load_pytest_plugins).lower()}')
+        results.append(
+            f'--load-pytest-plugins={str(config.load_pytest_plugins).lower()}'
+        )
         if self.remote_debug_params.enabled:
-            results.append(f'--enable-remote-debug')
+            results.append('--enable-remote-debug')
             results.append(f'--remote-debugger-port={self.remote_debug_params.port}')
         if config.enable_web_ui:
             # No need to collect performance metrics if there is no web-ui
-            results.append(f'--collect-perf')
+            results.append('--collect-perf')
 
         return results
 
@@ -129,8 +150,10 @@ class MultiprocessTestRunner:
         self.completion_futures.append(completion_future)
 
         # self.client_futures.append(completion_future)
-        protocol = TestRunnerServerProtocol(self.tasks, completion_future, self.timeline)
-        self.client_connections.append(protocol) 
+        protocol = TestRunnerServerProtocol(
+            self.tasks, completion_future, self.timeline
+        )
+        self.client_connections.append(protocol)
         return protocol
 
     def merge_task_results(self, demo_results):

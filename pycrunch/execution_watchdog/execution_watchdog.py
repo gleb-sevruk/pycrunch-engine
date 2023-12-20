@@ -2,7 +2,11 @@ import asyncio
 import logging
 
 from pycrunch.api.shared import pipe
-from pycrunch.execution_watchdog.tasks import AbstractWatchdogTask, TestExecutionBeginTask, TestExecutionEndTask
+from pycrunch.execution_watchdog.tasks import (
+    AbstractWatchdogTask,
+    TestExecutionBeginTask,
+    TestExecutionEndTask,
+)
 from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
@@ -17,6 +21,8 @@ termination_event = asyncio.Event()
     - signal to stop received from plugin
     - Timeout deadline while waiting for tests
 """
+
+
 class WatchdogDispatcher:
     def __init__(self):
         pass
@@ -29,10 +35,7 @@ class WatchdogDispatcher:
         if task.name == 'watchdog_begin':
             task: TestExecutionBeginTask = task
             termination_event.clear()
-            await pipe.push(
-                event_type='watchdog_begin',
-                total_tests=task.total_tests
-            )
+            await pipe.push(event_type='watchdog_begin', total_tests=task.total_tests)
         if task.name == 'watchdog_end':
             task: TestExecutionEndTask = task
             termination_event.clear()
@@ -48,7 +51,9 @@ async def watchdog_dispather_thread():
     dp = WatchdogDispatcher()
 
     while True:
-        logger.debug('WatchDog Dispatcher thread -- inside event loop, waiting for task...')
+        logger.debug(
+            'WatchDog Dispatcher thread -- inside event loop, waiting for task...'
+        )
         try:
             await dp.run_once()
         except asyncio.CancelledError:

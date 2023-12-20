@@ -1,14 +1,22 @@
-from pycrunch.api.serializers import CoverageRunForSingleFile
+import pytest
+
+from pycrunch.insights import trace
 from pycrunch.plugins.pytest_support.exception_utilities import custom_repr
+
+
+# !!! Uncomment this to test in IDE exception marks (x) on gutter
+pytestmark = pytest.mark.exclude_from_default_run(reason="Do not run on CI")
 
 
 def some_error_method():
     raise Exception('some exception')
 
+
 def test_some_exception():
     print('ssss')
     my_var_1 = 'a'
     my_var_2 = 'b'
+
     some_error_method()
     assert 1 == 2
 

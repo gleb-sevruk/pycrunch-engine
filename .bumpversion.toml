@@ -1,0 +1,14 @@
+[tool.bumpversion]
+current_version = "1.6.2"
+tag = "True"
+
+[[tool.bumpversion.files]]
+filename = "setup.py"
+search = "{current_version}"
+replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "pycrunch/version.py"
+regex = "True"
+search = "version_info = dict\\(major=(?P<major>\\d+), minor=(?P<minor>\\d+), patch=(?P<patch>\\d+)\\)"
+replace = "version_info = dict(major={new_major}, minor={new_minor}, patch={new_patch})"

@@ -1,9 +1,9 @@
 from pprint import pprint
 
-from coverage import CoverageData, Coverage
+from coverage import Coverage, CoverageData
 
 
-def print_coverage(coverage_data : CoverageData, coverage: Coverage):
+def print_coverage(coverage_data: CoverageData, coverage: Coverage):
     for f in coverage_data.measured_files():
         lines = coverage_data.lines(f)
         print('')

@@ -9,10 +9,11 @@ from pycrunch.pipeline.run_test_task import RemoteDebugParams, RunTestTask
 from pycrunch.runner.pipeline_dispatcher import dispather_thread
 from pycrunch.session.state import engine
 from pycrunch.shared.models import all_tests
+
 from .. import version
 from ..execution_watchdog.connection_watchdog import connection_watchdog
-from ..execution_watchdog.tasks import TerminateTestExecutionTask
 from ..execution_watchdog.execution_watchdog import watchdog_dispather_thread
+from ..execution_watchdog.tasks import TerminateTestExecutionTask
 from ..execution_watchdog.watchdog_pipeline import watchdog_pipeline
 from ..session import config
 
@@ -33,7 +34,6 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
     def handle_message(message):
         logger.debug('received message 2: ' + message)
 
-
     @sio.on('json')
     async def handle_json(json, smth):
         logger.debug('handle_json')
@@ -42,7 +42,6 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
         # logger.debug('url + ' + url_for1)
         await pipe.push(event_type='connected', **{'data': 'Connected'})
         logger.debug('received json 2: ' + str(json))
-
 
     @sio.on('my event')
     async def handle_my_custom_event(sid, json):
@@ -109,8 +108,8 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
             **dict(
                 data='Connected test_connected',
                 engine_mode=engine.get_engine_mode(),
-                version=version.version_info
-            )
+                version=version.version_info,
+            ),
         )
 
         with thread_lock:

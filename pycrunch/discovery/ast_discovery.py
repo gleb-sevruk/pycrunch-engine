@@ -33,9 +33,9 @@ class AstTestDiscovery:
         logger.debug(f'MODULE_DIR {MODULE_DIR}')
         logger.debug(f'Discovering tests in folder {folder}')
 
-        if not MODULE_DIR in sys.path:
+        if MODULE_DIR not in sys.path:
             sys.path.insert(0, MODULE_DIR)
-            logger.debug(f'after append')
+            logger.debug('after append')
             logger.debug(sys.path)
         # The directory containing your modules needs to be on the search path.
 
@@ -95,7 +95,9 @@ class AstTestDiscovery:
     def load_tests_from_ast_representation(self, ast_tree: ast.Module) -> List[str]:
         results = []
 
-        def process_function_def(func: Union[ast.FunctionDef, ast.AsyncFunctionDef]) -> List[str]:
+        def process_function_def(
+            func: Union[ast.FunctionDef, ast.AsyncFunctionDef],
+        ) -> List[str]:
             if self.looks_like_test_name(func.name):
                 return [func.name]
 
@@ -161,18 +163,20 @@ class AstTestDiscovery:
     def is_module_with_tests(self, module_name):
         # Todo take pytest configs into account
         module_short_name = module_name.split('.')[-1]
-        return module_short_name.startswith(
-            ('test_', 'tests_')
-        ) or module_short_name.endswith(('_test', 'tests', '_tests'))
+        return module_short_name.startswith((
+            'test_',
+            'tests_',
+        )) or module_short_name.endswith(('_test', 'tests', '_tests'))
 
     def looks_like_test_name(self, v):
         return v.startswith('test_') or v.endswith('_test')
 
-
     def looks_like_test_class(self, name: str) -> bool:
         return name.startswith('Test') or name.endswith('Test')
 
-    def is_subclass_of_unittest(self, ast_module: ast.Module, class_ast: ast.ClassDef) -> bool:
+    def is_subclass_of_unittest(
+        self, ast_module: ast.Module, class_ast: ast.ClassDef
+    ) -> bool:
         def search_via_deep_inheritance_analysis():
             if not self.configuration.deep_inheritance:
                 return False
@@ -187,7 +191,9 @@ class AstTestDiscovery:
             if may_null is None:
                 return False
             may_be_not_loaded = sys.modules.get("unittest")
-            is_unit_test_sub = may_be_not_loaded and issubclass(may_null, may_be_not_loaded.TestCase)
+            is_unit_test_sub = may_be_not_loaded and issubclass(
+                may_null, may_be_not_loaded.TestCase
+            )
 
             return is_unit_test_sub
 
@@ -200,7 +206,7 @@ class AstTestDiscovery:
             elif type_of_base == ast.Attribute:
                 possible_none = getattr(_, 'attr')
             else:
-               continue
+                continue
 
             if possible_none in available_subclasses:
                 return True
@@ -210,7 +216,9 @@ class AstTestDiscovery:
             deep_inheritance_result = search_via_deep_inheritance_analysis()
         except Exception as e:
             hint = 'You can disable this behaviour via `engine->deep-inheritance: false` configuration in .pycrunch-config.yaml'
-            logger.warning(f'Failed to compile module to search via deep_inheritance_analysis for {class_ast.name}; Error: {e};\n{hint}')
+            logger.warning(
+                f'Failed to compile module to search via deep_inheritance_analysis for {class_ast.name}; Error: {e};\n{hint}'
+            )
         return deep_inheritance_result
 
 

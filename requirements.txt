@@ -8,3 +8,4 @@ aiohttp
 PyYAML
 pytest-asyncio
 nest-asyncio
+bump-my-version

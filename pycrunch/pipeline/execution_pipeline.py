@@ -1,5 +1,9 @@
 import logging
+import typing
 from asyncio import Queue
+
+if typing.TYPE_CHECKING:
+    from pycrunch.pipeline.abstract_task import AbstractTask
 
 logger = logging.getLogger(__name__)
 

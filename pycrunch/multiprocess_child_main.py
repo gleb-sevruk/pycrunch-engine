@@ -5,8 +5,11 @@
 
 import asyncio
 import sys
+
 import nest_asyncio
+
 nest_asyncio.apply()
+
 
 async def run(engine_to_use, timeline, port, task_id):
     from pycrunch.child_runtime.client_protocol import EchoClientProtocol
@@ -22,8 +25,8 @@ async def run(engine_to_use, timeline, port, task_id):
 
     timeline.mark_event('Run: imports done')
 
-    test_configuration = None
-    tests_to_run = []
+    # test_configuration = None
+    # tests_to_run = []
     # add root of django project
     sys.path.insert(0, str(Path('.').absolute()))
     # todo: make configurable instead
@@ -32,7 +35,7 @@ async def run(engine_to_use, timeline, port, task_id):
 
     on_con_lost = loop.create_future()
     timeline.mark_event('TCP: Opening connection')
-    transport, protocol1 = await loop.create_connection(
+    transport, protocol1 = await loop.create_connection(  # noqa F841
         lambda: EchoClientProtocol(on_con_lost, task_id, timeline, engine_to_use),
         '127.0.0.1',
         port,
@@ -123,4 +126,3 @@ else:
         pass
     finally:
         loop.close()
-

@@ -1,16 +1,16 @@
+import logging
 import math
 from typing import List
 
 from pycrunch.scheduling.sheduled_task import TestRunPlan
 
-import logging
-
 logger = logging.getLogger(__name__)
 
 
-class TestRunScheduler():
+class TestRunScheduler:
     # Do not split up to 5 tasks
     threshold = 5
+    __test__ = False
 
     def __init__(self, cpu_cores, threshold):
         self.cpu_cores = cpu_cores
@@ -40,9 +40,13 @@ class TestRunScheduler():
         logger.info(f'total_cores_to_use {total_cores_to_use}')
         tests_so_far = 0
         tests_scheduled_per_core_with_decimal = total_tests_to_run / total_cores_to_use
-        logger.debug(f'tests_scheduled_per_core_with_decimal {tests_scheduled_per_core_with_decimal}')
+        logger.debug(
+            f'tests_scheduled_per_core_with_decimal {tests_scheduled_per_core_with_decimal}'
+        )
         tests_to_run_on_single_core = math.ceil(tests_scheduled_per_core_with_decimal)
-        logger.info(f'rounded tests_to_run_on_single_core {tests_to_run_on_single_core}')
+        logger.info(
+            f'rounded tests_to_run_on_single_core {tests_to_run_on_single_core}'
+        )
         for x in range(total_cores_to_use):
             from_index = tests_so_far
             to_index = tests_so_far + tests_to_run_on_single_core

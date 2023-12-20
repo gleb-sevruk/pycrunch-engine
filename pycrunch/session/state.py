@@ -12,6 +12,7 @@ from pycrunch.shared.models import all_tests
 
 logger = logging.getLogger(__name__)
 
+
 class EngineState:
     def __init__(self):
         # self.all_tests = dict()
@@ -40,11 +41,19 @@ class EngineState:
         self.prepare_runtime_configuration_if_necessary()
 
         logger.info('will_start_diagnostics_collection')
-        await pipe.push(event_type='diagnostics_did_become_available', engine=config.runtime_engine, **diagnostic_engine.summary())
+        await pipe.push(
+            event_type='diagnostics_did_become_available',
+            engine=config.runtime_engine,
+            **diagnostic_engine.summary(),
+        )
         logger.info('diagnostics_did_become_available')
 
     async def will_send_timings(self):
-        await pipe.push(event_type='execution_history_did_become_available', **execution_history.to_json(), folder=self.folder)
+        await pipe.push(
+            event_type='execution_history_did_become_available',
+            **execution_history.to_json(),
+            folder=self.folder,
+        )
 
     async def test_discovery_will_become_available(self, test_set):
         """
@@ -52,7 +61,9 @@ class EngineState:
         """
         for discovered_test in test_set.tests:
             is_pinned = config.is_test_pinned(discovered_test.fqn)
-            self.all_tests.test_discovered(discovered_test.fqn, discovered_test, is_pinned)
+            self.all_tests.test_discovered(
+                discovered_test.fqn, discovered_test, is_pinned
+            )
 
         # TODO: maybe do not wait for the signal from plugin to start discovery.
         self.all_tests.discard_tests_not_in_map()
@@ -65,7 +76,11 @@ class EngineState:
         logger.debug('notify_clients_about_tests_change')
         serialized_data = serialize_test_set_state(self.all_tests.tests)
         get_event_loop().create_task(
-            pipe.push(event_type='discovery_did_become_available', **serialized_data, folder=self.folder)
+            pipe.push(
+                event_type='discovery_did_become_available',
+                **serialized_data,
+                folder=self.folder,
+            )
         )
 
     async def tests_will_run(self, tests):
@@ -88,7 +103,6 @@ class EngineState:
         self.notify_clients_about_tests_change()
 
         self.save_pinned_state()
-
 
     async def tests_will_unpin(self, fqns):
         for fqn in fqns:
@@ -113,6 +127,3 @@ class EngineState:
 
 
 engine = EngineState()
-
-
-

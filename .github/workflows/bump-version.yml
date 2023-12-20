@@ -1,0 +1,37 @@
+name: Bump Version on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+
+
+jobs:
+  version-bump:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # Specify the Python version
+
+    - name: Install bump-my-version
+      run: pip install bump-my-version
+
+    - name: Bump version
+      run: bump-my-version bump patch  # Adjust the bump command as needed
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        git commit -m "Bump version"
+        git push

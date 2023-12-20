@@ -1,4 +1,6 @@
 class TestMetadata:
+    __test__ = False
+
     def __init__(self, filename, name, module, fqn, state):
         self.state = state
         self.fqn = fqn

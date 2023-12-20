@@ -5,17 +5,17 @@ MAXIMUM_BYTES_TO_REPR = 1024
 
 def get_originating_frame_and_location(tb):
     """
-      Get the most recent stack frame, filename, and line number where the exception originated.
+    Get the most recent stack frame, filename, and line number where the exception originated.
 
-      :param tb: The traceback object from the exception.
-      :type tb: traceback
-      :return: A tuple containing the most recent stack frame, filename, and line number.
-      :rtype: Tuple[frame, str, int]
+    :param tb: The traceback object from the exception.
+    :type tb: traceback
+    :return: A tuple containing the most recent stack frame, filename, and line number.
+    :rtype: Tuple[frame, str, int]
     """
     frame = None
     filename = None
     line_number = None
-    frames =[]
+    frames = []
     while tb is not None:
         frame = tb.tb_frame
         frames.append(frame)
@@ -35,7 +35,6 @@ def stringify_locals(frame):
         except Exception:
             stringified_value = "<unrepresentable>"
         stringified_locals[key] = stringified_value
-
 
     return stringified_locals
 
@@ -57,7 +56,10 @@ def limited_repr(obj):
     representation = repr(obj)
     if len(representation) > MAXIMUM_BYTES_TO_REPR:
         remaining_bytes = len(representation) - MAXIMUM_BYTES_TO_REPR
-        return representation[:MAXIMUM_BYTES_TO_REPR] + f'... ({remaining_bytes} more bytes not recorded)'
+        return (
+            representation[:MAXIMUM_BYTES_TO_REPR]
+            + f'... ({remaining_bytes} more bytes not recorded)'
+        )
     return representation
 
 
@@ -94,7 +96,7 @@ def custom_repr(obj, depth=2):
                     attr = getattr(obj, key)
                     if not callable(attr):
                         attributes[key] = attr
-                except:
+                except Exception:
                     # We just skip this pseudo_variable
                     # print(f'  ungettable key = {key}')
                     pass
@@ -116,5 +118,5 @@ def custom_repr(obj, depth=2):
             stringified_attributes[str(key)] = stringified_value
 
         return {"object": classname, "props": stringified_attributes}
-    except Exception as e:
+    except Exception:
         return limited_repr(obj)

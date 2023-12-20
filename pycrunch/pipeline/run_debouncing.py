@@ -1,11 +1,16 @@
 import asyncio
 import logging
 import sys
+import typing
 from asyncio import get_event_loop, sleep
+from typing import List
 
 from pycrunch.introspection.clock import clock
 from pycrunch.pipeline import execution_pipeline
 from pycrunch.pipeline.run_test_task import RemoteDebugParams, RunTestTask
+
+if typing.TYPE_CHECKING:
+    from pycrunch.shared.models import TestState
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +41,6 @@ class RunDebouncer:
         # print(f' {self.ts_created} < {now} < {self.ts_target}')
         # print(f' === {inside_debounce_interval}')
         if inside_debounce_interval:
-
             self.ts_target += self.debounce_delay * 1
 
             if self.ts_target - now > 1.0:
@@ -49,17 +53,14 @@ class RunDebouncer:
             )
 
             if self.run_pending and self.run_timer:
-                logger.debug(
-                    f'run_pending, cancelling...'
-                )
+                logger.debug('run_pending, cancelling...')
                 copied_ref = self.run_timer
                 copied_ref.cancel()
                 logger.debug(
-                    f' Cancelled pending run. Waiting for more tests to run at once.'
+                    ' Cancelled pending run. Waiting for more tests to run at once.'
                 )
                 self.run_timer = None
                 self.force_schedule_run()
-
 
     def add_tests(self, tests: "List[TestState]"):
         # until we have tests, wait...
@@ -93,11 +94,11 @@ class RunDebouncer:
             logger.debug(f'execute_with_delay->waiting for {round(delay, 4)} seconds')
             while clock.now() < target_at_enter:
                 await self.sleep_for_mutiple_python_versions()
-        except asyncio.CancelledError as e:
-            logger.debug(f'execute_with_delay: cancelled to aggregate more tasks')
+        except asyncio.CancelledError:
+            logger.debug('execute_with_delay: cancelled to aggregate more tasks')
             return
         except Exception as e:
-            logger.exception(f'exc', exc_info=e)
+            logger.exception('exc', exc_info=e)
             return
 
         # after sleep, it may not be a good idea to cancel; use events?
@@ -120,4 +121,3 @@ class RunDebouncer:
             await sleep(0.01)
         else:
             await sleep(0.01, loop=self._loop)
-

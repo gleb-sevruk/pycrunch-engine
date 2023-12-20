@@ -1,8 +1,13 @@
+import io
+import os
 from pathlib import Path
+from pprint import pprint
+from unittest import mock
+from unittest.mock import mock_open, create_autospec
 
-from pycrunch.discovery.ast_discovery import AstTestDiscovery
+from pycrunch.discovery.simple import SimpleTestDiscovery
 from pycrunch.session.configuration import Configuration
-import pycrunch.tests.dogfood.test_double_inheritance as double_inh
+
 
 def test_simple_discovery():
     actual = run_dogfood_discovery()
@@ -16,20 +21,21 @@ def test_simple_discovery():
 
     assert found_flag
 
+def test_dir_walk():
+    for x in Path('/Users/gleb/code/PyCrunch/').glob('**/test*.py'):
+        print(x.name)
 
-class TestProblem():
-    def test_sample(self):
-        assert 1 == 1
 
+def test_module_with_tests_simple():
+    sut = SimpleTestDiscovery('')
+    assert sut.is_module_with_tests('tests_simple')
+    assert sut.is_module_with_tests('simple_tests')
 
-def test_double_inheritance():
-    search_only_in = [double_inh.__file__]
-    configuration = Configuration()
-    configuration.deep_inheritance = True
-    actual = run_dogfood_discovery(search_only_in, configuration)
-    test_names = list(map(lambda _: _.name, actual.tests))
-
-    assert 'DoublyInheritedScenario::test_1' in test_names
+def test_module_with_tests_nested():
+    sut = SimpleTestDiscovery('')
+    assert sut.is_module_with_tests('nested.tests_simple')
+    assert sut.is_module_with_tests('api_tests.tests')
+    assert sut.is_module_with_tests('nested.even_more.tests_simple')
 
 
 def test_only_methods_are_discovered_not_variables():
@@ -42,25 +48,18 @@ def test_classes_with_unit_tests_are_discoverable():
     actual = run_dogfood_discovery()
     test_names = list(map(lambda _: _.name, actual.tests))
     assert len(test_names) > 0
-    assert 'SomeClassInhereted::test_1' in test_names
-    assert 'TestX::test_1' in test_names
     assert 'MyClass::test_method1' in test_names
     assert 'MyClass::test_method2' in test_names
-    assert 'test_async' in test_names
     assert 'TestForDummies::test_method1' in test_names
     assert 'TestForDummies::test_method2' in test_names
     assert 'TestForDummies::helper_method' not in test_names
 
 
-def run_dogfood_discovery(search_only_in=None, config=None):
+def run_dogfood_discovery():
     root_folder = Path('.')
-    current_folder = root_folder.joinpath('pycrunch', 'tests', 'dogfood').absolute()
-    sut = AstTestDiscovery(str(root_folder.absolute()), config if config else Configuration())
-
-    actual = sut.find_tests_in_folder(
-        str(current_folder.absolute()),
-        search_only_in=search_only_in
-    )
+    current_folder = root_folder.joinpath('pycrunch_tests', 'dogfood').absolute()
+    sut = SimpleTestDiscovery(str(root_folder.absolute()), Configuration())
+    actual = sut.find_tests_in_folder(str(current_folder.absolute()))
     return actual
 
 

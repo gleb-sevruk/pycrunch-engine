@@ -1,20 +1,23 @@
+import logging
+
 from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.session.combined_coverage import combined_coverage
 from pycrunch.session.file_map import test_map
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class TestState:
+    __test__ = False
+
     def __init__(self, discovered_test, execution_result, pinned):
         self.discovered_test = discovered_test
         self.pinned = pinned
         self.execution_result = execution_result
 
-
     def __repr__(self):
         return f'TestState-> {self.discovered_test.fqn}'
+
 
 class AllTests:
     def __init__(self):
@@ -23,7 +26,9 @@ class AllTests:
 
     def test_discovered(self, fqn, discovered_test, is_pinned):
         # todo preserve state
-        self.tests[fqn] = TestState(discovered_test, SingleTestExecutionResult(), is_pinned)
+        self.tests[fqn] = TestState(
+            discovered_test, SingleTestExecutionResult(), is_pinned
+        )
         combined_coverage.test_did_removed(fqn)
 
     def test_will_run(self, fqn):
@@ -53,14 +58,15 @@ class AllTests:
 
     def legacy_aggregated_statuses(self):
         # todo rename to status for consistency
-        return {fqn: dict(state=test_run_short_info.execution_result.status) for fqn, test_run_short_info in self.tests.items()}
-
+        return {
+            fqn: dict(state=test_run_short_info.execution_result.status)
+            for fqn, test_run_short_info in self.tests.items()
+        }
 
     def collect_by_fqn(self, fqns):
         result = list()
         logger.info(f'Found {len(fqns)} tests for run')
         for fqn in fqns:
-
             current_test = self.tests[fqn]
             self.log_test_details(current_test)
             result.append(current_test)
@@ -68,11 +74,13 @@ class AllTests:
         return result
 
     def log_test_details(self, current_test):
-        logger.debug(f'---')
-        logger.debug(f'current_test filename is {current_test.discovered_test.filename}')
+        logger.debug('---')
+        logger.debug(
+            f'current_test filename is {current_test.discovered_test.filename}'
+        )
         logger.debug(f'current_test fqn is {current_test.discovered_test.fqn}')
         logger.debug(f'current_test module is {current_test.discovered_test.module}')
-        logger.debug(f'---')
+        logger.debug('---')
 
     def get_pinned_tests(self):
         result = set()
@@ -88,5 +96,6 @@ class AllTests:
                 logger.debug(f'test no longer in file_map {fqn} - Removed')
                 del self.tests[fqn]
                 combined_coverage.test_did_removed(fqn)
+
 
 all_tests = AllTests()

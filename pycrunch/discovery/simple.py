@@ -17,6 +17,7 @@ class DiscoveredTest:
         self.name = name
         self.fqn = module + ':' + name
 
+
 class TestSet:
     def __init__(self):
         self.files = set()
@@ -25,7 +26,9 @@ class TestSet:
     def add_module(self, tests_in_module):
         self.files.add(tests_in_module.filename)
         for test in tests_in_module.tests_found:
-            self.tests.append(DiscoveredTest(test, tests_in_module.filename, tests_in_module.module))
+            self.tests.append(
+                DiscoveredTest(test, tests_in_module.filename, tests_in_module.module)
+            )
 
 
 class TestsInModule:
@@ -36,17 +39,15 @@ class TestsInModule:
         self.module = module
 
 
-
-
 class SimpleTestDiscovery:
-
     def __init__(self, root_directory=None, configuration=None):
         self.root_directory = root_directory
         self.configuration = configuration if configuration is not None else config
 
-    def find_tests_in_folder(self, folder, search_only_in = None):
-
-        import glob, importlib, os, pathlib, sys
+    def find_tests_in_folder(self, folder, search_only_in=None):
+        import importlib
+        import pathlib
+        import sys
 
         if not self.root_directory:
             MODULE_DIR = folder
@@ -57,9 +58,9 @@ class SimpleTestDiscovery:
         logger.debug(f'MODULE_DIR {MODULE_DIR}')
         logger.debug(f'Discovering tests in folder {folder}')
 
-        if not MODULE_DIR in sys.path:
+        if MODULE_DIR not in sys.path:
             sys.path.insert(0, MODULE_DIR)
-            logger.debug(f'after append')
+            logger.debug('after append')
             logger.debug(sys.path)
         # The directory containing your modules needs to be on the search path.
 
@@ -77,18 +78,16 @@ class SimpleTestDiscovery:
         py_files = folder_path.glob('**/*.py')
         test_set = TestSet()
         from os import environ
+
         for env_name, env_value in config.environment_vars.items():
             environ[env_name] = env_value
 
         self.configuration.prepare_django()
-        with ModuleCleanup() as cleanup:
-
+        with ModuleCleanup():
             for py_file in py_files:
-
                 if search_only_in:
                     if str(py_file) not in search_only_in:
                         continue
-
 
                 # print(py_file)
                 current_file_path = py_file.relative_to(parent_path)
@@ -105,7 +104,9 @@ class SimpleTestDiscovery:
                     tests_found = self.find_tests_in_module(module)
                 except Exception as ex:
                     logger.error(f'Failed to load `{current_file_path}`')
-                    logger.exception(f'importing {module_name} failed with exception: ' + str(ex))
+                    logger.exception(
+                        f'importing {module_name} failed with exception: ' + str(ex)
+                    )
                     continue
                 # execute as following
                 # method_to_call = getattr(module, 'test_1')
@@ -122,7 +123,11 @@ class SimpleTestDiscovery:
 
     def compute_module_name_from_path(self, current_file_path):
         if len(current_file_path.parts) > 1:
-            module_name = str.join('.', current_file_path.parts[:-1]) + '.' + current_file_path.stem
+            module_name = (
+                str.join('.', current_file_path.parts[:-1])
+                + '.'
+                + current_file_path.stem
+            )
         else:
             module_name = current_file_path.stem
         return module_name
@@ -130,7 +135,9 @@ class SimpleTestDiscovery:
     def is_excluded_via_configuration(self, current_file_path):
         s = str(current_file_path)
         x = False
-        if s.startswith(self.configuration.discovery_exclusions) or s.endswith(self.configuration.discovery_exclusions):
+        if s.startswith(self.configuration.discovery_exclusions) or s.endswith(
+            self.configuration.discovery_exclusions
+        ):
             x = True
         return x
 
@@ -142,9 +149,11 @@ class SimpleTestDiscovery:
 
             if self.is_subclass_of_unittest(function_or_variable_or_class):
                 # print(f'{v} : {function_or_variable_or_class} issubclass of unittest')
-                attr = getattr(function_or_variable_or_class, "__test__", True)
+                # attr = getattr(function_or_variable_or_class, "__test__", True)
                 # print(attr)
-                names = self.get_test_case_names_from_class(function_or_variable_or_class)
+                names = self.get_test_case_names_from_class(
+                    function_or_variable_or_class
+                )
                 names = map(lambda _: v + '::' + _, names)
                 found_methods.extend(names)
                 continue
@@ -161,12 +170,17 @@ class SimpleTestDiscovery:
             return False
 
         may_be_not_loaded = sys.modules.get("unittest")
-        is_unit_test_sub = may_be_not_loaded and issubclass(function_or_variable_or_class, may_be_not_loaded.TestCase)
+        is_unit_test_sub = may_be_not_loaded and issubclass(
+            function_or_variable_or_class, may_be_not_loaded.TestCase
+        )
         return is_unit_test_sub
 
     def is_module_with_tests(self, module_name):
         module_short_name = module_name.split('.')[-1]
-        return module_short_name.startswith(('test_', 'tests_')) or module_short_name.endswith(('_test','tests', '_tests'))
+        return module_short_name.startswith((
+            'test_',
+            'tests_',
+        )) or module_short_name.endswith(('_test', 'tests', '_tests'))
 
     def looks_like_test_name(self, v):
         return v.startswith('test_') or v.endswith('_test')
@@ -180,5 +194,6 @@ class SimpleTestDiscovery:
 
         return list(filter(is_test_method_in_class, dir(test_case_class)))
 
- # for basecls in inspect.getmro(self.obj.__class__):
- #            dicts.append(basecls.__dict__)
+
+# for basecls in inspect.getmro(self.obj.__class__):
+#            dicts.append(basecls.__dict__)
