@@ -1,7 +1,8 @@
 # Interval -> contains start, end, nested intervals, and markers (relative to interval)
 
-from pycrunch.introspection.clock import clock
 from collections import deque
+
+from pycrunch.introspection.clock import clock
 
 
 class Interval:

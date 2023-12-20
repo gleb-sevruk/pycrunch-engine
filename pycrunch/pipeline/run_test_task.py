@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import sys
 from typing import Optional
@@ -6,27 +7,24 @@ from typing import Optional
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
 from pycrunch.crossprocess.multiprocess_test_runner import MultiprocessTestRunner
+from pycrunch.execution_watchdog.execution_watchdog import termination_event
+from pycrunch.execution_watchdog.tasks import (
+    TestExecutionBeginTask,
+    TestExecutionEndTask,
+)
+from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 from pycrunch.introspection.clock import clock
 from pycrunch.introspection.history import execution_history
 from pycrunch.introspection.timings import Timeline
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.scheduling.scheduler import TestRunScheduler
+from pycrunch.session import config
 from pycrunch.session.combined_coverage import (
     combined_coverage,
     serialize_combined_coverage,
 )
 from pycrunch.session.state import engine
-from pycrunch.session import config
-
-import logging
-
-from pycrunch.execution_watchdog.tasks import (
-    TestExecutionBeginTask,
-    TestExecutionEndTask,
-)
-from pycrunch.execution_watchdog.execution_watchdog import termination_event
-from pycrunch.execution_watchdog.watchdog_pipeline import watchdog_pipeline
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,9 @@
 import io
+import logging
 
 from pycrunch.api import shared
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.session import config
-
-import logging
 
 logger = logging.getLogger(__name__)
 

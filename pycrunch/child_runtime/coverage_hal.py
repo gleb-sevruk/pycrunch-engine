@@ -2,7 +2,6 @@ import coverage
 
 from pycrunch.api.serializers import CoverageRunForSingleFile
 
-
 COVER_LIBS = False
 
 

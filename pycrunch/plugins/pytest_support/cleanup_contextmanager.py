@@ -1,11 +1,11 @@
+import logging
+import logging.config
 import sys
 from pathlib import Path
 
 import yaml
 
 from pycrunch.plugins.pytest_support.hot_reload import unload_candidates
-import logging.config
-import logging
 
 logger = logging.getLogger(__name__)
 

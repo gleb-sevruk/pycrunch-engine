@@ -1,3 +1,4 @@
+import platform
 import time
 
 from pycrunch.constants import CONFIG_FILE_NAME
@@ -9,8 +10,6 @@ from pycrunch.pipeline.run_debouncing import RunDebouncer
 from pycrunch.session import state
 from pycrunch.session.combined_coverage import combined_coverage
 from pycrunch.session.file_map import test_map
-
-import platform
 
 
 def is_running_on_m1():

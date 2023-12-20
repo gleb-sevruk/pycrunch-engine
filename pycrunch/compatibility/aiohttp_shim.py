@@ -2,6 +2,7 @@ from asyncio import get_event_loop
 from typing import Any, Dict
 
 import aiohttp
+
 from pycrunch.compatibility.version_utils import parse_version_string
 
 

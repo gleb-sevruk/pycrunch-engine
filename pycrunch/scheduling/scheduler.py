@@ -1,9 +1,8 @@
+import logging
 import math
 from typing import List
 
 from pycrunch.scheduling.sheduled_task import TestRunPlan
-
-import logging
 
 logger = logging.getLogger(__name__)
 

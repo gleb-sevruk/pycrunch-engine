@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Set, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Dict, Set, Tuple
 
 from pycrunch.api.shared import file_watcher
 from pycrunch.session import config

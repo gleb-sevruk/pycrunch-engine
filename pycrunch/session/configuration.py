@@ -1,11 +1,12 @@
 import io
 import logging
 import multiprocessing
+from os import environ
 from pathlib import Path
 from typing import List, Optional
-from os import environ
 
 import yaml
+
 from pycrunch.constants import CONFIG_FILE_NAME
 from pycrunch.session.auto_configuration import AutoConfiguration
 

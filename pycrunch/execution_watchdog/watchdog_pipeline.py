@@ -1,6 +1,5 @@
-from asyncio import Queue
-
 import logging
+from asyncio import Queue
 
 from pycrunch.execution_watchdog.tasks import AbstractWatchdogTask
 

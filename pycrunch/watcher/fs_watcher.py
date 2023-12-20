@@ -5,14 +5,15 @@ import typing
 from pathlib import Path
 from typing import Set
 
-from pycrunch.pipeline import execution_pipeline
-from pycrunch.pipeline.file_removed_task import FileRemovedTask
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+from pycrunch.pipeline import execution_pipeline
+from pycrunch.pipeline.file_removed_task import FileRemovedTask
+
 from ..constants import CONFIG_FILE_NAME
-from ._abstract_watcher import Watcher
 from ..session import config
+from ._abstract_watcher import Watcher
 
 if typing.TYPE_CHECKING:
     from ..pipeline.abstract_task import AbstractTask

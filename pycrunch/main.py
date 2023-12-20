@@ -1,13 +1,14 @@
 import asyncio
 import logging.config
+import sys
 from pathlib import Path
+
 import yaml
 from aiohttp import web
-import sys
 
 import pycrunch.version
-from pycrunch.session import config
 from pycrunch.execution_watchdog.connection_watchdog import connection_watchdog
+from pycrunch.session import config
 
 package_directory = Path(__file__).parent
 print(package_directory)

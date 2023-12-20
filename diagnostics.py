@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from coverage import CoverageData, Coverage
+from coverage import Coverage, CoverageData
 
 
 def print_coverage(coverage_data: CoverageData, coverage: Coverage):

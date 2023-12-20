@@ -1,7 +1,7 @@
 import asyncio
+import os
 import pickle
 import struct
-import os
 
 from pycrunch.child_runtime.test_runner import TestRunner
 from pycrunch.scheduling.messages import (

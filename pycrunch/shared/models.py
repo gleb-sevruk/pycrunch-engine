@@ -1,7 +1,8 @@
+import logging
+
 from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.session.combined_coverage import combined_coverage
 from pycrunch.session.file_map import test_map
-import logging
 
 logger = logging.getLogger(__name__)
 
