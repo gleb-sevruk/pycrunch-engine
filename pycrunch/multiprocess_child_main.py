@@ -32,7 +32,7 @@ async def run(engine_to_use, timeline, port, task_id):
 
     on_con_lost = loop.create_future()
     timeline.mark_event('TCP: Opening connection')
-    transport, protocol1 = await loop.create_connection(
+    transport, protocol1 = await loop.create_connection( # noqa F841
         lambda: EchoClientProtocol(on_con_lost, task_id, timeline, engine_to_use),
         '127.0.0.1',
         port,
