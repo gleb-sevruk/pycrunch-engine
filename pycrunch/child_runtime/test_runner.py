@@ -69,7 +69,7 @@ class TestRunner:
                     self.timeline.mark_event('Before coverage serialization')
                     coverage_for_run = self.serialize_test_run(cov, metadata.fqn, time_elapsed, test_metadata=test_to_run, execution_result=execution_result)
                     self.timeline.mark_event('After coverage serialization')
-            except Exception as e:
+            except Exception:
                 # Here is most likely exception in the engine itself.
                 self.timeline.mark_event('Test execution exception.')
                 import sys
