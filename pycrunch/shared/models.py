@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class TestState:
+    __test__ = False
+
     def __init__(self, discovered_test, execution_result, pinned):
         self.discovered_test = discovered_test
         self.pinned = pinned
@@ -68,11 +70,11 @@ class AllTests:
         return result
 
     def log_test_details(self, current_test):
-        logger.debug(f'---')
+        logger.debug('---')
         logger.debug(f'current_test filename is {current_test.discovered_test.filename}')
         logger.debug(f'current_test fqn is {current_test.discovered_test.fqn}')
         logger.debug(f'current_test module is {current_test.discovered_test.module}')
-        logger.debug(f'---')
+        logger.debug('---')
 
     def get_pinned_tests(self):
         result = set()

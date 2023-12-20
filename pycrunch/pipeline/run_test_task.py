@@ -1,7 +1,7 @@
 import asyncio
 import os
 import sys
-from typing import Dict, Optional
+from typing import Optional
 
 from pycrunch.api import shared
 from pycrunch.api.serializers import CoverageRun
@@ -71,7 +71,7 @@ class RunTestTask(AbstractTask):
         """
         self.timeline.mark_event('run')
         watchdog_pipeline.add_task(TestExecutionBeginTask(len(self.tests)))
-        socket_notification_task = asyncio.ensure_future(engine.tests_will_run(self.tests))
+        socket_notification_task = asyncio.ensure_future(engine.tests_will_run(self.tests)) # noqa: F841
 
         converted_tests = self.get_converted_test_list()
         runner = self.create_test_runner()
@@ -139,7 +139,7 @@ class RunTestTask(AbstractTask):
             failure_reason = 'Test execution terminated by user.'
         if status == 'timeout':
             line1 = f'Timeout of {config.execution_timeout_in_seconds} seconds reached while waiting for test execution to complete.'
-            line2 = f'Consider increasing it in .pycrunch-config.yaml, e.g.:'
+            line2 = 'Consider increasing it in .pycrunch-config.yaml, e.g.:'
             line3 = f'{os.linesep}engine:{os.linesep}    timeout: 999{os.linesep}'
             line4 = f'Setting it to zero will wait forever.{os.linesep}'
             line5 = 'https://pycrunch.com/docs/configuration-file'
@@ -183,10 +183,10 @@ class RunTestTask(AbstractTask):
             #  2.1 Run to end
             #  2.2 Timeout during run
             if python_version == 3.6:
-                waited = await asyncio.wait([termination_event.wait(), runner_task], return_when=asyncio.FIRST_COMPLETED)
+                waited = await asyncio.wait([termination_event.wait(), runner_task], return_when=asyncio.FIRST_COMPLETED) # noqa: F841
             else:
                 t1 = asyncio.create_task(termination_event.wait())
-                waited = await asyncio.wait([t1, runner_task], return_when=asyncio.FIRST_COMPLETED)
+                waited = await asyncio.wait([t1, runner_task], return_when=asyncio.FIRST_COMPLETED) # noqa: F841
 
             if runner_task.done():
                 return TestRunStatus('success', runner_task.result())

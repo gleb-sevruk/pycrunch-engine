@@ -46,7 +46,9 @@ class SimpleTestDiscovery:
 
     def find_tests_in_folder(self, folder, search_only_in = None):
 
-        import glob, importlib, os, pathlib, sys
+        import importlib
+        import pathlib
+        import sys
 
         if not self.root_directory:
             MODULE_DIR = folder
@@ -57,9 +59,9 @@ class SimpleTestDiscovery:
         logger.debug(f'MODULE_DIR {MODULE_DIR}')
         logger.debug(f'Discovering tests in folder {folder}')
 
-        if not MODULE_DIR in sys.path:
+        if MODULE_DIR not in sys.path:
             sys.path.insert(0, MODULE_DIR)
-            logger.debug(f'after append')
+            logger.debug('after append')
             logger.debug(sys.path)
         # The directory containing your modules needs to be on the search path.
 
@@ -81,7 +83,7 @@ class SimpleTestDiscovery:
             environ[env_name] = env_value
 
         self.configuration.prepare_django()
-        with ModuleCleanup() as cleanup:
+        with ModuleCleanup():
 
             for py_file in py_files:
 
@@ -142,7 +144,7 @@ class SimpleTestDiscovery:
 
             if self.is_subclass_of_unittest(function_or_variable_or_class):
                 # print(f'{v} : {function_or_variable_or_class} issubclass of unittest')
-                attr = getattr(function_or_variable_or_class, "__test__", True)
+                # attr = getattr(function_or_variable_or_class, "__test__", True)
                 # print(attr)
                 names = self.get_test_case_names_from_class(function_or_variable_or_class)
                 names = map(lambda _: v + '::' + _, names)

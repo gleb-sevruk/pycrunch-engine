@@ -30,7 +30,7 @@ class EchoClientProtocol(asyncio.Protocol):
         counter += 1
 
     def connection_made(self, transport):
-        self.timeline.mark_event(f'TCP: Connection established...')
+        self.timeline.mark_event('TCP: Connection established...')
         self.transport = transport
         msg = HandshakeMessage(self.task_id)
         msg_bytes = pickle.dumps(msg)
@@ -59,7 +59,7 @@ class EchoClientProtocol(asyncio.Protocol):
 
             # should have env from pycrunch config here
             test_runner = TestRunner(runner_engine, timeline, msg.coverage_exclusions, child_config)
-            timeline.mark_event(f'Run: about to run tests')
+            timeline.mark_event('Run: about to run tests')
             try:
                 timeline.mark_event(f'Run: total tests planned: {len(msg.task.tests)}')
                 results = test_runner.run(msg.task.tests)
@@ -69,7 +69,7 @@ class EchoClientProtocol(asyncio.Protocol):
                 bytes_to_send = self.safe_pickle(msg)
                 self.send_with_header(bytes_to_send)
                 timeline.mark_event('TCP: results sent')
-            except Exception as e:
+            except Exception:
                 import sys
                 import traceback
                 print('----! Unexpected exception during PyCrunch test execution:', file=sys.__stdout__)
@@ -91,7 +91,7 @@ class EchoClientProtocol(asyncio.Protocol):
     def safe_pickle(self, msg):
         try:
            return pickle.dumps(msg)
-        except Exception as e:
+        except Exception:
             for k, v in msg.results.items():
                 v.execution_result.state_timeline.make_safe_for_pickle()
                 v.execution_result.recorded_exception.make_safe_for_pickle()
@@ -112,7 +112,7 @@ class EchoClientProtocol(asyncio.Protocol):
         self.send_with_header(bytes_to_send)
 
     def connection_lost(self, exc):
-        self.timeline.mark_event(f'TCP: Connection to server lost')
+        self.timeline.mark_event('TCP: Connection to server lost')
         print(f'[{os.getpid()}] [task_id: {self.task_id}] - Child process for test runner is about to exit')
         self.on_con_lost.set_result(True)
 

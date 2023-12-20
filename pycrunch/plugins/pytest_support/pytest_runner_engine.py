@@ -56,7 +56,7 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
                     #   Need verify before `debug` button click
                     import pydevd_pycharm
                     pydevd_pycharm.settrace('127.0.0.1', suspend=False, port=self.child_config.remote_debug_port, stdoutToServer=True, stderrToServer=True)
-                except ModuleNotFoundError as e:
+                except ModuleNotFoundError:
                     print('---\nFailed to import pydevd_pycharm', file=sys.__stdout__)
                     print('  Make sure you install pudb pycharm bindings by running:', file=sys.__stdout__)
                     print('pip install pydevd-pycharm\n---', file=sys.__stdout__)

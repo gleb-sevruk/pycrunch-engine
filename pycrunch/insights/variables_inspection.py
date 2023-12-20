@@ -43,7 +43,7 @@ class RecordedVariable:
         )
 
     def recurse_fix_dict(self, v: dict):
-        if type(v) == dict:
+        if isinstance(v, dict):
             for k, inner in v.items():
                 self.recurse_fix_dict(inner)
                 v[k] = self.safe_for_serialization_value(inner)
@@ -97,6 +97,6 @@ class InsightTimeline:
         for variable in self.variables:
             try:
                 pickle.dumps(variable)
-            except Exception as e:
+            except Exception:
                 variable.value = \
                     f'This cannot be traced: {str(variable.value)}\n\nConsider removing this trace call for faster test execution.'

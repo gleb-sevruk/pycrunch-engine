@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class TestRunnerServerProtocol(asyncio.Protocol):
+    __test__ = False
+
     # 1 object - 1 connection
     def __init__(self, tasks, completion_future, timeline):
         self.timeline = timeline
@@ -77,7 +79,7 @@ class TestRunnerServerProtocol(asyncio.Protocol):
         msg = None
         try:
             msg = self.message_queue.get_nowait()
-        except Empty as e:
+        except Empty:
             pass
             # print('process_messages: nothing to process')
         return msg

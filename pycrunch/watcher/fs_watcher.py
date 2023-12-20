@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import typing
 from pathlib import Path
 from typing import Set
 
@@ -12,6 +13,9 @@ from watchdog.observers import Observer
 from ..constants import CONFIG_FILE_NAME
 from ._abstract_watcher import Watcher
 from ..session import config
+
+if typing.TYPE_CHECKING:
+    from ..pipeline.abstract_task import AbstractTask
 
 logger = logging.getLogger(__name__)
 

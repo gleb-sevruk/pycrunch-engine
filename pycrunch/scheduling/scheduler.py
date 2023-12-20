@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 class TestRunScheduler():
     # Do not split up to 5 tasks
     threshold = 5
+    __test__ = False
 
     def __init__(self, cpu_cores, threshold):
         self.cpu_cores = cpu_cores

@@ -9,6 +9,8 @@ from pycrunch.runner.single_test_execution_result import SingleTestExecutionResu
 DISABLE_COVERAGE = False
 
 class TestRunner:
+    __test__ = False
+
     def __init__(self, runner_engine, timeline, coverage_exclusions, child_config):
         self.runner_engine = runner_engine
         self.timeline = timeline
@@ -67,7 +69,7 @@ class TestRunner:
                     self.timeline.mark_event('Before coverage serialization')
                     coverage_for_run = self.serialize_test_run(cov, metadata.fqn, time_elapsed, test_metadata=test_to_run, execution_result=execution_result)
                     self.timeline.mark_event('After coverage serialization')
-            except Exception as e:
+            except Exception:
                 # Here is most likely exception in the engine itself.
                 self.timeline.mark_event('Test execution exception.')
                 import sys

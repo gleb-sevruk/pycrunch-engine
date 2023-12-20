@@ -20,21 +20,21 @@ class ConnectionWatchdog:
         self.initial_connection_established = False
 
     def connection_established(self):
-        logger.info(f'ConnectionWatchdog->connection_established')
+        logger.info('ConnectionWatchdog->connection_established')
         self.connected_clients += 1
         self.initial_connection_established = True
 
     def connection_lost(self):
-        logger.info(f'ConnectionWatchdog->connection_lost')
+        logger.info('ConnectionWatchdog->connection_lost')
         self.connected_clients -= 1
 
     async def watch_client_connection_loop(self):
-        logger.info(f'started ConnectionWatchdog->watch_client_connection_loop')
+        logger.info('started ConnectionWatchdog->watch_client_connection_loop')
 
         # if client was not reconnected in 100 seconds deadline - kill engine
         self.last_wakeup = datetime.now()
         while True:
-            logger.debug(f'watch_client_connection_loop-> deciding if we need to close engine')
+            logger.debug('watch_client_connection_loop-> deciding if we need to close engine')
             await asyncio.sleep(disconnection_deadline)
             now = datetime.now()
             time_interval = now - self.last_wakeup

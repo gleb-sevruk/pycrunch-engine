@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Any, Union, Set, TYPE_CHECKING, Tuple
+from typing import Dict, Set, TYPE_CHECKING, Tuple
 
 from pycrunch.api.shared import file_watcher
 from pycrunch.session import config
@@ -125,7 +125,7 @@ class CombinedCoverage:
         statistics.mark_lines(lines_covered=lines_covered, fqn=fqn, )
 
     def ensure_file_statistics_exist(self, filename):
-        if not filename in self.files:
+        if filename not in self.files:
             statistics = FileStatistics(filename=filename)
             self.files[filename] = statistics
 

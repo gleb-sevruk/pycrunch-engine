@@ -33,9 +33,9 @@ class AstTestDiscovery:
         logger.debug(f'MODULE_DIR {MODULE_DIR}')
         logger.debug(f'Discovering tests in folder {folder}')
 
-        if not MODULE_DIR in sys.path:
+        if MODULE_DIR not in sys.path:
             sys.path.insert(0, MODULE_DIR)
-            logger.debug(f'after append')
+            logger.debug('after append')
             logger.debug(sys.path)
         # The directory containing your modules needs to be on the search path.
 

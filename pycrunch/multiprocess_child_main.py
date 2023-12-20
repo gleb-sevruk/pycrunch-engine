@@ -22,8 +22,8 @@ async def run(engine_to_use, timeline, port, task_id):
 
     timeline.mark_event('Run: imports done')
 
-    test_configuration = None
-    tests_to_run = []
+    # test_configuration = None
+    # tests_to_run = []
     # add root of django project
     sys.path.insert(0, str(Path('.').absolute()))
     # todo: make configurable instead

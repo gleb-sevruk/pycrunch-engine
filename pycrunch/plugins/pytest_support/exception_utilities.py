@@ -94,7 +94,7 @@ def custom_repr(obj, depth=2):
                     attr = getattr(obj, key)
                     if not callable(attr):
                         attributes[key] = attr
-                except:
+                except Exception:
                     # We just skip this pseudo_variable
                     # print(f'  ungettable key = {key}')
                     pass
@@ -116,5 +116,5 @@ def custom_repr(obj, depth=2):
             stringified_attributes[str(key)] = stringified_value
 
         return {"object": classname, "props": stringified_attributes}
-    except Exception as e:
+    except Exception:
         return limited_repr(obj)

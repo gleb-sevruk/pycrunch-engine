@@ -16,7 +16,7 @@ async def dispather_thread():
     while True:
         logger.debug('Dispatcher thread -- inside event loop, waiting for task...')
         task = await execution_pipeline.get_task()
-        logger.debug(f'Dispatcher thread -- received task:')
+        logger.debug('Dispatcher thread -- received task:')
         logger.debug(f'   {task}')
         try:
             await task.run()

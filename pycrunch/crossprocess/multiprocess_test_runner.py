@@ -2,10 +2,14 @@ import asyncio
 import logging
 import os
 import sys
+import typing
 from typing import List, Optional
 
 from pycrunch.networking.server_protocol import TestRunnerServerProtocol
 from pycrunch.session import config
+
+if typing.TYPE_CHECKING:
+    from pycrunch.pipeline.run_test_task import RemoteDebugParams
 
 logger = logging.getLogger(__name__)
 
@@ -60,17 +64,17 @@ class MultiprocessTestRunner:
                 asyncio.gather(*child_waiters),
                 timeout=self.timeout_if_non_debug()
             )
-        except (asyncio.TimeoutError, asyncio.CancelledError) as e:
+        except (asyncio.TimeoutError, asyncio.CancelledError):
             timeout_reached = True
             logger.warning(f'Reached execution timeout of {self.timeout_if_non_debug()} seconds. ')
             for _ in subprocesses_results:
                 try:
                     _.kill()
-                except:
+                except Exception:
                     logger.warning('Cannot kill child runner process with, ignoring.')
 
         logger.debug('All subprocesses are completed')
-        logger.debug(f'Waiting for completion from TCP server')
+        logger.debug('Waiting for completion from TCP server')
         demo_results = []
         try:
             demo_results = await asyncio.wait_for(
@@ -86,14 +90,14 @@ class MultiprocessTestRunner:
                 print(_)
             pass
 
-        logger.debug(f'TCP ran to the end')
-        logger.debug(f'1 - merge_task_results')
+        logger.debug('TCP ran to the end')
+        logger.debug('1 - merge_task_results')
         _results = self.merge_task_results(demo_results)
-        logger.debug(f'1 - done')
+        logger.debug('1 - done')
 
         server.close()
 
-        logger.debug(f' ---- TCP server and child processes ran to the end')
+        logger.debug(' ---- TCP server and child processes ran to the end')
         if timeout_reached:
             raise asyncio.TimeoutError('Test execution timeout.')
         return _results
@@ -115,11 +119,11 @@ class MultiprocessTestRunner:
         results.append(f'--task-id={task_id}')
         results.append(f'--load-pytest-plugins={str(config.load_pytest_plugins).lower()}')
         if self.remote_debug_params.enabled:
-            results.append(f'--enable-remote-debug')
+            results.append('--enable-remote-debug')
             results.append(f'--remote-debugger-port={self.remote_debug_params.port}')
         if config.enable_web_ui:
             # No need to collect performance metrics if there is no web-ui
-            results.append(f'--collect-perf')
+            results.append('--collect-perf')
 
         return results
 

@@ -1,6 +1,4 @@
 # Interval -> contains start, end, nested intervals, and markers (relative to interval)
-import os
-from datetime import datetime
 
 from pycrunch.introspection.clock import clock
 from collections import deque

@@ -1,5 +1,4 @@
 import io
-from pathlib import Path
 
 class AutoConfiguration:
     def __init__(self, configuration_file):
@@ -24,4 +23,4 @@ engine:
         with io.open(self.configuration_file, encoding='utf-8', mode='w') as f:
             f.write(default_config_file)
 
-        print(f'Created default configuration file.')
+        print('Created default configuration file.')

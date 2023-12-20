@@ -178,13 +178,13 @@ class Configuration:
     def load_pytest_plugin_config(self, engine_config):
         node: Optional[str] = engine_config.get('load-pytest-plugins', None)
         if node is not None:
-            if type(node) == bool:
+            if isinstance(node, bool):
                 self.load_pytest_plugins = node
 
     def deep_inheritance_will_change(self, engine_config):
         deep_inheritance: str = engine_config.get('deep-inheritance', None)
         if deep_inheritance is not None:
-            if type(deep_inheritance) == bool:
+            if isinstance(deep_inheritance, bool):
                 self.deep_inheritance = deep_inheritance
 
     def execution_timeout_will_change(self, new_timeout: float):
