@@ -21,7 +21,7 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
-    "pycrunch/tests"
+    "pycrunch_tests"
 ]
 
 # Same as Black.

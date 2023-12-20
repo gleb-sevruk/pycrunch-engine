@@ -7,7 +7,7 @@ from unittest.mock import Mock
 from pycrunch.scheduling.messages import HandshakeMessage
 from pycrunch.networking.server_protocol import TestRunnerServerProtocol
 from pycrunch.scheduling.sheduled_task import TestRunPlan
-from pycrunch.tests.test_scheduling import generate_tests
+from pycrunch_tests.test_scheduling import generate_tests
 
 
 class ServerProtocolTests(TestCase):
