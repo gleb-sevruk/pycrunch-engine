@@ -1,20 +1,16 @@
 name: Bump Version on PR Merge
 
-#on:
-#  pull_request:
-#    types: [closed]
-#    branches:
-#      - master
-
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
+    types: [closed]
+    branches:
+      - master
+
+
 
 jobs:
   version-bump:
-#    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
