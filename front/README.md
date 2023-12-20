@@ -9,6 +9,10 @@ nvm use 8
 ```
 M1 is not supported here;
 
+After building using npm run build
+1. copy the `front/dist` folder to the `pycrunch/web-ui` folder;
+2. remove *.js.map files from the dist folder
+
 ```
 npm install
 ```
