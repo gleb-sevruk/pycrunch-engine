@@ -76,9 +76,9 @@ class RunTestTask(AbstractTask):
         """
         self.timeline.mark_event('run')
         watchdog_pipeline.add_task(TestExecutionBeginTask(len(self.tests)))
-        socket_notification_task = asyncio.ensure_future(
+        socket_notification_task = asyncio.ensure_future( # noqa: F841
             engine.tests_will_run(self.tests)
-        )  # noqa: F841
+        )
 
         converted_tests = self.get_converted_test_list()
         runner = self.create_test_runner()
@@ -211,9 +211,9 @@ class RunTestTask(AbstractTask):
                 )  # noqa: F841
             else:
                 t1 = asyncio.create_task(termination_event.wait())
-                waited = await asyncio.wait(
+                waited = await asyncio.wait(  # noqa: F841
                     [t1, runner_task], return_when=asyncio.FIRST_COMPLETED
-                )  # noqa: F841
+                )
 
             if runner_task.done():
                 return TestRunStatus('success', runner_task.result())

@@ -55,9 +55,9 @@ class PyTestInterceptionPlugin:
         )
         full_traceback_str = "".join(formatted_traceback)
 
-        frame, filename, line_number, frames = get_originating_frame_and_location(
+        frame, filename, line_number, frames = get_originating_frame_and_location( # noqa F841
             exc_traceback
-        )  # noqa F841
+        )
         _locals = stringify_locals(frame)
         # print(f"locals: {locals}")
         # print(f"Most recent stack frame: {frame}")
