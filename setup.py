@@ -4,7 +4,7 @@ import setuptools
 
 setup(
     name='pycrunch-engine',
-    version='1.6.2',
+    version='1.6.3',
     description='PyCrunch Engine - Connector for PyCharm plugin, providing real-time test feedback and precise test '
     'coverage tracking for Python projects. ',
     url='http://github.com/gleb-sevruk/pycrunch-engine',
