@@ -76,7 +76,7 @@ class RunTestTask(AbstractTask):
         """
         self.timeline.mark_event('run')
         watchdog_pipeline.add_task(TestExecutionBeginTask(len(self.tests)))
-        socket_notification_task = asyncio.ensure_future( # noqa: F841
+        socket_notification_task = asyncio.ensure_future(  # noqa: F841
             engine.tests_will_run(self.tests)
         )
 
