@@ -13,8 +13,6 @@ permissions:
   contents: read
 
 jobs:
-  call-reusable-workflow:
-    uses: ./.github/workflows/bump-version.yml
   dependencies-ruff-pytest:
     runs-on: ubuntu-latest
     steps:
