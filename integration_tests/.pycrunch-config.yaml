@@ -1,0 +1,12 @@
+discovery:
+  exclusions:
+  - test_folder
+engine:
+  enable-web-ui: false
+  load-pytest-plugins: true
+  runtime: pytest
+  cpu-cores: 1
+
+pinned-tests: []
+env:
+  PYCRUNCH_API_URL: http://localhost:11015

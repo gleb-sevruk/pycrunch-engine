@@ -1,8 +1,7 @@
-from shared_file import some_shared_method
+from test_folder.shared_file import some_shared_method
 
 
 def test_one():
-    print('output from test_one')
     some_shared_method()
 
 

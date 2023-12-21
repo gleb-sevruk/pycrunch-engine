@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 import typing
 
 from pycrunch.api.shared import pipe
@@ -96,6 +97,9 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
         if action == 'watchdog-terminate':
             print('action == watchdog-terminate -> TerminateTestExecutionTask')
             watchdog_pipeline.add_task(TerminateTestExecutionTask())
+        if action == 'halt':
+            print('action == halt; This is only used for integration tests, and should not be used in production')
+            sys.exit(0)
 
     @sio.event
     async def connect(sid, environ):
