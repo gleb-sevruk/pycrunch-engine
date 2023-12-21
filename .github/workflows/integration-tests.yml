@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  run-integrartion-tests:
+  run-integration-tests:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -29,4 +29,4 @@ jobs:
 
     - name: Build and run Docker containers
       run: |
-        docker-compose up --build
+        cd integration_tests && docker-compose up --build

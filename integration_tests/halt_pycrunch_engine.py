@@ -1,10 +1,9 @@
 from time import sleep
 
 import socketio
-
 from pycrunch_integration_tests.pycrunch_engine_int_test import (
-    PYCRUNCH_API_URL,
     EVENT_NAME,
+    PYCRUNCH_API_URL,
     Actions,
 )
 

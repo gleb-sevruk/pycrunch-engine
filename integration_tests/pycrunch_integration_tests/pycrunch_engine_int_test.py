@@ -2,26 +2,26 @@
 import os
 from pathlib import Path
 from time import sleep
-from typing import Optional, List
+from typing import List, Optional
 from unittest import TestCase
 
-from pycrunch.insights import trace
+import socketio
 
+from pycrunch.insights import trace
 from pycrunch_integration_tests.models import (
+    CombinedCoverage,
     DiscoveredTestModel,
     TestRunCompletedModel,
-    CombinedCoverage,
 )
-import socketio
 
 PYCRUNCH_API_URL = os.getenv("PYCRUNCH_API_URL", "http://websocket_app:11016")
 
 
 def print_info():
-    print(f"---------------------------")
-    print(f"Running integration tests...")
+    print("---------------------------")
+    print("Running integration tests...")
     print(f"Using API_URL={PYCRUNCH_API_URL}")
-    print(f"---------------------------\n")
+    print("---------------------------\n")
 
 
 print_info()
