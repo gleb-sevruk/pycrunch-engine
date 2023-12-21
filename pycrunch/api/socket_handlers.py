@@ -98,7 +98,9 @@ def attach_message_handlers_to_sio(sio: "socketio.Server"):
             print('action == watchdog-terminate -> TerminateTestExecutionTask')
             watchdog_pipeline.add_task(TerminateTestExecutionTask())
         if action == 'halt':
-            print('action == halt; This is only used for integration tests, and should not be used in production')
+            print(
+                'action == halt; This is only used for integration tests, and should not be used in production'
+            )
             sys.exit(0)
 
     @sio.event

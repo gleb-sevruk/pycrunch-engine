@@ -2,7 +2,11 @@ from time import sleep
 
 import socketio
 
-from pycrunch_integration_tests.pycrunch_engine_int_test import PYCRUNCH_API_URL, EVENT_NAME, Actions
+from pycrunch_integration_tests.pycrunch_engine_int_test import (
+    PYCRUNCH_API_URL,
+    EVENT_NAME,
+    Actions,
+)
 
 
 def create_connection():

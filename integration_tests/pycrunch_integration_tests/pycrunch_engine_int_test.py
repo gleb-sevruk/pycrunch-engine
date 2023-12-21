@@ -7,10 +7,15 @@ from unittest import TestCase
 
 from pycrunch.insights import trace
 
-from pycrunch_integration_tests.models import DiscoveredTestModel, TestRunCompletedModel, CombinedCoverage
+from pycrunch_integration_tests.models import (
+    DiscoveredTestModel,
+    TestRunCompletedModel,
+    CombinedCoverage,
+)
 import socketio
 
 PYCRUNCH_API_URL = os.getenv("PYCRUNCH_API_URL", "http://websocket_app:11016")
+
 
 def print_info():
     print(f"---------------------------")
@@ -18,12 +23,15 @@ def print_info():
     print(f"Using API_URL={PYCRUNCH_API_URL}")
     print(f"---------------------------\n")
 
+
 print_info()
+
 
 class EngineState:
     version: Optional[dict]
     tests_discovered: Optional[List[DiscoveredTestModel]]
     test_run_results: Optional[dict[str, TestRunCompletedModel]]
+
     def __init__(self):
         self.tests_discovered = None
         self.test_run_results = {}
@@ -45,7 +53,9 @@ class EngineState:
             self.combined_coverage.append(CombinedCoverage(**each))
         pass
 
-    def find_file_in_combined_coverage_by_suffix(self, filename_to_find: str) -> Optional[CombinedCoverage]:
+    def find_file_in_combined_coverage_by_suffix(
+        self, filename_to_find: str
+    ) -> Optional[CombinedCoverage]:
         for each in self.combined_coverage:
             if each.filename.endswith(filename_to_find):
                 return each
@@ -138,12 +148,16 @@ def assert_discovery_valid(tests_discovered: List[DiscoveredTestModel]):
         assert (
             actual_test is not None
         ), f'Waited for {expected_test.fqn} to be in discovery results'
-        assert Path(actual_test.filename).parts[-3:] == Path(expected_test.filename).parts[-3:]
+        assert (
+            Path(actual_test.filename).parts[-3:]
+            == Path(expected_test.filename).parts[-3:]
+        )
         assert actual_test.fqn == expected_test.fqn
         assert actual_test.module == expected_test.module
         assert actual_test.name == expected_test.name
         assert actual_test.pinned == expected_test.pinned
         assert actual_test.state == expected_test.state
+
 
 class SocketIOContextManager:
     def __init__(self, url, event_handler):
@@ -161,19 +175,17 @@ class SocketIOContextManager:
         # Don't forget to disconnect when you're done
         self.client.disconnect()
 
+
 class TestProblem(TestCase):
     state: EngineState
-
-
 
     def setUp(self):
         self.state = EngineState()
 
     def test_initial_state(self):
         assert self.state.status == 'initial'
-        
-    def test_initial_discovery_should_find_tests(self):
 
+    def test_initial_discovery_should_find_tests(self):
         # Create a Socket.IO client
         with self.connect_to_pycrunch() as sio:
             sleep(1)
@@ -194,16 +206,17 @@ class TestProblem(TestCase):
             sio.emit(EVENT_NAME, Actions.discovery())
             sleep(1)
 
-
     def test_when_ran_status_changes_to_success(self):
         with self.connect_to_pycrunch() as sio:
-
             sio.emit(EVENT_NAME, Actions.discovery())
             sleep(1)
             assert len(self.state.tests_discovered) > 0
             assert self.state.status == 'discovery_completed'
 
-            sio.emit(EVENT_NAME, Actions.run_tests(['test_sample:test_one', 'test_sample:test_two']))
+            sio.emit(
+                EVENT_NAME,
+                Actions.run_tests(['test_sample:test_one', 'test_sample:test_two']),
+            )
             sleep(1)
             test_one = find_by_fqn(self.state.tests_discovered, 'test_sample:test_one')
             test_two = find_by_fqn(self.state.tests_discovered, 'test_sample:test_two')
@@ -221,7 +234,10 @@ class TestProblem(TestCase):
             sleep(2)
             test_one = find_by_fqn(self.state.tests_discovered, 'test_sample:test_one')
             assert test_one.state == 'success'
-            assert 'output from test_one' in self.state.test_run_results['test_sample:test_one'].captured_output
+            assert (
+                'output from test_one'
+                in self.state.test_run_results['test_sample:test_one'].captured_output
+            )
 
     def test_when_ran_should_have_single_file_coverage(self):
         with self.connect_to_pycrunch() as sio:
@@ -237,19 +253,24 @@ class TestProblem(TestCase):
             test_one = find_by_fqn(self.state.tests_discovered, 'test_sample:test_one')
             assert test_one.state == 'success'
             assert len(self.state.test_run_results['test_sample:test_one'].files) > 0
-            file_coverage_shared = self.state.test_run_results['test_sample:test_one'].find_file_by_suffix("test_folder/shared_file.py")
-            file_coverage_test_file = self.state.test_run_results['test_sample:test_one'].find_file_by_suffix("test_folder/test_sample.py")
+            file_coverage_shared = self.state.test_run_results[
+                'test_sample:test_one'
+            ].find_file_by_suffix("test_folder/shared_file.py")
+            file_coverage_test_file = self.state.test_run_results[
+                'test_sample:test_one'
+            ].find_file_by_suffix("test_folder/test_sample.py")
             assert file_coverage_shared is not None
             assert file_coverage_test_file is not None
 
-            assert 2 in file_coverage_shared.lines_covered, 'Method body was not covered'
+            assert (
+                2 in file_coverage_shared.lines_covered
+            ), 'Method body was not covered'
             assert 5 in file_coverage_test_file.lines_covered
             assert 6 in file_coverage_test_file.lines_covered
             assert 10 not in file_coverage_test_file.lines_covered
 
     def test_when_test_one_ran_should_have_combined_coverage(self):
         with self.connect_to_pycrunch() as sio:
-
             sio.emit(EVENT_NAME, Actions.discovery())
             sleep(1)
             assert len(self.state.tests_discovered) > 0
@@ -259,25 +280,35 @@ class TestProblem(TestCase):
             sleep(2)
             test_one = find_by_fqn(self.state.tests_discovered, 'test_sample:test_one')
             assert test_one.state == 'success'
-            cov = self.state.find_file_in_combined_coverage_by_suffix('test_folder/test_sample.py')
-            assert cov is not None, 'Combined coverage for `test_folder/test_sample.py` should be available'
+            cov = self.state.find_file_in_combined_coverage_by_suffix(
+                'test_folder/test_sample.py'
+            )
+            assert (
+                cov is not None
+            ), 'Combined coverage for `test_folder/test_sample.py` should be available'
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['5']
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['6']
 
     def test_when_two_tests_ran_should_have_combined_coverage(self):
         with self.connect_to_pycrunch() as sio:
-
             sio.emit(EVENT_NAME, Actions.discovery())
             sleep(1)
             assert len(self.state.tests_discovered) > 0
             assert self.state.status == 'discovery_completed'
 
-            sio.emit(EVENT_NAME, Actions.run_tests(['test_sample:test_one', 'test_sample:test_two']))
+            sio.emit(
+                EVENT_NAME,
+                Actions.run_tests(['test_sample:test_one', 'test_sample:test_two']),
+            )
             sleep(2)
             test_one = find_by_fqn(self.state.tests_discovered, 'test_sample:test_one')
             assert test_one.state == 'success'
-            cov = self.state.find_file_in_combined_coverage_by_suffix('test_folder/test_sample.py')
-            assert cov is not None, 'Combined coverage for `test_folder/test_sample.py` should be available'
+            cov = self.state.find_file_in_combined_coverage_by_suffix(
+                'test_folder/test_sample.py'
+            )
+            assert (
+                cov is not None
+            ), 'Combined coverage for `test_folder/test_sample.py` should be available'
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['5']
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['6']
 
@@ -285,7 +316,9 @@ class TestProblem(TestCase):
 
     def connect_to_pycrunch(self):
         self.state = EngineState()
-        return SocketIOContextManager(PYCRUNCH_API_URL, lambda data: my_response_handler(data, self.state))
+        return SocketIOContextManager(
+            PYCRUNCH_API_URL, lambda data: my_response_handler(data, self.state)
+        )
 
 
 class Actions:
@@ -295,14 +328,8 @@ class Actions:
 
     @staticmethod
     def halt():
-        return {
-                'action': 'halt'
-        }
+        return {'action': 'halt'}
 
     @staticmethod
-
     def run_tests(fqns: List[str]):
-        return {
-                'action': 'run-tests',
-                'tests': [{'fqn': fqn} for fqn in fqns]
-        }
+        return {'action': 'run-tests', 'tests': [{'fqn': fqn} for fqn in fqns]}

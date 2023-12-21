@@ -34,6 +34,7 @@ class TestRunCompletedModel(BaseModel):
                 return file
         return None
 
+
 class CombinedCoverage(BaseModel):
     filename: str
     lines_with_entrypoints: dict[str, List[str]]
