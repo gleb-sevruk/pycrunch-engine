@@ -184,6 +184,7 @@ class TestProblem(TestCase):
 
     def test_failing_test(self):
         assert 1 == 2
+
     def test_initial_state(self):
         assert self.state.status == 'initial'
 

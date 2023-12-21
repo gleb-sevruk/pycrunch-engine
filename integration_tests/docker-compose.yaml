@@ -7,6 +7,8 @@ services:
       dockerfile: integration_tests/Dockerfile.pycrunch-engine
     ports:
       - "11016:11016"  # Adjust if your app uses a different port
+    environment:
+      - PYCRUNCH__CONNECTION_WATCHDOG_TIMEOUT=10
 
   pytest:
     build:

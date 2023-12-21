@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import sys
 from datetime import datetime, timedelta
 
@@ -7,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 # This is to prevent running engine process that Pycharm is no longer using
 # In seconds
-disconnection_deadline = 100
+disconnection_deadline = os.getenv('PYCRUNCH__CONNECTION_WATCHDOG_TIMEOUT', 100)
+disconnection_deadline = int(disconnection_deadline)
 significant_sleep_time = timedelta(seconds=disconnection_deadline * 2)
 
 
@@ -27,7 +29,9 @@ class ConnectionWatchdog:
         self.connected_clients -= 1
 
     async def watch_client_connection_loop(self):
-        logger.info('started ConnectionWatchdog->watch_client_connection_loop')
+        logger.info(
+            f'started ConnectionWatchdog->watch_client_connection_loop (disconnection_deadline: {disconnection_deadline} seconds)'
+        )
 
         # if client was not reconnected in 100 seconds deadline - kill engine
         self.last_wakeup = datetime.now()
