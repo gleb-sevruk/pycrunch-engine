@@ -4,7 +4,6 @@ discovery:
   - front\
   - build/
   - pycrunch_tests/dogfood
-  - pycrunch_tests/dogfood
   - tests_discovery_specs_demo.py
   - integration_tests/
 engine:
