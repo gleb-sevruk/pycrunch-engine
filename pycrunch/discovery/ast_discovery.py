@@ -170,7 +170,10 @@ class AstTestDiscovery:
         )) or module_short_name.endswith(('_test', 'tests', '_tests'))
 
     def looks_like_test_name(self, v):
-        return any(v.startswith(prefix) for prefix in ['test_', *self.configuration.function_prefixes]) or v.endswith('_test')
+        return any(
+            v.startswith(prefix)
+            for prefix in ['test_', *self.configuration.function_prefixes]
+        ) or v.endswith('_test')
 
     def looks_like_test_class(self, name: str) -> bool:
         return name.startswith('Test') or name.endswith('Test')
