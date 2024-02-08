@@ -1,5 +1,5 @@
 [tool.bumpversion]
-current_version = "1.6.3"
+current_version = "1.6.4"
 tag = "True"
 
 [[tool.bumpversion.files]]
