@@ -49,6 +49,7 @@ Most of the parameters listed:
 discovery:
   # Paths, that will be excluded during test discovery.
   # The file will be excluded from discovery, if either starts_with or ends_with condition is true on filename. File path is relative to project root folder.
+  # On Windows, use `\` separator when excluding paths
   exclusions:
   - front/
   - venv/
