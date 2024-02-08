@@ -78,6 +78,12 @@ engine:
 
   # Enable web UI (Default - `false`)
   enable-web-ui: true
+  
+  # Customize pytest.ini  [spec_file.py -> def should_be_true()]
+  # python_files = test_*.py tests_*.py spec*.py moduletest*.py
+  module-prefixes: test spec moduletest
+  # python_functions = *_test should* must*
+  function-prefixes: should must
 
 # Environment variables to forward to pytest executors
 env:
