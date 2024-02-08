@@ -1,0 +1,20 @@
+# Use a base Python image
+FROM python:3.9
+
+# Set the working directory
+WORKDIR /app
+
+# Copy your source code
+COPY . /app
+
+# Build and install your Python wheel
+RUN python setup.py bdist_wheel
+RUN pip install dist/*.whl
+
+# Expose the port your app runs on
+EXPOSE 11016
+
+WORKDIR /app/integration_tests/test_folder
+
+# Command to run your app
+CMD ["pycrunch-engine", "--port=11016"]  # Replace with the command to start your WebSocket app

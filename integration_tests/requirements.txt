@@ -1,0 +1,5 @@
+python-socketio>=5
+websocket-client
+pytest
+pycrunch-engine
+pydantic

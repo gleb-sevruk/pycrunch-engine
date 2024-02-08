@@ -1,0 +1,17 @@
+# Use a base Python image
+FROM python:3.9
+
+# Set the working directory
+WORKDIR /tests
+
+# Copy your test code and requirements file (adjust the path as necessary)
+
+# ...
+# Copy your test code and requirements file
+COPY . /tests
+
+# Install dependencies
+RUN pip install -r requirements.txt
+
+# Command to run tests
+CMD pytest pycrunch_integration_tests/pycrunch_engine_int_test.py && python halt_pycrunch_engine.py

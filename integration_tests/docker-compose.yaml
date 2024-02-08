@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  websocket_app:
+    build:
+      context: ../  # Path to the Dockerfile and source code of  WebSocket app
+      dockerfile: integration_tests/Dockerfile.pycrunch-engine
+    ports:
+      - "11016:11016"  # Adjust if your app uses a different port
+    environment:
+      - PYCRUNCH__CONNECTION_WATCHDOG_TIMEOUT=10
+
+  pytest:
+    build:
+      context: .  # Path to the Dockerfile and test code
+      dockerfile: Dockerfile.integration-test
+    volumes:
+      - .:/tests  # Mount your test code into the container
+    depends_on:
+      - websocket_app

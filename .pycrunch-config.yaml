@@ -3,8 +3,9 @@ discovery:
   - front/
   - front\
   - build/
-  - pycrunch/tests/dogfood
+  - pycrunch_tests/dogfood
   - tests_discovery_specs_demo.py
+  - integration_tests/
 engine:
   cpu-cores: 4
   load-pytest-plugins: true
@@ -15,7 +16,7 @@ engine:
 #   requires restart
   enable-web-ui: true
 env:
-  DJANGO_SETTINGS_MODULE: insuredportal.settings.local
+  DJANGO_SETTINGS_MODULE: somedjangoapp.settings.local
 pinned-tests:
 - tests_two:test_pin_sleep120
 - pycrunch.tests.tests_configuration:test_environment_vars
