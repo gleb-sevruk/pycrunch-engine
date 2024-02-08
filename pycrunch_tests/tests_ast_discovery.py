@@ -32,6 +32,16 @@ def test_double_inheritance():
     assert 'DoublyInheritedScenario::test_1' in test_names
 
 
+def test_custom_module_prefix():
+    configuration = Configuration()
+    configuration.module_prefixes = 'spec'
+    configuration.function_prefixes = 'should'
+    actual = run_dogfood_discovery(config=configuration)
+    test_names = list(map(lambda _: _.name, actual.tests))
+
+    assert 'should_regular_2' in test_names
+
+
 def test_only_methods_are_discovered_not_variables():
     actual = run_dogfood_discovery()
     test_names = list(map(lambda _: _.name, actual.tests))
