@@ -177,13 +177,18 @@ class SimpleTestDiscovery:
 
     def is_module_with_tests(self, module_name):
         module_short_name = module_name.split('.')[-1]
+
         return module_short_name.startswith((
             'test_',
             'tests_',
+            *self.configuration.module_prefixes,
         )) or module_short_name.endswith(('_test', 'tests', '_tests'))
 
     def looks_like_test_name(self, v):
-        return v.startswith('test_') or v.endswith('_test')
+        return any([
+            v.startswith(prefix)
+            for prefix in ['test_', *self.configuration.function_prefixes]
+        ]) or v.endswith('_test')
 
     def get_test_case_names_from_class(self, test_case_class):
         # implementation from standard unitest library

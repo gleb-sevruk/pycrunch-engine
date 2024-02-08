@@ -60,6 +60,8 @@ class Configuration:
         self.enable_web_ui = False
         self.change_detection_root: str = self._get_working_directory()
         self.intellij_connector_version = 'unknown'
+        self.module_prefixes = []
+        self.function_prefixes = []
 
     def _get_working_directory(self):
         return str(Path('.').absolute())
@@ -165,7 +167,8 @@ class Configuration:
         if multiprocess_threshold:
             self.multiprocess_threshold_will_change(multiprocess_threshold)
         self.load_pytest_plugin_config(engine_config)
-
+        self.load_module_prefixes_config(engine_config)
+        self.load_function_prefixes_config(engine_config)
         # this is in seconds
         execution_timeout = engine_config.get('timeout', None)
         if execution_timeout is not None:
@@ -193,6 +196,18 @@ class Configuration:
         if node is not None:
             if isinstance(node, bool):
                 self.load_pytest_plugins = node
+
+    def load_module_prefixes_config(self, engine_config):
+        node: Optional[str] = engine_config.get('module-prefixes', None)
+        if node is not None:
+            if isinstance(node, str):
+                self.module_prefixes = node.split(' ')
+
+    def load_function_prefixes_config(self, engine_config):
+        node: Optional[str] = engine_config.get('function-prefixes', None)
+        if node is not None:
+            if isinstance(node, str):
+                self.function_prefixes = node.split(' ')
 
     def deep_inheritance_will_change(self, engine_config):
         deep_inheritance: str = engine_config.get('deep-inheritance', None)
