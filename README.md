@@ -8,6 +8,9 @@ PyCrunch is written and supports Python 3.6+.
 
 ![What Covers What](https://i.stack.imgur.com/w7wQM.png)
 
+# Link to PyCharm Extension source code
+https://github.com/gleb-sevruk/pycrunch-intelij-plugin
+
 ## How to run:
 ### Using PyCharm Connector extension
 
