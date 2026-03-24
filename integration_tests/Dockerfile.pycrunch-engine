@@ -17,4 +17,4 @@ EXPOSE 11016
 WORKDIR /app/integration_tests/test_folder
 
 # Command to run your app
-CMD ["pycrunch-engine", "--port=11016"]  # Replace with the command to start your WebSocket app
+CMD ["pycrunch-engine", "--port=11016"]
