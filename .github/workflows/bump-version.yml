@@ -22,6 +22,11 @@ jobs:
       with:
         python-version: '3.9'  # Specify the Python version
 
+    - name: Configure git identity
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
     - name: Install bump-my-version
       run: pip install bump-my-version
 
@@ -30,8 +35,6 @@ jobs:
 
     - name: Commit and push changes
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
         BUMPED_VERSION=$(python -c "exec(open('pycrunch/version.py').read()); print(version_info_str)")
         git add -A
         git commit -m "Bump version to $BUMPED_VERSION"
