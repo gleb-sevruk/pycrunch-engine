@@ -55,14 +55,20 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
                 try:
                     # Todo: this is too late to check for debugger existence.
                     #   Need verify before `debug` button click
+                    import inspect
                     import pydevd_pycharm
+                    # in pydevd-pycharm > 253.31033.139 there is a different signature
+                    settrace_params = inspect.signature(pydevd_pycharm.settrace).parameters
+                    if 'stdout_to_server' in settrace_params:
+                        stdout_kwarg = {'stdout_to_server': True, 'stderr_to_server': True}
+                    else:
+                        stdout_kwarg = {'stdoutToServer': True, 'stderrToServer': True}
 
                     pydevd_pycharm.settrace(
                         '127.0.0.1',
                         suspend=False,
                         port=self.child_config.remote_debug_port,
-                        stdoutToServer=True,
-                        stderrToServer=True,
+                        **stdout_kwarg,
                     )
                 except ModuleNotFoundError:
                     print('---\nFailed to import pydevd_pycharm', file=sys.__stdout__)

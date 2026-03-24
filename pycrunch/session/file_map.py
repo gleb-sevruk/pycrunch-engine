@@ -20,6 +20,7 @@ class TestMap:
         self.map[filename] = new_list
 
     def get_immutable_tests_for_file(self, filename):
+        # returns: ['test_1', 'test_2']
         return list(self.map.get(filename, set()))
 
     def file_did_removed(self, filename):
