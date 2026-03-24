@@ -56,6 +56,7 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
                     # Todo: this is too late to check for debugger existence.
                     #   Need verify before `debug` button click
                     import inspect
+
                     import pydevd_pycharm
                     # in pydevd-pycharm > 253.31033.139 there is a different signature
                     settrace_params = inspect.signature(pydevd_pycharm.settrace).parameters
