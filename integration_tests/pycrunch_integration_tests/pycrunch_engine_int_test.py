@@ -145,9 +145,9 @@ def assert_discovery_valid(tests_discovered: List[DiscoveredTestModel]):
     # assert len(tests_discovered) == len(expected_tests)
     for expected_test in expected_tests:
         actual_test = find_by_fqn(tests_discovered, expected_test.fqn)
-        assert (
-            actual_test is not None
-        ), f'Waited for {expected_test.fqn} to be in discovery results'
+        assert actual_test is not None, (
+            f'Waited for {expected_test.fqn} to be in discovery results'
+        )
         assert (
             Path(actual_test.filename).parts[-3:]
             == Path(expected_test.filename).parts[-3:]
@@ -262,9 +262,9 @@ class TestProblem(TestCase):
             assert file_coverage_shared is not None
             assert file_coverage_test_file is not None
 
-            assert (
-                2 in file_coverage_shared.lines_covered
-            ), 'Method body was not covered'
+            assert 2 in file_coverage_shared.lines_covered, (
+                'Method body was not covered'
+            )
             assert 5 in file_coverage_test_file.lines_covered
             assert 6 in file_coverage_test_file.lines_covered
             assert 10 not in file_coverage_test_file.lines_covered
@@ -283,9 +283,9 @@ class TestProblem(TestCase):
             cov = self.state.find_file_in_combined_coverage_by_suffix(
                 'test_folder/test_sample.py'
             )
-            assert (
-                cov is not None
-            ), 'Combined coverage for `test_folder/test_sample.py` should be available'
+            assert cov is not None, (
+                'Combined coverage for `test_folder/test_sample.py` should be available'
+            )
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['5']
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['6']
 
@@ -306,9 +306,9 @@ class TestProblem(TestCase):
             cov = self.state.find_file_in_combined_coverage_by_suffix(
                 'test_folder/test_sample.py'
             )
-            assert (
-                cov is not None
-            ), 'Combined coverage for `test_folder/test_sample.py` should be available'
+            assert cov is not None, (
+                'Combined coverage for `test_folder/test_sample.py` should be available'
+            )
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['5']
             assert ['test_sample:test_one'] == cov.lines_with_entrypoints['6']
 

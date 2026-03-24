@@ -29,6 +29,6 @@ def enable_for_aiohttp(app, package_directory):
     app.add_routes([web.static('/ui', package_directory.joinpath('web-ui'))])
     app.add_routes([web.static('/js', package_directory.joinpath('web-ui', 'js'))])
     app.add_routes([web.static('/css', package_directory.joinpath('web-ui', 'css'))])
-    app.add_routes([
-        web.static('/fonts', package_directory.joinpath('web-ui', 'fonts'))
-    ])
+    app.add_routes(
+        [web.static('/fonts', package_directory.joinpath('web-ui', 'fonts'))]
+    )

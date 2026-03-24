@@ -58,10 +58,16 @@ class PyTestRunnerEngine(_abstract_runner.Runner):
                     import inspect
 
                     import pydevd_pycharm
+
                     # in pydevd-pycharm > 253.31033.139 there is a different signature
-                    settrace_params = inspect.signature(pydevd_pycharm.settrace).parameters
+                    settrace_params = inspect.signature(
+                        pydevd_pycharm.settrace
+                    ).parameters
                     if 'stdout_to_server' in settrace_params:
-                        stdout_kwarg = {'stdout_to_server': True, 'stderr_to_server': True}
+                        stdout_kwarg = {
+                            'stdout_to_server': True,
+                            'stderr_to_server': True,
+                        }
                     else:
                         stdout_kwarg = {'stdoutToServer': True, 'stderrToServer': True}
 
