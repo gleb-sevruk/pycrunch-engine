@@ -144,9 +144,10 @@ class AstTestDiscovery:
     ) -> None:
         try:
             root = self.configuration.change_detection_root
-            function_prefixes = tuple(
-                ['test_', *list(self.configuration.function_prefixes or [])]
-            )
+            function_prefixes = tuple([
+                'test_',
+                *list(self.configuration.function_prefixes or []),
+            ])
             fp = fingerprint_source(
                 source,
                 filename,
@@ -187,13 +188,11 @@ class AstTestDiscovery:
     def is_module_with_tests(self, module_name):
         # Todo take pytest configs into account
         module_short_name = module_name.split('.')[-1]
-        return module_short_name.startswith(
-            (
-                'test_',
-                'tests_',
-                *self.configuration.module_prefixes,
-            )
-        ) or module_short_name.endswith(('_test', 'tests', '_tests'))
+        return module_short_name.startswith((
+            'test_',
+            'tests_',
+            *self.configuration.module_prefixes,
+        )) or module_short_name.endswith(('_test', 'tests', '_tests'))
 
     def looks_like_test_name(self, v):
         return any(

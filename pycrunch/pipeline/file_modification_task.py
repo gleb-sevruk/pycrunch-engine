@@ -168,9 +168,10 @@ class FileModifiedNotificationTask(AbstractTask):
             _fm_mod.test_map.get_immutable_tests_for_file(filename)
             or _fm_mod.test_map.get_immutable_tests_for_file(self.file)
         )
-        function_prefixes = tuple(
-            ['test_', *list(state.config.function_prefixes or [])]
-        )
+        function_prefixes = tuple([
+            'test_',
+            *list(state.config.function_prefixes or []),
+        ])
 
         kind, new_fp = await loop.run_in_executor(
             None,
