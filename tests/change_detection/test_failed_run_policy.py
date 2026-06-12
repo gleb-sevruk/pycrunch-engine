@@ -5,9 +5,9 @@ T-FR: Tests for M9.3 — failed-run coverage policy + greedy failed re-run.
 import asyncio
 
 from pycrunch.api.serializers import CoverageRun, CoverageRunForSingleFile
+from pycrunch.change_detection import normalize_path
 from pycrunch.runner.single_test_execution_result import SingleTestExecutionResult
 from pycrunch.session.combined_coverage import CombinedCoverage
-from pycrunch.change_detection import normalize_path
 
 
 def _make_run(fqn: str, files, succeeded: bool) -> CoverageRun:
@@ -89,12 +89,12 @@ def test_success_after_failed_restores_invariant():
 
 def test_full_repro_greedy_failed_and_deps_preserved(tmp_path):
     from pycrunch.change_detection.fingerprint import fingerprint_source
-    from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.change_detection.import_graph import ImportGraph
-    from pycrunch.session.file_map import TestMap
-    from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
-    from pycrunch.shared.models import AllTests
+    from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.discovery.simple import DiscoveredTest
+    from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
+    from pycrunch.session.file_map import TestMap
+    from pycrunch.shared.models import AllTests
 
     # module_b v1 (good body), v2 (changed body — fix after failure)
     mod_b_v1 = "def helper():\n    return 1\n"
@@ -111,8 +111,6 @@ def test_full_repro_greedy_failed_and_deps_preserved(tmp_path):
     cache.update(mod_b_path, old_fp, mod_b_v1)
 
     cov = CombinedCoverage()
-    norm_mod_b = normalize_path(mod_b_path)
-    norm_test = normalize_path(test_file_path)
 
     # Success run: test_a covered module_b lines 1-2
     run_success = _make_run(
@@ -136,8 +134,8 @@ def test_full_repro_greedy_failed_and_deps_preserved(tmp_path):
     graph = ImportGraph()
 
     import pycrunch.pipeline.file_modification_task as fmt_mod
-    import pycrunch.shared.models as m_mod
     import pycrunch.session.file_map as fm_mod
+    import pycrunch.shared.models as m_mod
 
     fmt_mod._sc_mod.snapshot_cache = cache
     fmt_mod._ig_mod.import_graph = graph
@@ -208,12 +206,12 @@ def test_full_repro_greedy_failed_and_deps_preserved(tmp_path):
 
 def test_failed_tests_related_to_importer(tmp_path):
     from pycrunch.change_detection.fingerprint import fingerprint_source
-    from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.change_detection.import_graph import ImportGraph
-    from pycrunch.session.file_map import TestMap
-    from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
-    from pycrunch.shared.models import AllTests
+    from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.discovery.simple import DiscoveredTest
+    from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
+    from pycrunch.session.file_map import TestMap
+    from pycrunch.shared.models import AllTests
 
     mod_path = str(tmp_path / 'module.py')
     test_path = str(tmp_path / 'test_it.py')
@@ -249,8 +247,8 @@ def test_failed_tests_related_to_importer(tmp_path):
     graph.update_file(test_path, test_fp)
 
     import pycrunch.pipeline.file_modification_task as fmt_mod
-    import pycrunch.shared.models as m_mod
     import pycrunch.session.file_map as fm_mod
+    import pycrunch.shared.models as m_mod
 
     fmt_mod._sc_mod.snapshot_cache = cache
     fmt_mod._ig_mod.import_graph = graph
@@ -311,12 +309,12 @@ def test_failed_tests_related_to_importer(tmp_path):
 
 def test_greedy_not_triggered_on_no_change(tmp_path):
     from pycrunch.change_detection.fingerprint import fingerprint_source
-    from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.change_detection.import_graph import ImportGraph
-    from pycrunch.session.file_map import TestMap
-    from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
-    from pycrunch.shared.models import AllTests
+    from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.discovery.simple import DiscoveredTest
+    from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
+    from pycrunch.session.file_map import TestMap
+    from pycrunch.shared.models import AllTests
 
     src = "def foo():\n    return 1\n"
     mod_path = str(tmp_path / 'helpers.py')
@@ -333,8 +331,8 @@ def test_greedy_not_triggered_on_no_change(tmp_path):
     graph = ImportGraph()
 
     import pycrunch.pipeline.file_modification_task as fmt_mod
-    import pycrunch.shared.models as m_mod
     import pycrunch.session.file_map as fm_mod
+    import pycrunch.shared.models as m_mod
 
     fmt_mod._sc_mod.snapshot_cache = cache
     fmt_mod._ig_mod.import_graph = graph

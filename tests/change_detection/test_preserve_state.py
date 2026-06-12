@@ -7,8 +7,6 @@ for tests that weren't in the execution plan.
 
 import asyncio
 
-import pytest
-
 from pycrunch.api.serializers import CoverageRun, CoverageRunForSingleFile
 from pycrunch.change_detection import normalize_path
 from pycrunch.change_detection.fingerprint import fingerprint_source
@@ -236,8 +234,8 @@ def test_smart_mode_preserves_test_b_state_when_test_a_changes(tmp_path):
     tmap.map[filepath] = {fqn_a, fqn_b}
     graph = ImportGraph()
 
-    import pycrunch.shared.models as m_mod
     import pycrunch.session.file_map as fm_mod
+    import pycrunch.shared.models as m_mod
 
     original_cov = m_mod.combined_coverage
     original_map = fm_mod.test_map
@@ -251,7 +249,6 @@ def test_smart_mode_preserves_test_b_state_when_test_a_changes(tmp_path):
 
     # Set up AllTests with pre-existing 'success' state for both tests.
     # test_discovered(preserve_state=False) calls test_did_removed, so seed coverage AFTER.
-    import pycrunch.pipeline.file_modification_task as fmt_mod
     from pycrunch.shared.models import AllTests
 
     fake_all_tests = AllTests()
@@ -325,8 +322,8 @@ def test_smart_mode_preserves_test_b_state_when_test_a_changes(tmp_path):
 
 def test_legacy_mode_never_preserves_state(tmp_path, monkeypatch):
     """In legacy mode, test_discovered must reset state (preserve_state=False)."""
-    from pycrunch.shared.models import AllTests
     import pycrunch.shared.models as m_mod
+    from pycrunch.shared.models import AllTests
 
     calls = []
     original_test_discovered = AllTests.test_discovered
@@ -348,16 +345,12 @@ def test_legacy_mode_never_preserves_state(tmp_path, monkeypatch):
     try:
         import pycrunch.session.state as state_mod
 
-        fqn_a = 'test_mod:test_a'
-        dt = discovered('test_a')
-
         # Simulate legacy mode call via test_discovery_will_become_available
         from pycrunch.discovery.simple import TestSet, TestsInModule
 
         test_set = TestSet()
         test_set.add_module(TestsInModule('/proj/test_mod.py', ['test_a'], 'test_mod'))
 
-        fake_engine = state_mod.engine
         run(
             state_mod.engine.test_discovery_will_become_available(
                 test_set, preserve_state=False

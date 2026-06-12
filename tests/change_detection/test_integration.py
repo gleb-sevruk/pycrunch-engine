@@ -4,14 +4,11 @@ We call _smart_execution_plan directly after wiring up the module-level singleto
 """
 
 import asyncio
-from pathlib import Path
-
-import pytest
 
 from pycrunch.change_detection import normalize_path
+from pycrunch.change_detection.fingerprint import fingerprint_source
 from pycrunch.change_detection.import_graph import ImportGraph
 from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
-from pycrunch.change_detection.fingerprint import fingerprint_source
 from pycrunch.session.combined_coverage import CombinedCoverage
 from pycrunch.session.file_map import TestMap
 

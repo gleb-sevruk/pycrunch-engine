@@ -1,8 +1,4 @@
-import os
-import tempfile
-from pathlib import Path
 
-import pytest
 from pycrunch.change_detection.fingerprint import fingerprint_source
 from pycrunch.change_detection.import_graph import ImportGraph
 

@@ -1,4 +1,3 @@
-import pytest
 from pycrunch.change_detection.change_classifier import (
     BodyOnlyChange,
     ModuleLevelChange,
@@ -82,10 +81,9 @@ def test_deleted_function_in_changed():
     # We need module_level_hash to stay the same but a function to disappear.
     # This is synthetic — in practice deletion changes the skeleton.
     # We achieve it by patching old to contain an extra function not in new.
-    from dataclasses import replace
     from pycrunch.change_detection.fingerprint import (
-        FunctionFingerprint,
         FileFingerprint,
+        FunctionFingerprint,
     )
 
     src = "def foo():\n    return 1\n"

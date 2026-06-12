@@ -10,7 +10,6 @@ import pycrunch.change_detection.import_graph as _ig_mod
 import pycrunch.change_detection.snapshot_cache as _sc_mod
 import pycrunch.session.combined_coverage as _cc_mod
 import pycrunch.session.file_map as _fm_mod
-
 from pycrunch.api.shared import pipe
 from pycrunch.change_detection import match_fqns, normalize_path
 from pycrunch.change_detection.change_classifier import (

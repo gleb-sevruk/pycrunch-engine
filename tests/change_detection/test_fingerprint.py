@@ -1,4 +1,5 @@
 import pytest
+
 from pycrunch.change_detection.fingerprint import fingerprint_source
 
 FILENAME = '/project/pkg/mod.py'
@@ -81,8 +82,8 @@ def test_import_targets_from_various_forms():
 def test_relative_import_resolved():
     src = "from . import sibling\n"
     # file is pkg/mod.py, root contains pkg/
-    import tempfile, os
-    from pathlib import Path
+    import os
+    import tempfile
 
     with tempfile.TemporaryDirectory() as root:
         pkg = os.path.join(root, 'pkg')

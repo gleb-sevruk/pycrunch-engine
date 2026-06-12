@@ -7,9 +7,6 @@ exercised only in T-TF-12.
 """
 
 import asyncio
-from pathlib import Path
-
-import pytest
 
 from pycrunch.change_detection import match_fqns, normalize_path
 from pycrunch.change_detection.change_classifier import (
