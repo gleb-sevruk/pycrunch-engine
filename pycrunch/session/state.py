@@ -55,14 +55,19 @@ class EngineState:
             folder=self.folder,
         )
 
-    async def test_discovery_will_become_available(self, test_set):
+    async def test_discovery_will_become_available(
+        self, test_set, preserve_state: bool = False
+    ):
         """
         :type test_set: pycrunch.discovery.simple.TestSet
         """
         for discovered_test in test_set.tests:
             is_pinned = config.is_test_pinned(discovered_test.fqn)
             self.all_tests.test_discovered(
-                discovered_test.fqn, discovered_test, is_pinned
+                discovered_test.fqn,
+                discovered_test,
+                is_pinned,
+                preserve_state=preserve_state,
             )
 
         # TODO: maybe do not wait for the signal from plugin to start discovery.

@@ -24,8 +24,15 @@ class AllTests:
         # fqn -> TestState
         self.tests = dict()
 
-    def test_discovered(self, fqn, discovered_test, is_pinned):
-        # todo preserve state
+    def test_discovered(
+        self, fqn, discovered_test, is_pinned, preserve_state: bool = False
+    ):
+        existing = self.tests.get(fqn)
+        if preserve_state and existing is not None:
+            # Keep execution_result and coverage intact; only refresh metadata and pin status.
+            existing.discovered_test = discovered_test
+            existing.pinned = is_pinned
+            return
         self.tests[fqn] = TestState(
             discovered_test, SingleTestExecutionResult(), is_pinned
         )

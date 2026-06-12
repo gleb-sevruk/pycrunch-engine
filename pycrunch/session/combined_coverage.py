@@ -1,3 +1,4 @@
+import time
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Set, Tuple
 
@@ -26,9 +27,10 @@ class FileStatistics:
         # 2: [module1:test_1, module2:test_2]
         self.lines_with_entrypoints = defaultdict(set)
 
-    def mark_lines(self, lines_covered, fqn):
-        for possibly_oudated_line in self.lines_with_entrypoints:
-            self.lines_with_entrypoints[possibly_oudated_line].discard(fqn)
+    def mark_lines(self, lines_covered, fqn, additive: bool = False):
+        if not additive:
+            for possibly_oudated_line in self.lines_with_entrypoints:
+                self.lines_with_entrypoints[possibly_oudated_line].discard(fqn)
 
         for line in lines_covered:
             self.lines_with_entrypoints[line].add(fqn)
@@ -86,7 +88,6 @@ class CombinedCoverage:
 
     def __init__(self):
         self.files = dict()
-
         # all files involved in execution of test.
         # FQN will end up showing in multiple files if dependent file was used during run
         self.dependencies = defaultdict(set)
@@ -120,12 +121,15 @@ class CombinedCoverage:
 
         self.exceptions.clear_exception(fqn)
 
-    def mark_coverage(self, fqn, filename, lines_covered, test_run):
+    def mark_coverage(
+        self, fqn, filename, lines_covered, test_run, additive: bool = False
+    ):
         self.ensure_file_statistics_exist(filename)
         statistics = self.files[filename]
         statistics.mark_lines(
             lines_covered=lines_covered,
             fqn=fqn,
+            additive=additive,
         )
 
     def ensure_file_statistics_exist(self, filename):
@@ -134,12 +138,17 @@ class CombinedCoverage:
             self.files[filename] = statistics
 
     def add_multiple_results(self, results: Dict[str, "CoverageRun"]):
-        # todo invalidate\remove outdated runs
-
         for fqn, test_run in results.items():
-            test_run = test_run
-
-            self.clean_coverage_in_stale_files(fqn, test_run)
+            succeeded = test_run.execution_result.status == 'success'
+            if succeeded:
+                # Erase all previous line hits, dependencies, and exceptions for this fqn
+                # before rebuilding from the fresh run data. This ensures that coverage
+                # accurately reflects the last run, not an accumulation of past runs.
+                self.test_did_removed(fqn)
+                self.clean_coverage_in_stale_files(fqn, test_run)
+            # For failed runs: add new data on top of the last-good coverage so the
+            # dependency graph is not destroyed by a partial (import-error) run.
+            additive = not succeeded
             for file in test_run.files:
                 file_with_coverage = FileWithCoverage(
                     filename=file.filename, lines_covered=file.lines
@@ -153,6 +162,7 @@ class CombinedCoverage:
                     filename=file_with_coverage.filename,
                     lines_covered=file_with_coverage.lines_covered,
                     test_run=test_run,
+                    additive=additive,
                 )
 
             self.mark_exceptions(fqn=fqn, test_run=test_run)
@@ -212,3 +222,20 @@ def compute_lines(x):
 
 
 combined_coverage = CombinedCoverage()
+
+
+async def push_combined_coverage_updated(pipe, all_tests) -> None:
+    """Push the current combined coverage snapshot to the plugin.
+
+    Call this whenever coverage state changes outside of a test run (e.g. after
+    a smart-mode discovery that preserved existing test states).
+    Uses the same serialization and event type as run_test_task.py.
+    """
+    ts = time.time()
+    serialized = serialize_combined_coverage(combined_coverage)
+    await pipe.push(
+        event_type='combined_coverage_updated',
+        combined_coverage=serialized,
+        aggregated_results=all_tests.legacy_aggregated_statuses(),
+        timings=dict(start=ts, end=ts),
+    )

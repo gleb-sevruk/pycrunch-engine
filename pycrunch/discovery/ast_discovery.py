@@ -4,6 +4,9 @@ import sys
 from pathlib import Path
 from typing import List, Union
 
+from pycrunch.change_detection.fingerprint import fingerprint_source
+from pycrunch.change_detection.import_graph import import_graph
+from pycrunch.change_detection.snapshot_cache import snapshot_cache
 from pycrunch.discovery.simple import TestSet, TestsInModule
 from pycrunch.introspection.clock import Clock
 from pycrunch.session import config
@@ -64,7 +67,8 @@ class AstTestDiscovery:
 
             try:
                 logger.debug('Compiling ' + module_name)
-                ast_tree = self.load_syntax_tree_from(py_file)
+                contents = self.read_file(str(py_file))
+                ast_tree = self.parse_tree(contents, py_file)
                 tests_found = self.load_tests_from_ast_representation(ast_tree)
             except Exception as ex:
                 logger.error(f'Failed to parse ast of `{current_file_path}`')
@@ -74,6 +78,7 @@ class AstTestDiscovery:
                 continue
 
             filename = str(py_file)
+            self._update_snapshot_cache(filename, contents, test_file=True)
 
             test_map.did_found_tests_in_file(filename, tests_found, module_name)
             test_set.add_module(TestsInModule(filename, tests_found, module_name))
@@ -84,9 +89,8 @@ class AstTestDiscovery:
 
         return test_set
 
-    def load_syntax_tree_from(self, file_name) -> ast.Module:
+    def parse_tree(self, contents: str, file_name) -> ast.Module:
         start = self.clock.now()
-        contents = self.read_file(file_name)
         parse = ast.parse(contents, Path(file_name).name)
         end = self.clock.now()
         self.time_spent += end - start
@@ -135,6 +139,26 @@ class AstTestDiscovery:
 
         return results
 
+    def _update_snapshot_cache(
+        self, filename: str, source: str, test_file: bool = False
+    ) -> None:
+        try:
+            root = self.configuration.change_detection_root
+            function_prefixes = tuple(
+                ['test_', *list(self.configuration.function_prefixes or [])]
+            )
+            fp = fingerprint_source(
+                source,
+                filename,
+                root,
+                test_file=test_file,
+                function_prefixes=function_prefixes,
+            )
+            snapshot_cache.update(filename, fp, source)
+            import_graph.update_file(filename, fp)
+        except Exception:
+            logger.warning(f'snapshot update failed for {filename}', exc_info=True)
+
     @staticmethod
     def read_file(file_name: str) -> str:
         with open(file_name, "r") as f:
@@ -163,11 +187,13 @@ class AstTestDiscovery:
     def is_module_with_tests(self, module_name):
         # Todo take pytest configs into account
         module_short_name = module_name.split('.')[-1]
-        return module_short_name.startswith((
-            'test_',
-            'tests_',
-            *self.configuration.module_prefixes,
-        )) or module_short_name.endswith(('_test', 'tests', '_tests'))
+        return module_short_name.startswith(
+            (
+                'test_',
+                'tests_',
+                *self.configuration.module_prefixes,
+            )
+        ) or module_short_name.endswith(('_test', 'tests', '_tests'))
 
     def looks_like_test_name(self, v):
         return any(

@@ -72,6 +72,10 @@ class RunTestTask(AbstractTask):
         """
         Here we run multiple tests at once using one or multiple processes
         """
+        if not self.tests:
+            logger.warning('RunTestTask started with empty test list — nothing to do')
+            return
+
         self.timeline.mark_event('run')
         watchdog_pipeline.add_task(TestExecutionBeginTask(len(self.tests)))
         socket_notification_task = asyncio.ensure_future(  # noqa: F841
@@ -102,6 +106,7 @@ class RunTestTask(AbstractTask):
                 run_results_compound.results[candidate_fqn] = cov_run
 
         run_results = run_results_compound.results
+        self._fill_missing_results(converted_tests, run_results)
 
         self.timeline.mark_event('before tests_did_run')
 
@@ -222,6 +227,29 @@ class RunTestTask(AbstractTask):
         except asyncio.TimeoutError:
             logger.warning('Timeout reached while waiting for tests...')
             return TestRunStatus('timeout')
+
+    @staticmethod
+    def _fill_missing_results(converted_tests, run_results):
+        """Mark any scheduled test that produced no result as failed.
+
+        This guards against the child process crashing on collection or import
+        before it could report individual test outcomes, leaving those tests
+        stuck in the 'queued' state forever.
+        """
+        scheduled_fqns = {t['fqn'] for t in converted_tests}
+        for missing_fqn in scheduled_fqns - set(run_results.keys()):
+            logger.warning(
+                f'test {missing_fqn} was scheduled but produced no result '
+                f'(collection error or runner crash?)'
+            )
+            run_results[missing_fqn] = CoverageRun(
+                missing_fqn,
+                -1,
+                None,
+                execution_result=SingleTestExecutionResult.create_failed_with_reason(
+                    'Test produced no result (collection error or runner crash)'
+                ),
+            )
 
     def get_converted_test_list(self):
         converted_tests = list()
