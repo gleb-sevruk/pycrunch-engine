@@ -16,6 +16,9 @@ class AutoConfiguration:
 
     def create_default_configuration_file(self):
         default_config_file = """# documentation https://pycrunch.com/docs/configuration-file
+discovery:
+  exclusions:
+  - .venv
 engine:
     runtime: pytest
     enable-web-ui: false
