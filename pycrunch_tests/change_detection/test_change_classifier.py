@@ -3,22 +3,22 @@ from pycrunch.change_detection.change_classifier import (
     ModuleLevelChange,
     NoChange,
     UnparseableChange,
-    classify,
+    classify_file_change,
 )
-from pycrunch.change_detection.fingerprint import fingerprint_source
+from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 
 FILENAME = '/project/mod.py'
 
 
 def fp(source):
-    return fingerprint_source(source, FILENAME)
+    return compute_file_fingerprint(source, FILENAME)
 
 
 # T-CL-1: identical source -> NoChange
 def test_identical_source_no_change():
     src = "def foo():\n    return 1\n"
     old = fp(src)
-    kind, new_fp = classify(old, src, FILENAME)
+    kind, new_fp = classify_file_change(old, src, FILENAME)
     assert isinstance(kind, NoChange)
     assert new_fp is not None
 
@@ -29,7 +29,7 @@ def test_body_only_change_old_line_ranges():
     # insert blank line before foo to shift it down in the new source
     src2 = "\ndef foo():\n    return 99\n"
     old = fp(src1)
-    kind, new_fp = classify(old, src2, FILENAME)
+    kind, new_fp = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, BodyOnlyChange)
     assert len(kind.changed_functions) == 1
     changed = next(iter(kind.changed_functions))
@@ -43,7 +43,7 @@ def test_two_body_changes():
     src1 = "def foo():\n    return 1\ndef bar():\n    return 2\n"
     src2 = "def foo():\n    return 11\ndef bar():\n    return 22\n"
     old = fp(src1)
-    kind, _ = classify(old, src2, FILENAME)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, BodyOnlyChange)
     qualnames = {f.qualname for f in kind.changed_functions}
     assert 'foo' in qualnames
@@ -55,14 +55,14 @@ def test_constant_change_module_level():
     src1 = "TIMEOUT = 5\ndef foo():\n    return 1\n"
     src2 = "TIMEOUT = 10\ndef foo():\n    return 1\n"
     old = fp(src1)
-    kind, _ = classify(old, src2, FILENAME)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, ModuleLevelChange)
 
 
 # T-CL-5: old=None -> ModuleLevelChange
 def test_no_old_snapshot_is_module_level():
     src = "def foo():\n    return 1\n"
-    kind, new_fp = classify(None, src, FILENAME)
+    kind, new_fp = classify_file_change(None, src, FILENAME)
     assert isinstance(kind, ModuleLevelChange)
     assert new_fp is not None
 
@@ -71,7 +71,7 @@ def test_no_old_snapshot_is_module_level():
 def test_syntax_error_unparseable():
     src1 = "def foo():\n    return 1\n"
     old = fp(src1)
-    kind, new_fp = classify(old, "def foo(\n", FILENAME)
+    kind, new_fp = classify_file_change(old, "def foo(\n", FILENAME)
     assert isinstance(kind, UnparseableChange)
     assert new_fp is None
 
@@ -100,7 +100,7 @@ def test_deleted_function_in_changed():
         module_level_hash=real_fp.module_level_hash,
         import_targets=real_fp.import_targets,
     )
-    kind, _ = classify(old, src, FILENAME)
+    kind, _ = classify_file_change(old, src, FILENAME)
     assert isinstance(kind, BodyOnlyChange)
     qualnames = {f.qualname for f in kind.changed_functions}
     assert 'ghost' in qualnames
@@ -111,7 +111,7 @@ def test_only_comments_no_change():
     src1 = "def foo():\n    return 1\n"
     src2 = "def foo():\n    # a comment\n    return 1\n"
     old = fp(src1)
-    kind, _ = classify(old, src2, FILENAME)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, NoChange)
 
 
@@ -120,5 +120,5 @@ def test_reorder_functions_is_module_level():
     src1 = "def foo():\n    return 1\ndef bar():\n    return 2\n"
     src2 = "def bar():\n    return 2\ndef foo():\n    return 1\n"
     old = fp(src1)
-    kind, _ = classify(old, src2, FILENAME)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, ModuleLevelChange)

@@ -10,15 +10,14 @@ import pycrunch.change_detection.import_graph as _ig_mod
 import pycrunch.change_detection.snapshot_cache as _sc_mod
 import pycrunch.session.combined_coverage as _cc_mod
 import pycrunch.session.file_map as _fm_mod
-from pycrunch.api.shared import pipe
-from pycrunch.change_detection import match_fqns, normalize_path
+from pycrunch.change_detection import find_fqns_for_qualname, normalize_path
 from pycrunch.change_detection.change_classifier import (
     BodyOnlyChange,
     ModuleLevelChange,
     NoChange,
     TestFileChange,
     UnparseableChange,
-    classify,
+    classify_file_change,
 )
 from pycrunch.constants import CONFIG_FILE_NAME
 from pycrunch.discovery.strategy import create_test_discovery
@@ -168,20 +167,16 @@ class FileModifiedNotificationTask(AbstractTask):
             _fm_mod.test_map.get_immutable_tests_for_file(filename)
             or _fm_mod.test_map.get_immutable_tests_for_file(self.file)
         )
-        function_prefixes = tuple([
-            'test_',
-            *list(state.config.function_prefixes or []),
-        ])
 
         kind, new_fp = await loop.run_in_executor(
             None,
-            classify,
+            classify_file_change,
             old_fp,
             new_source,
             filename,
             state.config.change_detection_root,
             is_test_file,
-            function_prefixes,
+            state.config.effective_function_prefixes,
         )
 
         plan: Set[str] = set()
@@ -210,15 +205,17 @@ class FileModifiedNotificationTask(AbstractTask):
             else:
                 # Precise: only changed test functions by qualname
                 for qualname in kind.changed_tests:
-                    plan |= match_fqns(qualname, all_tests_in_file)
+                    plan |= find_fqns_for_qualname(qualname, all_tests_in_file)
 
                 # Helpers: coverage-based lookup using old line ranges
-                if kind.changed_helpers:
+                if kind.changed_support_functions:
                     coverage = _cc_mod.combined_coverage
                     stats = coverage.files.get(filename) or coverage.files.get(
                         self.file
                     )
-                    for fn in kind.changed_helpers:
+                    # TODO: PR145 - maybe there is more elegant way? what if function size dramatically changes across runs
+                    # TODO: PR145 - I would rather not include this completely into code because its too much overhead
+                    for fn in kind.changed_support_functions:
                         if stats is None:
                             plan |= all_tests_in_file
                             break
@@ -272,21 +269,9 @@ class FileModifiedNotificationTask(AbstractTask):
                 f'smart-detection: UnparseableChange in {self.file} -> {len(plan)} tests scheduled (legacy fallback)'
             )
 
-        # Greedy re-run: failed tests may have no runtime deps (crashed on import), so
-        # use the static import graph as a safety net for all non-NoChange kinds.
-        if not isinstance(kind, NoChange):
-            greedy = self._failed_tests_related_to(filename)
-            if greedy:
-                plan |= greedy
-                logger.info(
-                    f'smart-detection: +{len(greedy)} failed tests (greedy re-run)'
-                )
-
         if new_fp is not None:
             _sc_mod.snapshot_cache.update(filename, new_fp, new_source)
             _ig_mod.import_graph.update_file(filename, new_fp)
-
-        await _cc_mod.push_combined_coverage_updated(pipe, state.engine.all_tests)
 
         return plan
 
@@ -298,28 +283,6 @@ class FileModifiedNotificationTask(AbstractTask):
         )
         if removed_tests:
             result = {fqn for fqn in result if fqn not in removed_tests}
-        return result
-
-    def _failed_tests_related_to(self, filename: str) -> Set[str]:
-        """Return all failed tests related to filename via test-file, import graph, or runtime deps."""
-        result: Set[str] = set()
-        all_tests = state.engine.all_tests.tests
-        coverage = _cc_mod.combined_coverage
-
-        # Tests whose file is a transitive importer of filename (static graph).
-        related_files = {filename} | _ig_mod.import_graph.transitive_importers(filename)
-
-        for fqn, test_state in all_tests.items():
-            if test_state.execution_result.status != 'failed':
-                continue
-            test_file = normalize_path(test_state.discovered_test.filename)
-            # Related via static import graph or runtime dependencies
-            if test_file in related_files:
-                result.add(fqn)
-                continue
-            if fqn in coverage.dependencies.get(filename, set()):
-                result.add(fqn)
-
         return result
 
     def _conftest_plan(self, filename: str) -> Set[str]:

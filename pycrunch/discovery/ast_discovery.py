@@ -4,7 +4,8 @@ import sys
 from pathlib import Path
 from typing import List, Union
 
-from pycrunch.change_detection.fingerprint import fingerprint_source
+from pycrunch.change_detection import looks_like_test_class as _looks_like_test_class
+from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 from pycrunch.change_detection.import_graph import import_graph
 from pycrunch.change_detection.snapshot_cache import snapshot_cache
 from pycrunch.discovery.simple import TestSet, TestsInModule
@@ -65,10 +66,11 @@ class AstTestDiscovery:
             if not self.is_module_with_tests(module_name):
                 continue
 
+            filename = str(py_file)
             try:
                 logger.debug('Compiling ' + module_name)
-                contents = self.read_file(str(py_file))
-                ast_tree = self.parse_tree(contents, py_file)
+                contents = self.read_file(filename)
+                ast_tree = self.parse_ast_from_source(contents, py_file)
                 tests_found = self.load_tests_from_ast_representation(ast_tree)
             except Exception as ex:
                 logger.error(f'Failed to parse ast of `{current_file_path}`')
@@ -77,8 +79,7 @@ class AstTestDiscovery:
                 )
                 continue
 
-            filename = str(py_file)
-            self._update_snapshot_cache(filename, contents, test_file=True)
+            self._update_snapshot_cache(filename, contents)
 
             test_map.did_found_tests_in_file(filename, tests_found, module_name)
             test_set.add_module(TestsInModule(filename, tests_found, module_name))
@@ -89,7 +90,7 @@ class AstTestDiscovery:
 
         return test_set
 
-    def parse_tree(self, contents: str, file_name) -> ast.Module:
+    def parse_ast_from_source(self, contents: str, file_name) -> ast.Module:
         start = self.clock.now()
         parse = ast.parse(contents, Path(file_name).name)
         end = self.clock.now()
@@ -139,21 +140,17 @@ class AstTestDiscovery:
 
         return results
 
-    def _update_snapshot_cache(
-        self, filename: str, source: str, test_file: bool = False
-    ) -> None:
+    def _update_snapshot_cache(self, filename: str, source: str) -> None:
+        # Called only for test files; non-test source files are fingerprinted on-demand
+        # in _smart_execution_plan.
         try:
             root = self.configuration.change_detection_root
-            function_prefixes = tuple([
-                'test_',
-                *list(self.configuration.function_prefixes or []),
-            ])
-            fp = fingerprint_source(
+            fp = compute_file_fingerprint(
                 source,
                 filename,
                 root,
-                test_file=test_file,
-                function_prefixes=function_prefixes,
+                test_file=True,
+                function_prefixes=self.configuration.effective_function_prefixes,
             )
             snapshot_cache.update(filename, fp, source)
             import_graph.update_file(filename, fp)
@@ -201,7 +198,7 @@ class AstTestDiscovery:
         ) or v.endswith('_test')
 
     def looks_like_test_class(self, name: str) -> bool:
-        return name.startswith('Test') or name.endswith('Test')
+        return _looks_like_test_class(name)
 
     def is_subclass_of_unittest(
         self, ast_module: ast.Module, class_ast: ast.ClassDef

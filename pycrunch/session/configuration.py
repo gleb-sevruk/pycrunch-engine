@@ -64,6 +64,10 @@ class Configuration:
         self.module_prefixes = []
         self.function_prefixes = []
 
+    @property
+    def effective_function_prefixes(self) -> tuple:
+        return ('test_', *tuple(self.function_prefixes or ()))
+
     def _get_working_directory(self):
         return str(Path('.').absolute())
 

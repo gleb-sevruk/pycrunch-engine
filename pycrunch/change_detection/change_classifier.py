@@ -1,20 +1,25 @@
 from dataclasses import dataclass
-from typing import FrozenSet, Optional, Sequence, Tuple, Union
+from typing import FrozenSet, NamedTuple, Optional, Sequence
 
 from pycrunch.change_detection.fingerprint import (
     FileFingerprint,
     FunctionFingerprint,
-    fingerprint_source,
+    compute_file_fingerprint,
 )
 
 
 @dataclass(frozen=True)
-class NoChange:
+class ChangeKind:
+    """Base for all classifier results."""
+
+
+@dataclass(frozen=True)
+class NoChange(ChangeKind):
     pass
 
 
 @dataclass(frozen=True)
-class BodyOnlyChange:
+class BodyOnlyChange(ChangeKind):
     changed_functions: FrozenSet[
         FunctionFingerprint
     ]  # OLD fingerprints (old line ranges)
@@ -22,43 +27,54 @@ class BodyOnlyChange:
 
 
 @dataclass(frozen=True)
-class ModuleLevelChange:
+class ModuleLevelChange(ChangeKind):
     pass
 
 
 @dataclass(frozen=True)
-class UnparseableChange:
+class UnparseableChange(ChangeKind):
     pass
 
 
 @dataclass(frozen=True)
-class TestFileChange:
+class TestFileChange(ChangeKind):
     changed_tests: FrozenSet[str]  # qualnames of test functions with changed body
     changed_fixtures: FrozenSet[str]  # qualnames of fixtures with changed body
-    changed_helpers: FrozenSet[
+    changed_support_functions: FrozenSet[
         FunctionFingerprint
     ]  # OLD fingerprints of non-test/non-fixture functions
+    # When skeleton_changed=True the caller re-runs all tests in the file; the granular
+    # lists are still populated but are not required for correctness in that case.
     skeleton_changed: bool  # imports/constants/signatures/function set changed
 
 
-ChangeKind = Union[
-    NoChange, BodyOnlyChange, ModuleLevelChange, UnparseableChange, TestFileChange
-]
+class ClassificationResult(NamedTuple):
+    kind: ChangeKind
+    new_fp: Optional[FileFingerprint]
 
 
-def _classify_test_file(
+def function_body_did_change(
+    old_fn: FunctionFingerprint, new_fn: FunctionFingerprint
+) -> bool:
+    return old_fn.body_hash != new_fn.body_hash
+
+
+def _classify_test_file_change(
     old: Optional[FileFingerprint],
     new_fp: FileFingerprint,
-) -> Tuple[ChangeKind, Optional[FileFingerprint]]:
+) -> ClassificationResult:
     # Conservative when no old snapshot or old was built without test_file mode.
     # One-time migration: forces all tests to run on the first smart-mode edit.
     if old is None or not old.test_file:
-        return TestFileChange(
-            changed_tests=frozenset(),
-            changed_fixtures=frozenset(),
-            changed_helpers=frozenset(),
-            skeleton_changed=True,
-        ), new_fp
+        return ClassificationResult(
+            TestFileChange(
+                changed_tests=frozenset(),
+                changed_fixtures=frozenset(),
+                changed_support_functions=frozenset(),
+                skeleton_changed=True,
+            ),
+            new_fp,
+        )
 
     skeleton_changed = old.module_level_hash != new_fp.module_level_hash
 
@@ -68,12 +84,12 @@ def _classify_test_file(
 
     changed_tests: list = []
     changed_fixtures: list = []
-    changed_helpers: list = []
+    changed_support_functions: list = []
     any_func_change = False
 
     for qn in all_qualnames:
         if qn in old_funcs and qn in new_funcs:
-            if old_funcs[qn].body_hash != new_funcs[qn].body_hash:
+            if function_body_did_change(old_funcs[qn], new_funcs[qn]):
                 old_fn = old_funcs[qn]
                 any_func_change = True
                 if old_fn.is_fixture:
@@ -81,30 +97,33 @@ def _classify_test_file(
                 elif old_fn.is_test:
                     changed_tests.append(qn)
                 else:
-                    changed_helpers.append(old_fn)
+                    changed_support_functions.append(old_fn)
         # Added/deleted functions affect the skeleton, caught by skeleton_changed above.
 
     if not skeleton_changed and not any_func_change:
-        return NoChange(), new_fp
+        return ClassificationResult(NoChange(), new_fp)
 
-    return TestFileChange(
-        changed_tests=frozenset(changed_tests),
-        changed_fixtures=frozenset(changed_fixtures),
-        changed_helpers=frozenset(changed_helpers),
-        skeleton_changed=skeleton_changed,
-    ), new_fp
+    return ClassificationResult(
+        TestFileChange(
+            changed_tests=frozenset(changed_tests),
+            changed_fixtures=frozenset(changed_fixtures),
+            changed_support_functions=frozenset(changed_support_functions),
+            skeleton_changed=skeleton_changed,
+        ),
+        new_fp,
+    )
 
 
-def classify(
+def classify_file_change(
     old: Optional[FileFingerprint],
     new_source: str,
     filename: str,
     root: Optional[str] = None,
     test_file: bool = False,
     function_prefixes: Sequence[str] = ('test_',),
-) -> Tuple[ChangeKind, Optional[FileFingerprint]]:
+) -> ClassificationResult:
     try:
-        new_fp = fingerprint_source(
+        new_fp = compute_file_fingerprint(
             new_source,
             filename,
             root,
@@ -112,17 +131,17 @@ def classify(
             function_prefixes=function_prefixes,
         )
     except SyntaxError:
-        return UnparseableChange(), None
+        return ClassificationResult(UnparseableChange(), None)
 
     if test_file:
-        return _classify_test_file(old, new_fp)
+        return _classify_test_file_change(old, new_fp)
 
     # Non-test-file logic (M1-M6 unchanged)
     if old is None:
-        return ModuleLevelChange(), new_fp
+        return ClassificationResult(ModuleLevelChange(), new_fp)
 
     if old.module_level_hash != new_fp.module_level_hash:
-        return ModuleLevelChange(), new_fp
+        return ClassificationResult(ModuleLevelChange(), new_fp)
 
     old_funcs = old.functions
     new_funcs = new_fp.functions
@@ -133,7 +152,7 @@ def classify(
     all_qualnames = set(old_funcs) | set(new_funcs)
     for qn in all_qualnames:
         if qn in old_funcs and qn in new_funcs:
-            if old_funcs[qn].body_hash != new_funcs[qn].body_hash:
+            if function_body_did_change(old_funcs[qn], new_funcs[qn]):
                 changed.append(old_funcs[qn])  # OLD fingerprint with old line ranges
         elif qn in new_funcs:
             added.append(qn)
@@ -142,9 +161,12 @@ def classify(
             changed.append(old_funcs[qn])
 
     if not changed and not added:
-        return NoChange(), new_fp
+        return ClassificationResult(NoChange(), new_fp)
 
-    return BodyOnlyChange(
-        changed_functions=frozenset(changed),
-        added_functions=frozenset(added),
-    ), new_fp
+    return ClassificationResult(
+        BodyOnlyChange(
+            changed_functions=frozenset(changed),
+            added_functions=frozenset(added),
+        ),
+        new_fp,
+    )

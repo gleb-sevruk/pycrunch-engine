@@ -34,6 +34,7 @@ class TestAutoConfigDecision(unittest.TestCase):
     def when_file_does_not_exist(self):
         self.set_config_file_existence(False)
 
+
     def when_configuration_file_already_on_disk(self):
         self.set_config_file_existence(True)
 

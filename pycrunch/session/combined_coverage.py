@@ -27,10 +27,9 @@ class FileStatistics:
         # 2: [module1:test_1, module2:test_2]
         self.lines_with_entrypoints = defaultdict(set)
 
-    def mark_lines(self, lines_covered, fqn, additive: bool = False):
-        if not additive:
-            for possibly_oudated_line in self.lines_with_entrypoints:
-                self.lines_with_entrypoints[possibly_oudated_line].discard(fqn)
+    def mark_lines(self, lines_covered, fqn):
+        for possibly_oudated_line in self.lines_with_entrypoints:
+            self.lines_with_entrypoints[possibly_oudated_line].discard(fqn)
 
         for line in lines_covered:
             self.lines_with_entrypoints[line].add(fqn)
@@ -121,15 +120,12 @@ class CombinedCoverage:
 
         self.exceptions.clear_exception(fqn)
 
-    def mark_coverage(
-        self, fqn, filename, lines_covered, test_run, additive: bool = False
-    ):
+    def mark_coverage(self, fqn, filename, lines_covered, test_run):
         self.ensure_file_statistics_exist(filename)
         statistics = self.files[filename]
         statistics.mark_lines(
             lines_covered=lines_covered,
             fqn=fqn,
-            additive=additive,
         )
 
     def ensure_file_statistics_exist(self, filename):
@@ -145,10 +141,11 @@ class CombinedCoverage:
                 # before rebuilding from the fresh run data. This ensures that coverage
                 # accurately reflects the last run, not an accumulation of past runs.
                 self.test_did_removed(fqn)
-                self.clean_coverage_in_stale_files(fqn, test_run)
-            # For failed runs: add new data on top of the last-good coverage so the
-            # dependency graph is not destroyed by a partial (import-error) run.
-            additive = not succeeded
+            # Display (lines_with_entrypoints) always reflects the LAST run — even a failed
+            # one — so stale file hits are cleared unconditionally. Dependencies survive
+            # failure (old edges union with new) so the engine re-triggers the test when
+            # the dependency is fixed.
+            self.clean_coverage_in_stale_files(fqn, test_run)
             for file in test_run.files:
                 file_with_coverage = FileWithCoverage(
                     filename=file.filename, lines_covered=file.lines
@@ -156,13 +153,11 @@ class CombinedCoverage:
                 self.mark_dependency(
                     file_with_coverage.filename, test_run.test_metadata['fqn']
                 )
-
                 self.mark_coverage(
                     fqn=fqn,
                     filename=file_with_coverage.filename,
                     lines_covered=file_with_coverage.lines_covered,
                     test_run=test_run,
-                    additive=additive,
                 )
 
             self.mark_exceptions(fqn=fqn, test_run=test_run)
@@ -227,9 +222,9 @@ combined_coverage = CombinedCoverage()
 async def push_combined_coverage_updated(pipe, all_tests) -> None:
     """Push the current combined coverage snapshot to the plugin.
 
-    Call this whenever coverage state changes outside of a test run (e.g. after
-    a smart-mode discovery that preserved existing test states).
     Uses the same serialization and event type as run_test_task.py.
+    Not called from _smart_execution_plan — the standalone push there was found
+    to wipe exception markers (M11). Kept for callers that need an explicit push.
     """
     ts = time.time()
     serialized = serialize_combined_coverage(combined_coverage)

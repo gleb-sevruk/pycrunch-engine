@@ -105,7 +105,7 @@ def test_run_test_task_empty_returns_early():
 
 def test_smart_no_change_does_not_call_add_tests(tmp_path):
     from pycrunch.change_detection import normalize_path
-    from pycrunch.change_detection.fingerprint import fingerprint_source
+    from pycrunch.change_detection.fingerprint import compute_file_fingerprint
     from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.change_detection.import_graph import ImportGraph
     from pycrunch.session.file_map import TestMap
@@ -120,7 +120,7 @@ def test_smart_no_change_does_not_call_add_tests(tmp_path):
 
     fqn_a = 'test_mod:test_a'
     cache = FileSnapshotCache()
-    old_fp = fingerprint_source(src, filepath, test_file=True)
+    old_fp = compute_file_fingerprint(src, filepath, test_file=True)
     cache.update(filepath, old_fp, src)
 
     coverage = CombinedCoverage()
@@ -156,6 +156,7 @@ def test_smart_no_change_does_not_call_add_tests(tmp_path):
         engine_mode = 'auto'
         change_detection_root = str(tmp_path)
         function_prefixes = []
+        effective_function_prefixes = ('test_',)
 
     class FakeEngine:
         folder = str(tmp_path)
@@ -186,8 +187,8 @@ def test_smart_no_change_does_not_call_add_tests(tmp_path):
 
         # add_tests must NOT have been called (level-1 guard fires first)
         assert add_tests_calls == [], f'add_tests was called unexpectedly: {add_tests_calls}'
-        # push must have been sent
-        assert len(push_calls) > 0, 'coverage push was not sent'
+        # NoChange — no standalone push is sent (M11: push was removed from _smart_execution_plan)
+        assert len(push_calls) == 0, 'unexpected coverage push on NoChange'
     finally:
         state_mod.engine = original_engine
         state_mod.config = original_config

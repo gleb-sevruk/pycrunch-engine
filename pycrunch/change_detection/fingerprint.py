@@ -3,13 +3,18 @@ import copy
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, FrozenSet, Optional, Sequence
+from typing import Dict, FrozenSet, Optional, Sequence, Set
+
+from pycrunch.change_detection import looks_like_test_class
+
+Sha256 = str  # hex-encoded SHA-256 digest
 
 
+# frozen=True makes instances immutable and hashable — required for use in frozenset / as dict keys.
 @dataclass(frozen=True)
 class FunctionFingerprint:
     qualname: str
-    body_hash: str
+    body_hash: Sha256
     line_start: int
     line_end: int
     has_decorators: bool
@@ -17,19 +22,22 @@ class FunctionFingerprint:
     is_fixture: bool = False
 
 
+# frozen=True for immutability; not hashable because functions: Dict is unhashable.
 @dataclass(frozen=True)
 class FileFingerprint:
     functions: Dict[str, FunctionFingerprint]
-    module_level_hash: str
+    module_level_hash: Sha256
     import_targets: FrozenSet[str]
     test_file: bool = False
 
 
-def _sha256(text: str) -> str:
+def _sha256(text: str) -> Sha256:
     return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
 
 def _strip_locations(node: ast.AST) -> ast.AST:
+    # ast.dump includes source positions by default; zeroing them ensures two
+    # logically-identical functions at different line numbers hash the same.
     for child in ast.walk(node):
         for attr in ('lineno', 'col_offset', 'end_lineno', 'end_col_offset'):
             if hasattr(child, attr):
@@ -49,6 +57,8 @@ def _remove_docstring(body: list) -> list:
 
 
 def _is_test_name(name: str, prefixes: Sequence[str] = ('test_',)) -> bool:
+    # Intentionally simpler than AstTestDiscovery.looks_like_test_name: prefix-match only.
+    # TODO: PR145 I dont believe this is valid behaviour. Should be 1-1 as in discovery.
     return any(name.startswith(p) for p in prefixes)
 
 
@@ -75,16 +85,16 @@ def _is_test_function_node(
     name_ok = _is_test_name(func_node.name, prefixes)
     if class_name:
         # Methods in a class are tests only when both the method name and class name match
-        return name_ok and (
-            class_name.startswith('Test') or class_name.endswith('Test')
-        )
+        return name_ok and looks_like_test_class(class_name)
     return name_ok
 
 
-def _hash_function_node(func_node: ast.FunctionDef) -> str:
+def compute_function_body_hash(func_node: ast.FunctionDef) -> Sha256:
     node = copy.deepcopy(func_node)
     node.body = _remove_docstring(node.body)
-    # strip signature (args/defaults/annotations) — only body+decorators matter for body_hash
+    # Signature (args, annotations, defaults) is intentionally excluded from body_hash.
+    # Argument-list changes affect module_level_hash via the skeleton (which keeps args),
+    # so they are handled by ModuleLevelChange, not BodyOnlyChange.
     node.args = ast.arguments(
         posonlyargs=[],
         args=[],
@@ -99,28 +109,32 @@ def _hash_function_node(func_node: ast.FunctionDef) -> str:
     return _sha256(ast.dump(node, include_attributes=False))
 
 
-def _collect_imports(
-    tree: ast.AST, filename: str, root: Optional[str]
-) -> FrozenSet[str]:
+def _collect_import_targets_from_node(
+    node: ast.ImportFrom, filename: str, root: Optional[str]
+) -> set:
+    module = node.module or ''
+    level = node.level
+    if level > 0:
+        return set(_resolve_relative(filename, root, module, level, node.names))
+    targets = set()
+    if module:
+        targets.add(module)
+    for alias in node.names:
+        if module:
+            targets.add(f'{module}.{alias.name}')
+        else:
+            targets.add(alias.name)
+    return targets
+
+
+def _collect_imports(tree: ast.AST, filename: str, root: Optional[str]) -> Set[str]:
     targets = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
                 targets.add(alias.name)
         elif isinstance(node, ast.ImportFrom):
-            module = node.module or ''
-            level = node.level
-            if level > 0:
-                resolved = _resolve_relative(filename, root, module, level, node.names)
-                targets.update(resolved)
-            else:
-                if module:
-                    targets.add(module)
-                for alias in node.names:
-                    if module:
-                        targets.add(f'{module}.{alias.name}')
-                    else:
-                        targets.add(alias.name)
+            targets.update(_collect_import_targets_from_node(node, filename, root))
     return frozenset(targets)
 
 
@@ -167,7 +181,7 @@ def _resolve_relative(
         return []
 
 
-def _strip_function_bodies(
+def _stub_function_bodies_for_skeleton(
     stmts,
     test_file: bool = False,
     function_prefixes: Sequence[str] = ('test_',),
@@ -177,6 +191,7 @@ def _strip_function_bodies(
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             node.body = [ast.Pass()]
             if test_file:
+                # TODO: PR145 Maybe we dont need to have this branch? and just strip fixtrues always
                 # Strip decorators from test-functions and fixtures so that
                 # @pytest.mark.parametrize / @skip / @fixture(scope=...) changes
                 # don't affect the module skeleton hash.
@@ -185,7 +200,7 @@ def _strip_function_bodies(
                 ):
                     node.decorator_list = []
         elif isinstance(node, ast.ClassDef):
-            _strip_function_bodies(
+            _stub_function_bodies_for_skeleton(
                 node.body, test_file, function_prefixes, class_name=node.name
             )
 
@@ -194,9 +209,9 @@ def _compute_module_level_hash(
     tree: ast.Module,
     test_file: bool = False,
     function_prefixes: Sequence[str] = ('test_',),
-) -> str:
+) -> Sha256:
     skeleton = copy.deepcopy(tree)
-    _strip_function_bodies(skeleton.body, test_file, function_prefixes)
+    _stub_function_bodies_for_skeleton(skeleton.body, test_file, function_prefixes)
     _strip_locations(skeleton)
     return _sha256(ast.dump(skeleton, include_attributes=False))
 
@@ -214,7 +229,7 @@ def _collect_functions(
                 decorators = node.decorator_list
                 line_start = min((d.lineno for d in decorators), default=node.lineno)
                 line_end = node.end_lineno
-                body_hash = _hash_function_node(node)
+                body_hash = compute_function_body_hash(node)
                 is_fixture = _is_fixture_function(node)
                 is_test = (not is_fixture) and _is_test_function_node(
                     node, class_name, function_prefixes
@@ -237,7 +252,7 @@ def _collect_functions(
     return result
 
 
-def fingerprint_source(
+def compute_file_fingerprint(
     source: str,
     filename: str,
     root: Optional[str] = None,
@@ -245,12 +260,19 @@ def fingerprint_source(
     test_file: bool = False,
     function_prefixes: Sequence[str] = ('test_',),
 ) -> FileFingerprint:
+    """Compute a structural fingerprint for Python source.
+
+    test_file and function_prefixes control which functions are labelled is_test/is_fixture
+    and which decorators are excluded from the skeleton hash; they must match the runtime
+    discovery config so that change-detection and test discovery stay in sync.
+    """
     tree = ast.parse(source, filename=filename)  # raises SyntaxError on bad input
 
     functions = _collect_functions(tree, function_prefixes=function_prefixes)
     module_level_hash = _compute_module_level_hash(
         tree, test_file=test_file, function_prefixes=function_prefixes
     )
+
     import_targets = _collect_imports(tree, filename, root)
     return FileFingerprint(
         functions=functions,

@@ -1,4 +1,4 @@
-from pycrunch.change_detection.fingerprint import fingerprint_source
+from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 from pycrunch.change_detection.import_graph import ImportGraph
 
 
@@ -7,12 +7,14 @@ def make_graph(root):
 
 
 def make_fp(source, filename, root):
-    return fingerprint_source(source, str(filename), str(root))
-
+    return compute_file_fingerprint(source, str(filename), str(root))
 
 # T-IG-1: a imports b -> transitive_importers(b) == {a}
 def test_direct_importer(tmp_path):
     root = tmp_path
+    pkg = root / 'pkg'
+
+
     a = root / 'a.py'
     b = root / 'b.py'
     a.write_text('import b\n')

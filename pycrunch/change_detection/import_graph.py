@@ -6,6 +6,9 @@ from pycrunch.change_detection import normalize_path
 from pycrunch.change_detection.fingerprint import FileFingerprint
 
 
+# Similar path→module logic exists in fingerprint._resolve_relative and
+# AstTestDiscovery.compute_module_name_from_path; kept separate to avoid coupling
+# import_graph to discovery internals.
 def _file_to_module(filename: str, root: Optional[str]) -> str:
     try:
         path = Path(filename).resolve()
@@ -26,6 +29,13 @@ def _file_to_module(filename: str, root: Optional[str]) -> str:
 
 
 class ImportGraph:
+    """Directed index: file → set of files that import it.
+
+    Edges are derived from import_targets in each file's FileFingerprint.
+    Keys are normalized absolute paths. Supports transitive importer lookup via
+    transitive_importers; does not walk the graph automatically on update.
+    """
+
     def __init__(self, root: Optional[str] = None):
         self._root = root
         # module_name -> set of filenames that import it

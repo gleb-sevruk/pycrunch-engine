@@ -27,7 +27,7 @@ def _make_run(fqn: str, files, succeeded: bool = True) -> CoverageRun:
 
 def test_coverage_lifecycle_after_edit(tmp_path):
     from pycrunch.change_detection import normalize_path
-    from pycrunch.change_detection.fingerprint import fingerprint_source
+    from pycrunch.change_detection.fingerprint import compute_file_fingerprint
     from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
     from pycrunch.change_detection.import_graph import ImportGraph
     from pycrunch.session.file_map import TestMap
@@ -62,7 +62,7 @@ def test_coverage_lifecycle_after_edit(tmp_path):
     (tmp_path / 'test_mod.py').write_text(src_v2)
 
     cache = FileSnapshotCache()
-    old_fp = fingerprint_source(src_v1, filepath, test_file=True)
+    old_fp = compute_file_fingerprint(src_v1, filepath, test_file=True)
     cache.update(filepath, old_fp, src_v1)
 
     tmap = TestMap()
@@ -99,6 +99,7 @@ def test_coverage_lifecycle_after_edit(tmp_path):
         engine_mode = 'auto'
         change_detection_root = str(tmp_path)
         function_prefixes = []
+        effective_function_prefixes = ('test_',)
 
     class FakeEngine:
         folder = str(tmp_path)

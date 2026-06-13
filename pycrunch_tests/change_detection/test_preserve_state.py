@@ -9,7 +9,7 @@ import asyncio
 
 from pycrunch.api.serializers import CoverageRun, CoverageRunForSingleFile
 from pycrunch.change_detection import normalize_path
-from pycrunch.change_detection.fingerprint import fingerprint_source
+from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 from pycrunch.change_detection.import_graph import ImportGraph
 from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
 from pycrunch.discovery.simple import DiscoveredTest
@@ -225,7 +225,7 @@ def test_smart_mode_preserves_test_b_state_when_test_a_changes(tmp_path):
     fqn_b = 'test_mod:test_b'
 
     cache = FileSnapshotCache()
-    old_fp = fingerprint_source(src_v1, filepath, test_file=True)
+    old_fp = compute_file_fingerprint(src_v1, filepath, test_file=True)
     cache.update(filepath, old_fp)
 
     coverage = CombinedCoverage()
@@ -275,6 +275,7 @@ def test_smart_mode_preserves_test_b_state_when_test_a_changes(tmp_path):
         engine_mode = 'auto'
         change_detection_root = str(tmp_path)
         function_prefixes = []
+        effective_function_prefixes = ('test_',)
 
     class FakeEngine:
         folder = str(tmp_path)

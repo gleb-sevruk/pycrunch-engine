@@ -1,12 +1,12 @@
 import pytest
 
-from pycrunch.change_detection.fingerprint import fingerprint_source
+from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 
 FILENAME = '/project/pkg/mod.py'
 
 
 def fp(source, filename=FILENAME, root=None):
-    return fingerprint_source(source, filename, root)
+    return compute_file_fingerprint(source, filename, root)
 
 
 # T-FP-1: same source twice -> identical fingerprint
@@ -89,7 +89,7 @@ def test_relative_import_resolved():
         pkg = os.path.join(root, 'pkg')
         os.makedirs(pkg)
         filename = os.path.join(pkg, 'mod.py')
-        f = fingerprint_source(src, filename, root)
+        f = compute_file_fingerprint(src, filename, root)
         assert 'pkg.sibling' in f.import_targets
 
 

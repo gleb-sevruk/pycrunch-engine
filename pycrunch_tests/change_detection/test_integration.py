@@ -6,7 +6,7 @@ We call _smart_execution_plan directly after wiring up the module-level singleto
 import asyncio
 
 from pycrunch.change_detection import normalize_path
-from pycrunch.change_detection.fingerprint import fingerprint_source
+from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 from pycrunch.change_detection.import_graph import ImportGraph
 from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
 from pycrunch.session.combined_coverage import CombinedCoverage
@@ -56,7 +56,7 @@ def test_body_only_change_selects_correct_tests(tmp_path):
     (tmp_path / 'mod.py').write_text(src_v2)
 
     cache = FileSnapshotCache()
-    old_fp = fingerprint_source(src_v1, filepath)
+    old_fp = compute_file_fingerprint(src_v1, filepath)
     cache.update(filepath, old_fp)
 
     coverage = CombinedCoverage()
@@ -89,7 +89,7 @@ def test_module_level_change_includes_importers(tmp_path):
     settings_file.write_text(settings_src_v2)
 
     cache = FileSnapshotCache()
-    old_fp = fingerprint_source(settings_src_v1, str(settings_file))
+    old_fp = compute_file_fingerprint(settings_src_v1, str(settings_file))
     cache.update(str(settings_file), old_fp)
 
     coverage = CombinedCoverage()
@@ -98,7 +98,7 @@ def test_module_level_change_includes_importers(tmp_path):
 
     tmap = TestMap()
     graph = ImportGraph(root=str(tmp_path))
-    consumer_fp = fingerprint_source(
+    consumer_fp = compute_file_fingerprint(
         'import settings\n', str(consumer_file), str(tmp_path)
     )
     graph.update_file(str(settings_file), old_fp)
@@ -119,7 +119,7 @@ def test_no_change_empty_plan_snapshot_updated(tmp_path):
     (tmp_path / 'mod.py').write_text(src)
 
     cache = FileSnapshotCache()
-    old_fp = fingerprint_source(src, filepath)
+    old_fp = compute_file_fingerprint(src, filepath)
     cache.update(filepath, old_fp)
 
     coverage = CombinedCoverage()
@@ -141,7 +141,6 @@ def test_conftest_includes_subtree_tests(tmp_path):
 
     test_in_dir = str(tmp_path / 'test_something.py')
     test_outside = str(tmp_path.parent / 'test_other.py')
-
     tmap = TestMap()
     tmap.map[test_in_dir] = {'pkg:test_inside'}
     tmap.map[test_outside] = {'pkg:test_outside'}
@@ -192,7 +191,7 @@ def test_no_coverage_data_falls_back_to_legacy(tmp_path):
     (tmp_path / 'mod.py').write_text(src_v2)
 
     cache = FileSnapshotCache()
-    old_fp = fingerprint_source(src_v1, filepath)
+    old_fp = compute_file_fingerprint(src_v1, filepath)
     cache.update(filepath, old_fp)
 
     coverage = CombinedCoverage()

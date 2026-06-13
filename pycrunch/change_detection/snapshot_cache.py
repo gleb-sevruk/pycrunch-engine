@@ -6,6 +6,7 @@ from pycrunch.change_detection.fingerprint import FileFingerprint
 
 class FileSnapshotCache:
     def __init__(self):
+        # key: normalize_path(absolute_filename)  value: (FileFingerprint, raw_source)
         self._snapshots: Dict[str, Tuple[FileFingerprint, str]] = {}
 
     def get(self, filename: str) -> Optional[FileFingerprint]:
