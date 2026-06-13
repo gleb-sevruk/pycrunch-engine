@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import FrozenSet, NamedTuple, Optional, Sequence
+from typing import FrozenSet, NamedTuple, Optional
 
 from pycrunch.change_detection.fingerprint import (
     FileFingerprint,
@@ -118,23 +118,14 @@ def classify_file_change(
     old: Optional[FileFingerprint],
     new_source: str,
     filename: str,
+    *,
     root: Optional[str] = None,
     test_file: bool = False,
-    function_prefixes: Sequence[str] = ('test_',),
 ) -> ClassificationResult:
-    """Classify the change between old fingerprint and new_source.
-
-    Always pass function_prefixes from config (Configuration.effective_function_prefixes);
-    the default ('test_',) exists only so tests can omit it when the value doesn't affect
-    the assertion.
-    """
+    """Classify the change between old fingerprint and new_source."""
     try:
         new_fp = compute_file_fingerprint(
-            new_source,
-            filename,
-            root,
-            test_file=test_file,
-            function_prefixes=function_prefixes,
+            new_source, filename, root, test_file=test_file
         )
     except SyntaxError:
         return ClassificationResult(UnparseableChange(), None)

@@ -63,7 +63,7 @@ def test_body_change_schedules_only_changed_test():
         "    assert 2 == 2\n"  # unchanged
     )
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_tests == frozenset({'test_a'})
     assert kind.changed_fixtures == frozenset()
@@ -91,7 +91,7 @@ def test_parametrize_change_does_not_affect_skeleton():
         "    assert True\n"
     )
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_tests == frozenset({'test_a'})
     assert not kind.skeleton_changed
@@ -104,7 +104,7 @@ def test_skip_decorator_added_does_not_affect_skeleton():
     src1 = "def test_a():\n    assert True\n\ndef test_b():\n    assert True\n"
     src2 = "@pytest.mark.skip\ndef test_a():\n    assert True\n\ndef test_b():\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_tests == frozenset({'test_a'})
     assert not kind.skeleton_changed
@@ -117,7 +117,7 @@ def test_fixture_body_change_goes_to_changed_fixtures():
     src1 = "@pytest.fixture\ndef db():\n    return {}\n"
     src2 = "@pytest.fixture\ndef db():\n    return {'key': 'val'}\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_fixtures == frozenset({'db'})
     assert kind.changed_tests == frozenset()
@@ -131,7 +131,7 @@ def test_fixture_scope_change_does_not_affect_skeleton():
     src1 = "@pytest.fixture(scope='session')\ndef db():\n    return {}\n"
     src2 = "@pytest.fixture(scope='function')\ndef db():\n    return {}\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_fixtures == frozenset({'db'})
     assert not kind.skeleton_changed
@@ -144,7 +144,7 @@ def test_import_added_causes_skeleton_change():
     src1 = "def test_a():\n    assert True\n"
     src2 = "import os\ndef test_a():\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.skeleton_changed
 
@@ -156,7 +156,7 @@ def test_module_constant_change_causes_skeleton_change():
     src1 = "TIMEOUT = 1\ndef test_a():\n    assert True\n"
     src2 = "TIMEOUT = 2\ndef test_a():\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.skeleton_changed
 
@@ -257,7 +257,7 @@ def test_comment_only_change_is_no_change():
     src1 = "def test_a():\n    assert True\n"
     src2 = "def test_a():\n    # comment\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, NoChange)
 
 
@@ -268,7 +268,7 @@ def test_old_snapshot_without_test_file_flag_is_conservative():
     src1 = "def test_a():\n    assert True\n"
     src2 = "def test_a():\n    assert False\n"
     old = fp(src1, test_file=False)  # old-style snapshot
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True, function_prefixes=('test_',))
+    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
     assert isinstance(kind, TestFileChange)
     assert kind.skeleton_changed  # conservative: run everything
 

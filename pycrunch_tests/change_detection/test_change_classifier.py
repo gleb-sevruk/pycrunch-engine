@@ -15,7 +15,7 @@ def fp(source):
 
 
 def classify(old, src, filename=FILENAME):
-    return classify_file_change(old, src, filename, function_prefixes=('test_',))
+    return classify_file_change(old, src, filename)
 
 
 # T-CL-1: identical source -> NoChange

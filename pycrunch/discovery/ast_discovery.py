@@ -145,14 +145,8 @@ class AstTestDiscovery:
         # in _smart_execution_plan.
         try:
             root = self.configuration.change_detection_root
-            fp = compute_file_fingerprint(
-                source,
-                filename,
-                root,
-                test_file=True,
-                function_prefixes=self.configuration.effective_function_prefixes,
-            )
-            snapshot_cache.update(filename, fp, source)
+            fp = compute_file_fingerprint(source, filename, root, test_file=True)
+            snapshot_cache.update(filename, fp)
             import_graph.update_file(filename, fp)
         except Exception:
             logger.warning(f'snapshot update failed for {filename}', exc_info=True)

@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import logging
 import os
 import platform
@@ -168,15 +169,13 @@ class FileModifiedNotificationTask(AbstractTask):
             or _fm_mod.test_map.get_immutable_tests_for_file(self.file)
         )
 
-        kind, new_fp = await loop.run_in_executor(
-            None,
+        _classify = functools.partial(
             classify_file_change,
-            old_fp,
-            new_source,
-            filename,
-            state.config.change_detection_root,
-            is_test_file,
-            state.config.effective_function_prefixes,
+            root=state.config.change_detection_root,
+            test_file=is_test_file,
+        )
+        kind, new_fp = await loop.run_in_executor(
+            None, _classify, old_fp, new_source, filename
         )
 
         plan: Set[str] = set()
@@ -270,7 +269,7 @@ class FileModifiedNotificationTask(AbstractTask):
             )
 
         if new_fp is not None:
-            _sc_mod.snapshot_cache.update(filename, new_fp, new_source)
+            _sc_mod.snapshot_cache.update(filename, new_fp)
             _ig_mod.import_graph.update_file(filename, new_fp)
 
         return plan

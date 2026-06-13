@@ -3,9 +3,10 @@ import copy
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, FrozenSet, Optional, Sequence, Set
+from typing import Dict, FrozenSet, Optional, Set
 
 from pycrunch.change_detection import looks_like_test_class
+from pycrunch.session import config
 
 Sha256 = str  # hex-encoded SHA-256 digest
 
@@ -56,10 +57,10 @@ def _remove_docstring(body: list) -> list:
     return body
 
 
-def _is_test_name(name: str, prefixes: Sequence[str] = ('test_',)) -> bool:
+def _is_test_name(name: str) -> bool:
     # Intentionally simpler than AstTestDiscovery.looks_like_test_name: prefix-match only.
     # TODO: PR145 I dont believe this is valid behaviour. Should be 1-1 as in discovery.
-    return any(name.startswith(p) for p in prefixes)
+    return any(name.startswith(p) for p in config.effective_function_prefixes)
 
 
 def _is_fixture_decorator(node: ast.expr) -> bool:
@@ -77,12 +78,8 @@ def _is_fixture_function(func_node: ast.FunctionDef) -> bool:
     return any(_is_fixture_decorator(d) for d in func_node.decorator_list)
 
 
-def _is_test_function_node(
-    func_node: ast.FunctionDef,
-    class_name: str,
-    prefixes: Sequence[str],
-) -> bool:
-    name_ok = _is_test_name(func_node.name, prefixes)
+def _is_test_function_node(func_node: ast.FunctionDef, class_name: str) -> bool:
+    name_ok = _is_test_name(func_node.name)
     if class_name:
         # Methods in a class are tests only when both the method name and class name match
         return name_ok and looks_like_test_class(class_name)
@@ -184,7 +181,7 @@ def _resolve_relative(
 def _stub_function_bodies_for_skeleton(
     stmts: list,
     test_file: bool = False,
-    function_prefixes: Sequence[str] = ('test_',),
+    *,
     class_name: str = '',
 ) -> None:
     for node in stmts:
@@ -196,30 +193,25 @@ def _stub_function_bodies_for_skeleton(
                 # @pytest.mark.parametrize / @skip / @fixture(scope=...) changes
                 # don't affect the module skeleton hash.
                 if _is_fixture_function(node) or _is_test_function_node(
-                    node, class_name, function_prefixes
+                    node, class_name
                 ):
                     node.decorator_list = []
         elif isinstance(node, ast.ClassDef):
             _stub_function_bodies_for_skeleton(
-                node.body, test_file, function_prefixes, class_name=node.name
+                node.body,
+                test_file,
+                class_name=node.name,
             )
 
 
-def _compute_module_level_hash(
-    tree: ast.Module,
-    test_file: bool = False,
-    function_prefixes: Sequence[str] = ('test_',),
-) -> Sha256:
+def _compute_module_level_hash(tree: ast.Module, test_file: bool = False) -> Sha256:
     skeleton = copy.deepcopy(tree)
-    _stub_function_bodies_for_skeleton(skeleton.body, test_file, function_prefixes)
+    _stub_function_bodies_for_skeleton(skeleton.body, test_file)
     _strip_locations(skeleton)
     return _sha256(ast.dump(skeleton, include_attributes=False))
 
 
-def _collect_functions(
-    tree: ast.AST,
-    function_prefixes: Sequence[str] = ('test_',),
-) -> Dict[str, FunctionFingerprint]:
+def _collect_functions(tree: ast.AST) -> Dict[str, FunctionFingerprint]:
     result = {}
 
     def _process_body(stmts, prefix, class_name: str = ''):
@@ -231,9 +223,7 @@ def _collect_functions(
                 line_end = node.end_lineno
                 body_hash = compute_function_body_hash(node)
                 is_fixture = _is_fixture_function(node)
-                is_test = (not is_fixture) and _is_test_function_node(
-                    node, class_name, function_prefixes
-                )
+                is_test = (not is_fixture) and _is_test_function_node(node, class_name)
                 result[qualname] = FunctionFingerprint(
                     qualname=qualname,
                     body_hash=body_hash,
@@ -258,20 +248,16 @@ def compute_file_fingerprint(
     root: Optional[str] = None,
     *,
     test_file: bool = False,
-    function_prefixes: Sequence[str] = ('test_',),
 ) -> FileFingerprint:
     """Compute a structural fingerprint for Python source.
 
-    test_file and function_prefixes control which functions are labelled is_test/is_fixture
-    and which decorators are excluded from the skeleton hash; they must match the runtime
-    discovery config so that change-detection and test discovery stay in sync.
+    test_file controls which functions are labelled is_test/is_fixture and which decorators
+    are excluded from the skeleton hash. function_prefixes are read from config automatically.
     """
     tree = ast.parse(source, filename=filename)  # raises SyntaxError on bad input
 
-    functions = _collect_functions(tree, function_prefixes=function_prefixes)
-    module_level_hash = _compute_module_level_hash(
-        tree, test_file=test_file, function_prefixes=function_prefixes
-    )
+    functions = _collect_functions(tree)
+    module_level_hash = _compute_module_level_hash(tree, test_file=test_file)
 
     import_targets = _collect_imports(tree, filename, root)
     return FileFingerprint(
