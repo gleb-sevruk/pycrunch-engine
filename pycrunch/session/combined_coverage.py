@@ -217,20 +217,3 @@ def compute_lines(x):
 
 
 combined_coverage = CombinedCoverage()
-
-
-async def push_combined_coverage_updated(pipe, all_tests) -> None:
-    """Push the current combined coverage snapshot to the plugin.
-
-    Uses the same serialization and event type as run_test_task.py.
-    Not called from _smart_execution_plan — the standalone push there was found
-    to wipe exception markers (M11). Kept for callers that need an explicit push.
-    """
-    ts = time.time()
-    serialized = serialize_combined_coverage(combined_coverage)
-    await pipe.push(
-        event_type='combined_coverage_updated',
-        combined_coverage=serialized,
-        aggregated_results=all_tests.legacy_aggregated_statuses(),
-        timings=dict(start=ts, end=ts),
-    )
