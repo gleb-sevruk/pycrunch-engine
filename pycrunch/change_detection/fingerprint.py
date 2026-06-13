@@ -182,7 +182,7 @@ def _resolve_relative(
 
 
 def _stub_function_bodies_for_skeleton(
-    stmts,
+    stmts: list,
     test_file: bool = False,
     function_prefixes: Sequence[str] = ('test_',),
     class_name: str = '',

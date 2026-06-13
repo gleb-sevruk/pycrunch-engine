@@ -122,6 +122,12 @@ def classify_file_change(
     test_file: bool = False,
     function_prefixes: Sequence[str] = ('test_',),
 ) -> ClassificationResult:
+    """Classify the change between old fingerprint and new_source.
+
+    Always pass function_prefixes from config (Configuration.effective_function_prefixes);
+    the default ('test_',) exists only so tests can omit it when the value doesn't affect
+    the assertion.
+    """
     try:
         new_fp = compute_file_fingerprint(
             new_source,
