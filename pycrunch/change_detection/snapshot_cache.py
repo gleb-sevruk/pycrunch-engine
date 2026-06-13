@@ -4,7 +4,7 @@ from pycrunch.change_detection import normalize_path
 from pycrunch.change_detection.fingerprint import FileFingerprint
 
 
-class FileSnapshotCache:
+class FileSnapshotFingerprintCache:
     def __init__(self):
         # key: normalize_path(absolute_filename)  value: FileFingerprint
         self._snapshots: Dict[str, FileFingerprint] = {}
@@ -22,4 +22,4 @@ class FileSnapshotCache:
         return set(self._snapshots.keys())
 
 
-snapshot_cache = FileSnapshotCache()
+snapshot_cache = FileSnapshotFingerprintCache()

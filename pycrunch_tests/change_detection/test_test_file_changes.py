@@ -16,7 +16,7 @@ from pycrunch.change_detection.change_classifier import (
 )
 from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 from pycrunch.change_detection.import_graph import ImportGraph
-from pycrunch.change_detection.snapshot_cache import FileSnapshotCache
+from pycrunch.change_detection.snapshot_cache import FileSnapshotFingerprintCache
 from pycrunch.session.combined_coverage import CombinedCoverage
 from pycrunch.session.file_map import TestMap
 
@@ -183,7 +183,7 @@ def test_helper_change_uses_coverage_for_plan(tmp_path):
     (tmp_path / 'test_mod.py').write_text(src2)
 
     old = compute_file_fingerprint(src1, filepath, test_file=True)
-    cache = FileSnapshotCache()
+    cache = FileSnapshotFingerprintCache()
     cache.update(filepath, old)
 
     coverage = CombinedCoverage()
@@ -224,7 +224,7 @@ def test_class_method_qualname_matching(tmp_path):
     (tmp_path / 'test_suite.py').write_text(src2)
 
     old = compute_file_fingerprint(src1, filepath, test_file=True)
-    cache = FileSnapshotCache()
+    cache = FileSnapshotFingerprintCache()
     cache.update(filepath, old)
 
     coverage = CombinedCoverage()
@@ -283,7 +283,7 @@ def test_no_fqn_match_falls_back_to_all_tests(tmp_path):
     (tmp_path / 'test_mod.py').write_text(src2)
 
     old = compute_file_fingerprint(src1, filepath, test_file=True)
-    cache = FileSnapshotCache()
+    cache = FileSnapshotFingerprintCache()
     cache.update(filepath, old)
 
     coverage = CombinedCoverage()
