@@ -30,20 +30,17 @@ def fp(source, test_file=True):
 # ── helpers for integration tests ────────────────────────────────────────────
 
 
-def patch_singletons(cache, graph, coverage, tmap):
-    import pycrunch.pipeline.file_modification_task as fmt_mod
-
-    fmt_mod._sc_mod.snapshot_cache = cache
-    fmt_mod._ig_mod.import_graph = graph
-    fmt_mod._cc_mod.combined_coverage = coverage
-    fmt_mod._fm_mod.test_map = tmap
-
-
 def make_task(filepath, cache, graph, coverage, tmap):
     from pycrunch.pipeline.file_modification_task import FileModifiedNotificationTask
 
-    patch_singletons(cache, graph, coverage, tmap)
-    return FileModifiedNotificationTask(filepath)
+    # Inject collaborators directly — no module-global swapping needed.
+    return FileModifiedNotificationTask(
+        filepath,
+        snapshot_cache=cache,
+        import_graph=graph,
+        combined_coverage=coverage,
+        test_map=tmap,
+    )
 
 
 def run(coro):
