@@ -61,6 +61,8 @@ engine:
     runtime: pytest
     enable-web-ui: false
     load-pytest-plugins: true
+    # use `legacy` for pre 1.7 behaviour
+    change-detection-mode: smart
 '''
             handle.write.assert_called_once_with(default_config_file)
 

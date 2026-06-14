@@ -59,7 +59,7 @@ class Configuration:
         self.enable_asyncio_debug = False
         self.enable_web_ui = False
         self.change_detection_root: str = self._get_working_directory()
-        self.change_detection_mode: str = 'legacy'  # 'legacy' | 'smart'
+        self.change_detection_mode: str = 'smart'  # 'smart' | 'legacy'
         self.intellij_connector_version = 'unknown'
         self.module_prefixes = []
         self.function_prefixes = []

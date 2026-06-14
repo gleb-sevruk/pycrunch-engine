@@ -23,6 +23,8 @@ engine:
     runtime: pytest
     enable-web-ui: false
     load-pytest-plugins: true
+    # use `legacy` for pre 1.7 behaviour
+    change-detection-mode: smart
 """
         with io.open(self.configuration_file, encoding='utf-8', mode='w') as f:
             f.write(default_config_file)
