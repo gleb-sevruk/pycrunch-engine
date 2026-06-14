@@ -47,7 +47,6 @@ class TestCoverageRun(unittest.TestCase):
 
     def test_coverage_lib_version_4(self):
         sut = self.create_sut(is_v5_or_greater=False)
-
         assert 'data_file' not in sut.get_coverage_arguments()
 
     def test_coverage_lib_version_5(self):
@@ -62,3 +61,4 @@ class TestCoverageRun(unittest.TestCase):
         sut = CoverageAbstraction(True, None, None)
         sut.is_coverage_v5_or_greater = MagicMock(return_value=is_v5_or_greater)
         return sut
+

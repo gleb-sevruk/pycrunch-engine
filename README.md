@@ -219,3 +219,53 @@ This was major dependency change, so please report any issues you may have.
  
  
  
+
+---
+
+## Smart Change Detection
+
+By default pycrunch-engine re-runs every test that ever touched a changed file ("legacy" mode).
+**Smart mode** uses AST analysis to run only the tests that are actually affected by the change.
+
+### Enabling smart mode
+
+Add to `.pycrunch-config.yaml`:
+
+```yaml
+engine:
+  change-detection-mode: smart
+```
+
+### How it works
+
+| Change type | Tests scheduled |
+|---|---|
+| Body of a function changed | Only tests whose coverage touched those lines |
+| Comment / docstring / blank line only | Zero tests (no re-run) |
+| Constant, import, decorator, signature, default-arg | All tests that touched the file **plus** all tests in every file that imports it (transitively) |
+| File is new or unparseable | Same as legacy (all tests that touched the file) |
+| `conftest.py` modified | All tests in that directory subtree |
+
+### Known limitations
+
+Smart mode cannot detect dependencies established at runtime:
+
+- `importlib.import_module('name_as_string')` — dynamic import
+- Monkey-patching: `module.attr = new_value`
+- `getattr(module, computed_name)`
+- Changes to non-Python files (JSON fixtures, templates, etc.)
+
+For these cases the engine may miss affected tests. If in doubt, use legacy mode or trigger a full run manually.
+
+**Known issue — stale coverage gutter positions:** After editing a file, coverage gutter
+positions may be stale (shown at pre-edit line numbers) until the affected tests are
+re-run. Tests that are not affected by the edit keep their last-run coverage at
+last-run positions.
+
+### Configuration reference
+
+```yaml
+engine:
+  change-detection-mode: smart   # 'legacy' (default) | 'smart'
+  change-detection-root: /path/to/project/root   # used for relative-import resolution
+```

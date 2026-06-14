@@ -12,6 +12,7 @@ engine:
   multiprocessing-threshold: 4
   runtime: pytest
   timeout: 0
+  change-detection-mode: smart
   change-detection-root: .
 #   requires restart
   enable-web-ui: true

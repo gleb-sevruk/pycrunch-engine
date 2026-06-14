@@ -86,7 +86,6 @@ class CombinedCoverage:
 
     def __init__(self):
         self.files = dict()
-
         # all files involved in execution of test.
         # FQN will end up showing in multiple files if dependent file was used during run
         self.dependencies = defaultdict(set)
@@ -134,11 +133,11 @@ class CombinedCoverage:
             self.files[filename] = statistics
 
     def add_multiple_results(self, results: Dict[str, "CoverageRun"]):
-        # todo invalidate\remove outdated runs
-
         for fqn, test_run in results.items():
-            test_run = test_run
+            # todo pr145: succeeded = test_run.execution_result.status == 'success'
+            #        that needed?     if succeeded:
 
+            self.test_did_removed(fqn)
             self.clean_coverage_in_stale_files(fqn, test_run)
             for file in test_run.files:
                 file_with_coverage = FileWithCoverage(
@@ -147,7 +146,6 @@ class CombinedCoverage:
                 self.mark_dependency(
                     file_with_coverage.filename, test_run.test_metadata['fqn']
                 )
-
                 self.mark_coverage(
                     fqn=fqn,
                     filename=file_with_coverage.filename,

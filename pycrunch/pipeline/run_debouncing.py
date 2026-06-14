@@ -107,6 +107,14 @@ class RunDebouncer:
             f'execute_with_delay: Total {len(copy_of_list)} tests will run with delay {round(delay, 4)} seconds',
         )
 
+        if not copy_of_list:
+            logger.debug('execute_with_delay: no dirty tests, skipping RunTestTask')
+            self.dirty_tests = []
+            self.run_pending = False
+            self.reset_deadline()
+            self.run_timer = None
+            return
+
         execution_pipeline.add_task(
             # While this is running - append only, do not issue another tasks
             RunTestTask(copy_of_list, RemoteDebugParams.disabled())

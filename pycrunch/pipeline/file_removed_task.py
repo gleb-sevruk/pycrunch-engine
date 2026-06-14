@@ -1,6 +1,8 @@
 import time
 
 from pycrunch.api import shared
+from pycrunch.change_detection.import_graph import import_graph
+from pycrunch.change_detection.snapshot_cache import snapshot_cache
 from pycrunch.pipeline.abstract_task import AbstractTask
 from pycrunch.session.file_map import test_map
 
@@ -20,6 +22,8 @@ class FileRemovedTask(AbstractTask):
         )
 
         test_map.file_did_removed(self.file)
+        snapshot_cache.remove(self.file)
+        import_graph.remove_file(self.file)
         from pycrunch.discovery.simple import TestSet
 
         await state.engine.test_discovery_will_become_available(TestSet())

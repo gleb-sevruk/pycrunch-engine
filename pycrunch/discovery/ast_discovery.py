@@ -4,6 +4,14 @@ import sys
 from pathlib import Path
 from typing import List, Union
 
+from pycrunch.change_detection.classification import (
+    compute_module_name_from_path,
+    is_module_with_tests,
+    looks_like_test_class,
+)
+from pycrunch.change_detection.fingerprint import compute_file_fingerprint
+from pycrunch.change_detection.import_graph import import_graph
+from pycrunch.change_detection.snapshot_cache import snapshot_cache
 from pycrunch.discovery.simple import TestSet, TestsInModule
 from pycrunch.introspection.clock import Clock
 from pycrunch.session import config
@@ -58,13 +66,15 @@ class AstTestDiscovery:
             if self.is_excluded_via_configuration(current_file_path):
                 continue
 
-            module_name = self.compute_module_name_from_path(current_file_path)
-            if not self.is_module_with_tests(module_name):
+            module_name = compute_module_name_from_path(current_file_path)
+            if not is_module_with_tests(module_name, self.configuration):
                 continue
 
+            filename = str(py_file)
             try:
                 logger.debug('Compiling ' + module_name)
-                ast_tree = self.load_syntax_tree_from(py_file)
+                contents = self.read_file(filename)
+                ast_tree = self.parse_ast_from_source(contents, py_file)
                 tests_found = self.load_tests_from_ast_representation(ast_tree)
             except Exception as ex:
                 logger.error(f'Failed to parse ast of `{current_file_path}`')
@@ -73,7 +83,7 @@ class AstTestDiscovery:
                 )
                 continue
 
-            filename = str(py_file)
+            self._update_snapshot_cache(filename, contents)
 
             test_map.did_found_tests_in_file(filename, tests_found, module_name)
             test_set.add_module(TestsInModule(filename, tests_found, module_name))
@@ -84,9 +94,8 @@ class AstTestDiscovery:
 
         return test_set
 
-    def load_syntax_tree_from(self, file_name) -> ast.Module:
+    def parse_ast_from_source(self, contents: str, file_name) -> ast.Module:
         start = self.clock.now()
-        contents = self.read_file(file_name)
         parse = ast.parse(contents, Path(file_name).name)
         end = self.clock.now()
         self.time_spent += end - start
@@ -107,7 +116,7 @@ class AstTestDiscovery:
             class_results = []
             class_ast_name = class_ast.name
 
-            c2 = self.looks_like_test_class(class_ast.name)
+            c2 = looks_like_test_class(class_ast.name)
             if not c2:
                 c2 = self.is_subclass_of_unittest(ast_tree, class_ast)
 
@@ -135,21 +144,21 @@ class AstTestDiscovery:
 
         return results
 
+    def _update_snapshot_cache(self, filename: str, source: str) -> None:
+        # Called only for test files; non-test source files are fingerprinted on-demand
+        # in _smart_execution_plan.
+        try:
+            root = self.configuration.change_detection_root
+            fp = compute_file_fingerprint(source, filename, root, test_file=True)
+            snapshot_cache.update(filename, fp)
+            import_graph.update_file(filename, fp)
+        except Exception:
+            logger.warning(f'snapshot update failed for {filename}', exc_info=True)
+
     @staticmethod
     def read_file(file_name: str) -> str:
         with open(file_name, "r") as f:
             return f.read()
-
-    def compute_module_name_from_path(self, current_file_path):
-        if len(current_file_path.parts) > 1:
-            module_name = (
-                str.join('.', current_file_path.parts[:-1])
-                + '.'
-                + current_file_path.stem
-            )
-        else:
-            module_name = current_file_path.stem
-        return module_name
 
     def is_excluded_via_configuration(self, current_file_path):
         s = str(current_file_path)
@@ -160,23 +169,11 @@ class AstTestDiscovery:
             x = True
         return x
 
-    def is_module_with_tests(self, module_name):
-        # Todo take pytest configs into account
-        module_short_name = module_name.split('.')[-1]
-        return module_short_name.startswith((
-            'test_',
-            'tests_',
-            *self.configuration.module_prefixes,
-        )) or module_short_name.endswith(('_test', 'tests', '_tests'))
-
     def looks_like_test_name(self, v):
         return any(
             v.startswith(prefix)
             for prefix in ['test_', *self.configuration.function_prefixes]
         ) or v.endswith('_test')
-
-    def looks_like_test_class(self, name: str) -> bool:
-        return name.startswith('Test') or name.endswith('Test')
 
     def is_subclass_of_unittest(
         self, ast_module: ast.Module, class_ast: ast.ClassDef

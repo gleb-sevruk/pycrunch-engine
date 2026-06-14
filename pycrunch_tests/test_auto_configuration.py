@@ -34,6 +34,7 @@ class TestAutoConfigDecision(unittest.TestCase):
     def when_file_does_not_exist(self):
         self.set_config_file_existence(False)
 
+
     def when_configuration_file_already_on_disk(self):
         self.set_config_file_existence(True)
 
@@ -53,10 +54,15 @@ class TestAutoConfigCreation(unittest.TestCase):
             sut.create_default_configuration_file()
             handle = io_mock()
             default_config_file ='''# documentation https://pycrunch.com/docs/configuration-file
+discovery:
+  exclusions:
+  - .venv
 engine:
     runtime: pytest
     enable-web-ui: false
     load-pytest-plugins: true
+    # use `legacy` for pre 1.7 behaviour
+    change-detection-mode: smart
 '''
             handle.write.assert_called_once_with(default_config_file)
 

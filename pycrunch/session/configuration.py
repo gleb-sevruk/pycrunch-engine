@@ -59,9 +59,14 @@ class Configuration:
         self.enable_asyncio_debug = False
         self.enable_web_ui = False
         self.change_detection_root: str = self._get_working_directory()
+        self.change_detection_mode: str = 'smart'  # 'smart' | 'legacy'
         self.intellij_connector_version = 'unknown'
         self.module_prefixes = []
         self.function_prefixes = []
+
+    @property
+    def effective_function_prefixes(self) -> tuple:
+        return ('test_', *tuple(self.function_prefixes or ()))
 
     def _get_working_directory(self):
         return str(Path('.').absolute())
@@ -163,6 +168,14 @@ class Configuration:
                 self.change_detection_root = change_detection_root
             else:
                 print('engine: change_detection_root parameter should be a string')
+        change_detection_mode = engine_config.get('change-detection-mode', None)
+        if change_detection_mode is not None:
+            if change_detection_mode in ('legacy', 'smart'):
+                self.change_detection_mode = change_detection_mode
+            else:
+                logger.warning(
+                    f'engine: unknown change-detection-mode {change_detection_mode!r}, falling back to legacy'
+                )
         multiprocess_threshold = engine_config.get('multiprocessing-threshold', None)
         if multiprocess_threshold:
             self.multiprocess_threshold_will_change(multiprocess_threshold)
