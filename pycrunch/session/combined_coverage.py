@@ -134,16 +134,10 @@ class CombinedCoverage:
 
     def add_multiple_results(self, results: Dict[str, "CoverageRun"]):
         for fqn, test_run in results.items():
-            succeeded = test_run.execution_result.status == 'success'
-            if succeeded:
-                # Erase all previous line hits, dependencies, and exceptions for this fqn
-                # before rebuilding from the fresh run data. This ensures that coverage
-                # accurately reflects the last run, not an accumulation of past runs.
-                self.test_did_removed(fqn)
-            # Display (lines_with_entrypoints) always reflects the LAST run — even a failed
-            # one — so stale file hits are cleared unconditionally. Dependencies survive
-            # failure (old edges union with new) so the engine re-triggers the test when
-            # the dependency is fixed.
+            # todo pr145: succeeded = test_run.execution_result.status == 'success'
+            #        that needed?     if succeeded:
+
+            self.test_did_removed(fqn)
             self.clean_coverage_in_stale_files(fqn, test_run)
             for file in test_run.files:
                 file_with_coverage = FileWithCoverage(

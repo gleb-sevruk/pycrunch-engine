@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, FrozenSet, Optional, Set
 
-from pycrunch.change_detection import looks_like_test_class
+from pycrunch.change_detection.classification import looks_like_test_class
 from pycrunch.session import config
 
 Sha256 = str  # hex-encoded SHA-256 digest

@@ -63,7 +63,7 @@ def test_body_change_schedules_only_changed_test():
         "    assert 2 == 2\n"  # unchanged
     )
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_tests == frozenset({'test_a'})
     assert kind.changed_fixtures == frozenset()
@@ -91,7 +91,7 @@ def test_parametrize_change_does_not_affect_skeleton():
         "    assert True\n"
     )
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_tests == frozenset({'test_a'})
     assert not kind.skeleton_changed
@@ -104,7 +104,7 @@ def test_skip_decorator_added_does_not_affect_skeleton():
     src1 = "def test_a():\n    assert True\n\ndef test_b():\n    assert True\n"
     src2 = "@pytest.mark.skip\ndef test_a():\n    assert True\n\ndef test_b():\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_tests == frozenset({'test_a'})
     assert not kind.skeleton_changed
@@ -117,7 +117,7 @@ def test_fixture_body_change_goes_to_changed_fixtures():
     src1 = "@pytest.fixture\ndef db():\n    return {}\n"
     src2 = "@pytest.fixture\ndef db():\n    return {'key': 'val'}\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_fixtures == frozenset({'db'})
     assert kind.changed_tests == frozenset()
@@ -131,7 +131,7 @@ def test_fixture_scope_change_does_not_affect_skeleton():
     src1 = "@pytest.fixture(scope='session')\ndef db():\n    return {}\n"
     src2 = "@pytest.fixture(scope='function')\ndef db():\n    return {}\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.changed_fixtures == frozenset({'db'})
     assert not kind.skeleton_changed
@@ -144,7 +144,7 @@ def test_import_added_causes_skeleton_change():
     src1 = "def test_a():\n    assert True\n"
     src2 = "import os\ndef test_a():\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.skeleton_changed
 
@@ -156,7 +156,7 @@ def test_module_constant_change_causes_skeleton_change():
     src1 = "TIMEOUT = 1\ndef test_a():\n    assert True\n"
     src2 = "TIMEOUT = 2\ndef test_a():\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.skeleton_changed
 
@@ -182,7 +182,7 @@ def test_helper_change_uses_coverage_for_plan(tmp_path):
     filepath = str(tmp_path / 'test_mod.py')
     (tmp_path / 'test_mod.py').write_text(src2)
 
-    old = compute_file_fingerprint(src1, filepath, test_file=True)
+    old = compute_file_fingerprint(src1, filepath)
     cache = FileSnapshotFingerprintCache()
     cache.update(filepath, old)
 
@@ -257,7 +257,7 @@ def test_comment_only_change_is_no_change():
     src1 = "def test_a():\n    assert True\n"
     src2 = "def test_a():\n    # comment\n    assert True\n"
     old = fp(src1)
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, NoChange)
 
 
@@ -268,7 +268,7 @@ def test_old_snapshot_without_test_file_flag_is_conservative():
     src1 = "def test_a():\n    assert True\n"
     src2 = "def test_a():\n    assert False\n"
     old = fp(src1, test_file=False)  # old-style snapshot
-    kind, _ = classify_file_change(old, src2, FILENAME, test_file=True)
+    kind, _ = classify_file_change(old, src2, FILENAME)
     assert isinstance(kind, TestFileChange)
     assert kind.skeleton_changed  # conservative: run everything
 
@@ -282,7 +282,7 @@ def test_no_fqn_match_falls_back_to_all_tests(tmp_path):
     filepath = str(tmp_path / 'test_mod.py')
     (tmp_path / 'test_mod.py').write_text(src2)
 
-    old = compute_file_fingerprint(src1, filepath, test_file=True)
+    old = compute_file_fingerprint(src1, filepath)
     cache = FileSnapshotFingerprintCache()
     cache.update(filepath, old)
 
@@ -313,6 +313,6 @@ def test_non_test_file_still_uses_body_only_change():
 
     # Same file with test_file=True: foo() is not a test (name doesn't start with test_)
     # So decorator is NOT stripped → skeleton still changes
-    f3 = compute_file_fingerprint(src1, '/project/tests/test_mod.py', test_file=True)
-    f4 = compute_file_fingerprint(src2, '/project/tests/test_mod.py', test_file=True)
+    f3 = compute_file_fingerprint(src1, '/project/tests/test_mod.py')
+    f4 = compute_file_fingerprint(src2, '/project/tests/test_mod.py')
     assert f3.module_level_hash != f4.module_level_hash

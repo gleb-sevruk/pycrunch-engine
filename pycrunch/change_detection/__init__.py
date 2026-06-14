@@ -6,10 +6,6 @@ def normalize_path(p: str) -> str:
     return str(Path(p).resolve())
 
 
-def looks_like_test_class(name: str) -> bool:
-    return name.startswith('Test') or name.endswith('Test')
-
-
 def find_fqns_for_qualname(qualname: str, candidates: Iterable[str]) -> Set[str]:
     """Find all test FQNs whose name part matches qualname.
 

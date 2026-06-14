@@ -1,11 +1,17 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import FrozenSet, NamedTuple, Optional
 
+from pycrunch.change_detection.classification import (
+    is_module_with_tests,
+    compute_module_name_from_path,
+)
 from pycrunch.change_detection.fingerprint import (
     FileFingerprint,
     FunctionFingerprint,
     compute_file_fingerprint,
 )
+from pycrunch.session import config
 
 
 @dataclass(frozen=True)
@@ -118,11 +124,11 @@ def classify_file_change(
     old: Optional[FileFingerprint],
     new_source: str,
     filename: str,
-    *,
     root: Optional[str] = None,
-    test_file: bool = False,
 ) -> ClassificationResult:
     """Classify the change between old fingerprint and new_source."""
+    module_name = compute_module_name_from_path(Path(filename))
+    test_file = is_module_with_tests(module_name, config)
     try:
         new_fp = compute_file_fingerprint(
             new_source, filename, root, test_file=test_file

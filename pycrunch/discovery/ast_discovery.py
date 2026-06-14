@@ -4,7 +4,11 @@ import sys
 from pathlib import Path
 from typing import List, Union
 
-from pycrunch.change_detection import looks_like_test_class as _looks_like_test_class
+from pycrunch.change_detection.classification import (
+    is_module_with_tests,
+    looks_like_test_class,
+    compute_module_name_from_path,
+)
 from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 from pycrunch.change_detection.import_graph import import_graph
 from pycrunch.change_detection.snapshot_cache import snapshot_cache
@@ -62,8 +66,8 @@ class AstTestDiscovery:
             if self.is_excluded_via_configuration(current_file_path):
                 continue
 
-            module_name = self.compute_module_name_from_path(current_file_path)
-            if not self.is_module_with_tests(module_name):
+            module_name = compute_module_name_from_path(current_file_path)
+            if not is_module_with_tests(module_name, self.configuration):
                 continue
 
             filename = str(py_file)
@@ -112,7 +116,7 @@ class AstTestDiscovery:
             class_results = []
             class_ast_name = class_ast.name
 
-            c2 = self.looks_like_test_class(class_ast.name)
+            c2 = looks_like_test_class(class_ast.name)
             if not c2:
                 c2 = self.is_subclass_of_unittest(ast_tree, class_ast)
 
@@ -156,17 +160,6 @@ class AstTestDiscovery:
         with open(file_name, "r") as f:
             return f.read()
 
-    def compute_module_name_from_path(self, current_file_path):
-        if len(current_file_path.parts) > 1:
-            module_name = (
-                str.join('.', current_file_path.parts[:-1])
-                + '.'
-                + current_file_path.stem
-            )
-        else:
-            module_name = current_file_path.stem
-        return module_name
-
     def is_excluded_via_configuration(self, current_file_path):
         s = str(current_file_path)
         x = False
@@ -176,23 +169,11 @@ class AstTestDiscovery:
             x = True
         return x
 
-    def is_module_with_tests(self, module_name):
-        # Todo take pytest configs into account
-        module_short_name = module_name.split('.')[-1]
-        return module_short_name.startswith((
-            'test_',
-            'tests_',
-            *self.configuration.module_prefixes,
-        )) or module_short_name.endswith(('_test', 'tests', '_tests'))
-
     def looks_like_test_name(self, v):
         return any(
             v.startswith(prefix)
             for prefix in ['test_', *self.configuration.function_prefixes]
         ) or v.endswith('_test')
-
-    def looks_like_test_class(self, name: str) -> bool:
-        return _looks_like_test_class(name)
 
     def is_subclass_of_unittest(
         self, ast_module: ast.Module, class_ast: ast.ClassDef

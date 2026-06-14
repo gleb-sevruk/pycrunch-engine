@@ -60,7 +60,6 @@ class FileModifiedNotificationTask(AbstractTask):
         # look out for new tests in changed files
         # clean up zombie tests
         # run impacted tests and newly discovered
-        # todo: Do not block event_loop!
         if self.file.endswith(CONFIG_FILE_NAME):
             execution_pipeline.add_task(ConfigReloadTask())
             return
@@ -146,7 +145,7 @@ class FileModifiedNotificationTask(AbstractTask):
         loop = asyncio.get_event_loop()
         filename = normalize_path(self.file)
 
-        if Path(filename).name == 'conftest.py':
+        if self.is_conftest(filename):
             return self._conftest_plan(filename)
 
         # If called from run(), old_fp is pre-captured before discovery overwrote the cache.
@@ -162,17 +161,9 @@ class FileModifiedNotificationTask(AbstractTask):
             )
             return self._legacy_fallback()
 
-        # Determine if this is a test file by checking whether test_map knows about it.
-        # Discovery has already run at this point, so test_map is up to date.
-        is_test_file = bool(
-            _fm_mod.test_map.get_immutable_tests_for_file(filename)
-            or _fm_mod.test_map.get_immutable_tests_for_file(self.file)
-        )
-
         _classify = functools.partial(
             classify_file_change,
             root=state.config.change_detection_root,
-            test_file=is_test_file,
         )
         kind, new_fp = await loop.run_in_executor(
             None, _classify, old_fp, new_source, filename
@@ -188,7 +179,7 @@ class FileModifiedNotificationTask(AbstractTask):
         elif isinstance(kind, TestFileChange):
             all_tests_in_file = set(
                 _fm_mod.test_map.get_immutable_tests_for_file(filename)
-            ) | set(_fm_mod.test_map.get_immutable_tests_for_file(self.file))
+            )
 
             if kind.skeleton_changed or kind.changed_fixtures:
                 plan |= all_tests_in_file
@@ -209,9 +200,7 @@ class FileModifiedNotificationTask(AbstractTask):
                 # Helpers: coverage-based lookup using old line ranges
                 if kind.changed_support_functions:
                     coverage = _cc_mod.combined_coverage
-                    stats = coverage.files.get(filename) or coverage.files.get(
-                        self.file
-                    )
+                    stats = coverage.files.get(filename)
                     # TODO: PR145 - maybe there is more elegant way? what if function size dramatically changes across runs
                     # TODO: PR145 - I would rather not include this completely into code because its too much overhead
                     for fn in kind.changed_support_functions:
@@ -238,7 +227,7 @@ class FileModifiedNotificationTask(AbstractTask):
 
         elif isinstance(kind, BodyOnlyChange):
             coverage = _cc_mod.combined_coverage
-            stats = coverage.files.get(filename) or coverage.files.get(self.file)
+            stats = coverage.files.get(filename)
             if stats is not None:
                 for fn in kind.changed_functions:
                     for line in range(fn.line_start, fn.line_end + 1):
@@ -274,12 +263,13 @@ class FileModifiedNotificationTask(AbstractTask):
 
         return plan
 
+    def is_conftest(self, filename: str) -> bool:
+        return Path(filename).name == 'conftest.py'
+
     def _legacy_fallback(self, removed_tests: Optional[set] = None) -> Set[str]:
         filename = normalize_path(self.file)
         coverage = _cc_mod.combined_coverage
-        result = coverage.dependencies.get(filename, set()) | coverage.dependencies.get(
-            self.file, set()
-        )
+        result = coverage.dependencies.get(filename, set())
         if removed_tests:
             result = {fqn for fqn in result if fqn not in removed_tests}
         return result
