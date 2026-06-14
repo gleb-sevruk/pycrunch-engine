@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import List, Union
 
 from pycrunch.change_detection.classification import (
+    compute_module_name_from_path,
     is_module_with_tests,
     looks_like_test_class,
-    compute_module_name_from_path,
 )
 from pycrunch.change_detection.fingerprint import compute_file_fingerprint
 from pycrunch.change_detection.import_graph import import_graph

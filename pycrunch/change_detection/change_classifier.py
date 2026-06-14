@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import FrozenSet, NamedTuple, Optional
 
 from pycrunch.change_detection.classification import (
-    is_module_with_tests,
     compute_module_name_from_path,
+    is_module_with_tests,
 )
 from pycrunch.change_detection.fingerprint import (
     FileFingerprint,
